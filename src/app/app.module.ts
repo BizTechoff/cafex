@@ -25,6 +25,8 @@ import { DialogService } from './common/dialog';
 import { AdminGuard } from './users/roles';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { StoresListComponent } from './core/store/stores-list/stores-list.component';
+import { ProductsListComponent } from './core/product/products-list/products-list.component';
+import { GridDialogComponent } from './common/grid-dialog/grid-dialog.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +35,9 @@ import { StoresListComponent } from './core/store/stores-list/stores-list.compon
     HomeComponent,
     YesNoQuestionComponent,
     InputAreaComponent,
-    StoresListComponent
+    GridDialogComponent,
+    StoresListComponent,
+    ProductsListComponent
   ],
   imports: [
     BrowserModule,
@@ -56,6 +60,7 @@ import { StoresListComponent } from './core/store/stores-list/stores-list.compon
   ],
   providers: [DialogService, AdminGuard],
   bootstrap: [AppComponent],
-  entryComponents: [YesNoQuestionComponent, InputAreaComponent]
+  entryComponents: [YesNoQuestionComponent, InputAreaComponent, GridDialogComponent]
 })
 export class AppModule { }
+ 

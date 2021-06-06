@@ -12,3 +12,7 @@ export class Store extends IdEntity{
         });
     }
 };
+  
+export class StoreIdColumn extends StringColumn{
+    
+}

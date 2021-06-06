@@ -17,16 +17,16 @@ async function startup() {
     let dataProvider: DataProvider;
 
     // use json db for dev, and postgres for production
-    if (!process.env.DEV_MODE) {
+    if (true) {
         const pool = new Pool({
             connectionString: process.env.DATABASE_URL,
             ssl: process.env.DEV_MODE ? false : { rejectUnauthorized: false }// use ssl in production but not in development. the `rejectUnauthorized: false`  is required for deployment to heroku etc...
         });
         let database = new SqlDatabase(new PostgresDataProvider(pool));
         await verifyStructureOfAllEntities(database); 
-        dataProvider = database;
+        dataProvider = database; 
     }
-
+ 
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(compression());
@@ -34,11 +34,11 @@ async function startup() {
         app.use(forceHttps);
     initExpress(app, {
         dataProvider
-    });
-    app.use(express.static('dist/cafe-app'));
+    }); 
+    app.use(express.static('dist/cafex-app'));
     app.use('/*', async (req, res) => {
         try {
-            res.send(fs.readFileSync('dist/cafe-app/index.html').toString());
+            res.send(fs.readFileSync('dist/cafex-app/index.html').toString());
         } catch (err) {
             res.sendStatus(500);
         }

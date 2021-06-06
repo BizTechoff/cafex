@@ -155,7 +155,7 @@ export class AppComponent implements OnInit {
         if (this.activeRoute.firstChild.routeConfig)
           return this.activeRoute.firstChild.routeConfig.path;
       }
-    return 'cafe-app';
+    return 'cafex-app';
   }
 
   shouldDisplayRoute(route: Route) {
