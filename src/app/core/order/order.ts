@@ -1,4 +1,6 @@
-import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, NumberColumn, StringColumn, ValueListColumn } from "@remult/core";
+import { extend, openDialog } from "@remult/angular";
+import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, StringColumn, ValueListColumn } from "@remult/core";
+import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
 import { STARTING_ORDER_NUM } from "../../shared/types";
 import { UserId } from "../../users/users";
 import { StoreIdColumn } from "../store/store";
@@ -38,14 +40,32 @@ export class Order extends IdEntity {
     }
 };
 
-export class OrderIdColumn extends StringColumn {
-
+export class OrderIdColumn extends LookupColumn<Order> {
+    constructor(context: Context, settings?: ColumnSettings<string>) {
+        super(context.for(Order), {
+            displayValue: () => this.item.orderNum.value.toString()
+            , ...settings
+        });
+        extend(this).dataControl(dcs => {
+            dcs.hideDataOnInput = true;
+            dcs.clickIcon = 'search';
+            dcs.getValue = () => this.displayValue;
+            dcs.click = async () => {
+                await openDialog(DynamicServerSideSearchDialogComponent,
+                    dlg => dlg.args(Order, {
+                        onClear: () => this.value = '',
+                        onSelect: cur => this.value = cur.id.value,
+                        searchColumn: cur => new StringColumn({ defaultValue: cur.orderNum.value.toString() })
+                    }));
+            };
+        });
+    }
 }
 
 export class OrderStatus {
-    static open = new OrderStatus();
-    static wainting = new OrderStatus();
     static closed = new OrderStatus();
+    static working = new OrderStatus();
+    static open = new OrderStatus();
     constructor() { }
     id: string = '';//for ValueListItem
 }
@@ -53,8 +73,8 @@ export class OrderStatus {
 export class OrderStatusColumn extends ValueListColumn<OrderStatus> {
     constructor(options?: ColumnSettings<OrderStatus>) {
         super(OrderStatus, {
-            defaultValue: OrderStatus.wainting,
-            ...options
+            defaultValue: OrderStatus.open,
+            ...options,
         });
     }
 }

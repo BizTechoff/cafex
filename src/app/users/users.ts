@@ -4,6 +4,7 @@ import { changeDate } from '../shared/types';
 import { Context, EntityClass } from '@remult/core';
 import { Roles } from './roles';
 import { extend } from "@remult/angular";
+import { StoreIdColumn } from "../core/store/store";
 
 @EntityClass
 export class Users extends IdEntity {
@@ -24,6 +25,8 @@ export class Users extends IdEntity {
     technician = new BoolColumn({ allowApiUpdate: Roles.admin });
     agent = new BoolColumn({ allowApiUpdate: Roles.admin });
     store = new BoolColumn({ allowApiUpdate: Roles.admin });
+
+    defaultStore = new StoreIdColumn(this.context);
 
     constructor(private context: Context) {
 

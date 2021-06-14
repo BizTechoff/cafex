@@ -82,9 +82,9 @@ export class StoreOrdersComponent implements OnInit {
         allowCRUD: this.context.isSignedIn(),
         numOfColumnsInGrid: 10,
         columnSettings: cur => [
-          cur.name,
-          // cur.quntity,
-          // cur.price
+          cur.product,
+          cur.quntity,
+          cur.price
         ],
       }),
       ok: () => { }
