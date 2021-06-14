@@ -21,6 +21,10 @@ export class Users extends IdEntity {
     createDate = new changeDate({ caption: 'Create Date' });
 
     admin = new BoolColumn({ allowApiUpdate: Roles.admin });
+    technician = new BoolColumn({ allowApiUpdate: Roles.admin });
+    agent = new BoolColumn({ allowApiUpdate: Roles.admin });
+    store = new BoolColumn({ allowApiUpdate: Roles.admin });
+
     constructor(private context: Context) {
 
         super({

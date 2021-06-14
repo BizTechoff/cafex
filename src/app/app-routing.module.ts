@@ -5,15 +5,19 @@ import { HomeComponent } from './home/home.component';
 
 
 import { UsersComponent } from './users/users.component';
-import { Roles, AdminGuard } from './users/roles';
+import { Roles, AdminGuard, StoreGuard, AgentGuard } from './users/roles';
 import { ShowDialogOnErrorErrorHandler } from './common/dialog';
 import { JwtModule } from '@auth0/angular-jwt';
 import { StoresListComponent } from './core/store/stores-list/stores-list.component';
+import { StoreOrdersComponent } from './core/store/store-orders/store-orders.component';
+import { AgentStoreOrdersComponent } from './core/agent/agent-store-orders/agent-store-orders.component';
 
 
 const routes: Routes = [
-  { path: 'Home', component: HomeComponent },
-  { path: 'Stores', component: StoresListComponent, canActivate: [SignedInGuard] },
+  { path: 'Home', component: HomeComponent, canActivate: [NotSignedInGuard] },
+  { path: 'Stores', component: StoresListComponent, canActivate: [AdminGuard] },
+  { path: 's/orders', component: StoreOrdersComponent, canActivate: [StoreGuard], data: {name: 'Your`s Orders'} },
+  { path: 'a/orders', component: AgentStoreOrdersComponent, canActivate: [AgentGuard], data: {name: 'Store Orders'} },
   { path: 'User Accounts', component: UsersComponent, canActivate: [AdminGuard] },
   { path: '', redirectTo: '/Home', pathMatch: 'full' },
   { path: '**', redirectTo: '/Home', pathMatch: 'full' }

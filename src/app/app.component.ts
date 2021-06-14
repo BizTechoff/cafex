@@ -57,6 +57,15 @@ export class AppComponent implements OnInit {
         if (u.admin.value) {
           result.roles.push(Roles.admin);
         }
+        if (u.technician.value) {
+          result.roles.push(Roles.technician);
+        }
+        if (u.agent.value) {
+          result.roles.push(Roles.agent);
+        }
+        if (u.store.value) {
+          result.roles.push(Roles.store);
+        }
       }
 
     if (result) {

@@ -23,10 +23,10 @@ async function startup() {
             ssl: process.env.DEV_MODE ? false : { rejectUnauthorized: false }// use ssl in production but not in development. the `rejectUnauthorized: false`  is required for deployment to heroku etc...
         });
         let database = new SqlDatabase(new PostgresDataProvider(pool));
-        await verifyStructureOfAllEntities(database); 
-        dataProvider = database; 
+        await verifyStructureOfAllEntities(database);
+        dataProvider = database;
     }
- 
+
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(compression());
@@ -34,7 +34,7 @@ async function startup() {
         app.use(forceHttps);
     initExpress(app, {
         dataProvider
-    }); 
+    });
     app.use(express.static('dist/cafex-app'));
     app.use('/*', async (req, res) => {
         try {

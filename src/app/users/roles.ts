@@ -3,8 +3,11 @@ import { Injectable } from '@angular/core';
 
 
 
-export const Roles = { 
-    admin: 'admin'
+export const Roles = {
+    admin: 'admin',
+    store: 'store',
+    agent: 'agent',
+    technician: 'technician'
 }
 
 
@@ -13,5 +16,27 @@ export class AdminGuard extends SignedInGuard {
 
     isAllowed() {
         return Roles.admin;
+    }
+}
+
+@Injectable()
+export class TechnicianGuard extends SignedInGuard {
+
+    isAllowed() {
+        return Roles.technician;
+    }
+}
+@Injectable()
+export class AgentGuard extends SignedInGuard {
+
+    isAllowed() {
+        return Roles.agent;
+    }
+}
+@Injectable()
+export class StoreGuard extends SignedInGuard {
+
+    isAllowed() {
+        return Roles.store;
     }
 }

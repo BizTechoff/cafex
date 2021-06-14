@@ -1,0 +1,10 @@
+<div style="display:flex;">
+    <button style="height: 40px;" mat-raised-button color="primary" (click)="prevDay()">-</button>
+    <data-control [column]="params.date" title='day: {{params.date.getDayOfWeek() + 1}}'>
+    </data-control>
+    <button style="height: 40px;" mat-raised-button color="primary" (click)="nextDay()">+</button>
+    <button mat-mini-fab title="Refresh" (click)="refresh()" color="primary"
+        title="{{ this.refreshed | date: 'HH:mm' }}">
+        <mat-icon>refresh</mat-icon>
+    </button>
+</div>
