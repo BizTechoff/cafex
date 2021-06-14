@@ -21,8 +21,9 @@ export class StoreIdColumn extends LookupColumn<Store> {
 
     constructor(context: Context, settings?: ColumnSettings<string>) {
         super(context.for(Store), {
-            displayValue: () => this.item.name.value
-            , ...settings
+            displayValue: () => this.item.name.value,
+            caption: 'Store',
+            ...settings
         });
         extend(this).dataControl(dcs => {
             dcs.hideDataOnInput = true;

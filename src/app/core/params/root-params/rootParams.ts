@@ -5,11 +5,11 @@ import { addDays } from "../../../shared/utils";
 @ServerController({ key: 'p/root', allowed: true })
 export class rootParams {
 
-  options: paramOptions = { date: addDays(TODAY) };
+  options: paramOptions = { date: addDays() };
 
   onChanged = async () : Promise<void> => { };
   date = new DateColumn({
-    defaultValue: this.options.date ? this.options.date : addDays(TODAY),
+    defaultValue: this.options.date ? this.options.date : addDays(),
     valueChange: async () => { await this.onChanged(); }
   });
    

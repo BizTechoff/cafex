@@ -19,7 +19,7 @@ export class RootParamsComponent implements OnInit {
     if (onCahnge) {
       this.params.onChanged = onCahnge;
     }
-    this.params.date.value = addDays(TODAY);
+    this.params.date.value = addDays();
   } 
 
   prevDay() {

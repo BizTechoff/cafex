@@ -5,7 +5,7 @@ import { OrderIdColumn } from "./order";
 @EntityClass
 export class OrderItem extends IdEntity {
     oid = new OrderIdColumn(this.context);
-    product = new ProductIdColumn(this.context);
+    pid = new ProductIdColumn(this.context);
     quntity = new NumberColumn();//cur item quantity
     price = new NumberColumn({ decimalDigits: 2 });//cur item price
  

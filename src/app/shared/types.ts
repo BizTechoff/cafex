@@ -6,8 +6,8 @@ export const TODAY: number = 0;
 export const IsDevMode: boolean = true;
 export const STARTING_ORDER_NUM: number = 1000;
 
-export const sharedParams = new rootParams({ date: addDays(TODAY) });
-
+export const sharedParams = new rootParams({ date: addDays() });
+ 
 export class changeDate extends DateTimeColumn {
   readonly = true;
 }

@@ -45,7 +45,7 @@ export class StoreOrdersComponent implements OnInit {
   constructor(private context: Context, private dialog: DialogService) { }
 
   ngOnInit() {
-    // sharedParams.date.value = addDays(TODAY);
+    // sharedParams.date.value = addDays();
   }
 
   prevDay() {
@@ -82,7 +82,7 @@ export class StoreOrdersComponent implements OnInit {
         allowCRUD: this.context.isSignedIn(),
         numOfColumnsInGrid: 10,
         columnSettings: cur => [
-          cur.product,
+          cur.pid,
           cur.quntity,
           cur.price
         ],

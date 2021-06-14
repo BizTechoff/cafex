@@ -1,14 +1,17 @@
 import { extend, openDialog } from "@remult/angular";
 import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, StringColumn, ValueListColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
-import { STARTING_ORDER_NUM } from "../../shared/types";
+import { STARTING_ORDER_NUM, TimeColumn, TODAY } from "../../shared/types";
+import { addDays, addHours, addTime } from "../../shared/utils";
 import { UserId } from "../../users/users";
 import { StoreIdColumn } from "../store/store";
+import { OrderItem } from "./orderItem";
 
 @EntityClass
 export class Order extends IdEntity {
     orderNum = new NumberColumn({ allowApiUpdate: false });
     date = new DateColumn();
+    time = new TimeColumn();
     status = new OrderStatusColumn();
     isImported = new BoolColumn({ caption: 'Imported?', defaultValue: false });
     created = new DateTimeColumn();
@@ -16,6 +19,15 @@ export class Order extends IdEntity {
     modified = new DateTimeColumn();
     modifiedBy = new UserId(this.context);
     sid = new StoreIdColumn(this.context);
+    count: number;
+
+    getCount() {
+        if (this.count !== undefined)
+            return this.count;
+        this.count = 0;
+        this.context.for(OrderItem).count(c => c.oid.isEqualTo(this.id)).then(result => { this.count = result; })
+        return this.count;
+    }
 
     constructor(private context: Context) {
         super({
@@ -24,6 +36,9 @@ export class Order extends IdEntity {
             allowApiRead: c => c.isSignedIn(),
             saving: async () => {
                 if (context.onServer) {
+                    if (this.date.wasChanged()) {
+                        this.time.value = addTime();
+                    }
                     if (this.isNew()) {
                         let o = await context.for(Order).findFirst({
                             orderBy: () => [{ column: this.orderNum, descending: true }]
@@ -33,6 +48,11 @@ export class Order extends IdEntity {
                         } else {
                             this.orderNum.value = STARTING_ORDER_NUM;
                         }
+                        this.created.value = addDays(TODAY, undefined, false);
+                        this.createdBy.value = this.context.user.id;
+                    } else {
+                        this.modified.value = addDays(TODAY, undefined, false);
+                        this.modifiedBy.value = this.context.user.id;
                     }
                 }
             }

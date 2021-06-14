@@ -36,7 +36,7 @@ export class AgentStoreOrdersComponent implements OnInit {
       rowButtons: [
         {
           textInMenu: 'Edit Order Items',
-          icon: 'edit',
+          icon: 'shopping_bag',
           click: async (cur) => { await this.openOrderItems(cur.id.value); }
         },
         { textInMenu: '__________________________' },
@@ -129,13 +129,13 @@ export class AgentStoreOrdersComponent implements OnInit {
           where: cur => cur.oid.isEqualTo(oid),
           newRow: (o) => {
             o.oid.value = oid;
-            o.price.value = o.product.item.price.value
+            o.price.value = o.pid.item.price.value
           },
           allowCRUD: false,
           showPagination: false,
           numOfColumnsInGrid: 10,
           columnSettings: cur => [
-            { column: cur.product, width: '90' },
+            { column: cur.pid, width: '90' },
             { column: cur.quntity, width: '55' },
             { column: cur.price, width: '50' }
           ],
@@ -175,7 +175,7 @@ export class AgentStoreOrdersComponent implements OnInit {
     await openDialog(InputAreaComponent, thus => thus.args = {
       title: `${item.isNew() ? 'Add' : 'Edit'} Order Item`,
       columnSettings: () => [
-        { column: item.product },
+        { column: item.pid },
         item.quntity,
         { column: item.price }
       ],
