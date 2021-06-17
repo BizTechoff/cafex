@@ -4,10 +4,10 @@ import { OrderIdColumn } from "./order";
 
 @EntityClass
 export class OrderItem extends IdEntity {
-    oid = new OrderIdColumn(this.context);
-    pid = new ProductIdColumn(this.context);
-    quntity = new NumberColumn();//cur item quantity
-    price = new NumberColumn({ decimalDigits: 2 });//cur item price
+    oid = new OrderIdColumn(this.context,{caption: 'הזמנה'});
+    pid = new ProductIdColumn(this.context,{caption: 'מוצר'});
+    quntity = new NumberColumn({caption: 'כמות'});//cur item quantity
+    price = new NumberColumn({ decimalDigits: 2 ,caption: 'מחיר'});//cur item price
  
     constructor(private context: Context) {
         super({

@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Users } from './users';
+import { GridSettings } from '@remult/angular';
 import { Context, ServerFunction } from '@remult/core';
-
 import { DialogService } from '../common/dialog';
 import { Roles } from './roles';
-import { GridSettings } from '@remult/angular';
+import { Users } from './users';
+
 
 
 @Component({
@@ -20,7 +20,14 @@ export class UsersComponent implements OnInit {
   }
 
   users = new GridSettings(this.context.for(Users), {
-    allowDelete: true,
+    orderBy: cur => [
+      { column: cur.admin, descending: true },
+      { column: cur.technician, descending: true },
+      { column: cur.agent, descending: true },
+      { column: cur.store, descending: true },
+      cur.name
+    ],
+    allowDelete: false,
     allowInsert: true,
     allowUpdate: true,
     numOfColumnsInGrid: 10,
@@ -44,12 +51,18 @@ export class UsersComponent implements OnInit {
           this.dialog.info("Password reseted");
         };
       }
+    }, {
+      name: 'Delete User',
+      click: async (cur) => {
+
+        if (await this.dialog.confirmDelete(cur.name.value)) {
+          await cur.delete();
+        };
+      }
     }
-    ],
-    confirmDelete: async (h) => {
-      return await this.dialog.confirmDelete(h.name.value)
-    },
+    ]
   });
+  
   @ServerFunction({ allowed: Roles.admin })
   static async resetPassword(userId: string, context?: Context) {
     let u = await context.for(Users).findId(userId);

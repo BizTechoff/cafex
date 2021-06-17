@@ -31,6 +31,8 @@ import { StoresListComponent } from './core/store/stores-list/stores-list.compon
 import { HomeComponent } from './home/home.component';
 import { AdminGuard, AgentGuard, StoreGuard, TechnicianGuard } from './users/roles';
 import { UsersComponent } from './users/users.component';
+import { CategoriesListComponent } from './core/category/categories-list/categories-list.component';
+import { CategoryCrudComponent } from './core/category/category-crud/category-crud.component';
 
 
 @NgModule({
@@ -47,7 +49,9 @@ import { UsersComponent } from './users/users.component';
     StoreOrdersComponent,
     RootParamsComponent,
     AgentStoreOrdersComponent,
-    DynamicServerSideSearchDialogComponent
+    DynamicServerSideSearchDialogComponent,
+    CategoriesListComponent,
+    CategoryCrudComponent
   ],
   imports: [
     BrowserModule,

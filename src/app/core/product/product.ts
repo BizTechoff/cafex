@@ -1,17 +1,18 @@
 import { extend, openDialog } from "@remult/angular";
-import { ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, NumberColumn, StringColumn } from "@remult/core";
+import { ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, StringColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
-import { StoreIdColumn } from "../store/store";
+import { CategoryIdColumn } from "../category/category";
+import { CategoryItemIdColumn } from "../category/categoryItem";
 
 @EntityClass
 export class Product extends IdEntity {
-    sid = new StoreIdColumn(this.context);
-    name = new StringColumn();
-    firstCategory = new StringColumn();
-    secondCategory = new StringColumn();
-    sku = new StringColumn();//makat
-    quntity = new NumberColumn();//stock quantity
-    price = new NumberColumn({ decimalDigits: 2 });//base price
+    cid = new CategoryIdColumn(this.context, {
+        caption: 'קבוצה ראשית',
+        valueChange: () => { this.ciid.cid = this.cid.value; }
+    });
+    ciid = new CategoryItemIdColumn(this.context, { caption: 'קבוצה משנית' });
+    sku = new StringColumn({ caption: 'מק"ט' });//makat
+    name = new StringColumn({ caption: 'שם' });
 
     constructor(private context: Context) {
         super({
@@ -25,14 +26,15 @@ export class Product extends IdEntity {
 export class ProductIdColumn extends LookupColumn<Product> {
     constructor(context: Context, settings?: ColumnSettings<string>) {
         super(context.for(Product), {
+            caption: 'Product',
             displayValue: () => this.item.name.value
             , ...settings
         });
-        extend(this).dataControl(dcs => {
-            dcs.hideDataOnInput = true;
-            dcs.clickIcon = 'search';
-            dcs.getValue = () => this.displayValue;
-            dcs.click = async () => {
+        extend(this).dataControl(ctrl => {
+            ctrl.hideDataOnInput = true;
+            ctrl.clickIcon = 'search';
+            ctrl.getValue = () => this.displayValue;
+            ctrl.click = async () => {
                 await openDialog(DynamicServerSideSearchDialogComponent,
                     dlg => dlg.args(Product, {
                         onClear: () => this.value = '',

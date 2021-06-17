@@ -16,12 +16,12 @@ export class OrdersListComponent implements OnInit {
   count = new NumberColumn();
   orders = new GridSettings(this.context.for(Order),
     {
-      orderBy: cur => cur.sid,
+      orderBy: cur => cur.uid,
       allowCRUD: false,
       allowDelete: false,
       numOfColumnsInGrid: 10,
       columnSettings: cur => [
-        cur.sid,
+        cur.uid,
         cur.orderNum,
         cur.date,
         cur.time,
@@ -29,21 +29,21 @@ export class OrdersListComponent implements OnInit {
         // cur.modified,
         // cur.modifiedBy,
         {
-          column: this.count, caption: 'Items', getValue: () => cur.getCount()
+          column: this.count, caption: 'מס.מוצרים', getValue: () => cur.getCount()
         },
         cur.createdBy,
         cur.isImported
       ],
       rowButtons: [
         {
-          textInMenu: 'Show Items',
+          textInMenu: 'הצג שורות',
           icon: 'shopping_bag',
           click: async (cur) => await this.showOrderItems(cur),
           visible: cur => !cur.isNew(),
           showInLine: true,
         },
         {
-          textInMenu: 'Delete Order',
+          textInMenu: 'מחק הזמנה',
           icon: 'delete',
           click: async (cur) => await this.deleteOrder(cur),
           visible: cur => !cur.isNew()
@@ -59,10 +59,10 @@ export class OrdersListComponent implements OnInit {
   async deleteOrder(o: Order) {
     let count = await this.context.for(OrderItem).count(cur => cur.oid.isEqualTo(o.id));
     if (count > 0) {
-      await this.dialog.error(` Found ${count} OrderItems, Can NOT delete order`);
+      await this.dialog.error(` נמצאו ${count} שורות, לא ניתן למחוק הזמנה זו`);
     }
     else {
-      let yes = await this.dialog.confirmDelete(` ${o.orderNum.value} Order`);
+      let yes = await this.dialog.confirmDelete(`הזמנה ${o.orderNum.value}`);
       if (yes) {
         await o.delete();
       }
@@ -71,7 +71,7 @@ export class OrdersListComponent implements OnInit {
 
   async showOrderItems(o: Order) {
     await openDialog(GridDialogComponent, gd => gd.args = {
-      title: `Items For OrderNum ${o.orderNum.value}`,
+      title: `שורות הזמנה ${o.orderNum.value}`,
       settings: new GridSettings(this.context.for(OrderItem), {
         where: cur => cur.oid.isEqualTo(o.id),
         newRow: cur => cur.oid.value = o.id.value,

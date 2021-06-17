@@ -1,24 +1,24 @@
 import { extend, openDialog } from "@remult/angular";
-import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, StringColumn, ValueListColumn } from "@remult/core";
+import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, ServerFunction, StringColumn, ValueListColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
 import { STARTING_ORDER_NUM, TimeColumn, TODAY } from "../../shared/types";
 import { addDays, addHours, addTime } from "../../shared/utils";
+import { Roles } from "../../users/roles";
 import { UserId } from "../../users/users";
-import { StoreIdColumn } from "../store/store";
 import { OrderItem } from "./orderItem";
 
 @EntityClass
 export class Order extends IdEntity {
-    orderNum = new NumberColumn({ allowApiUpdate: false });
-    date = new DateColumn();
-    time = new TimeColumn();
-    status = new OrderStatusColumn();
-    isImported = new BoolColumn({ caption: 'Imported?', defaultValue: false });
-    created = new DateTimeColumn();
-    createdBy = new UserId(this.context);
-    modified = new DateTimeColumn();
-    modifiedBy = new UserId(this.context);
-    sid = new StoreIdColumn(this.context);
+    uid = new UserId(this.context, Roles.admin, { caption: 'בית קפה' });
+    orderNum = new NumberColumn({ allowApiUpdate: false,caption: 'מס.הזמנה' });
+    date = new DateColumn({caption: 'תאריך'});
+    time = new TimeColumn({caption: 'שעה'});
+    status = new OrderStatusColumn({caption: 'סטטוס'});
+    isImported = new BoolColumn({ caption: 'נטען?', defaultValue: false });
+    created = new DateTimeColumn({caption: 'נוצר'});
+    createdBy = new UserId(this.context, Roles.admin,{caption: 'נוצר ע"י'});
+    modified = new DateTimeColumn({caption: 'השתנה'});
+    modifiedBy = new UserId(this.context, Roles.admin,{caption: 'השתנה ע"י'});
     count: number;
 
     getCount() {
@@ -58,7 +58,22 @@ export class Order extends IdEntity {
             }
         });
     }
+    @ServerFunction({ allowed: true })
+    static async getOrders(context?: Context) {
+        let r: theResult[] = [];
+        for await (const o of context.for(Order).iterate()) {
+            r.push({
+                date: o.date.value,
+                status: o.status.value.id
+            })
+        }
+        return r;
+    }
 };
+interface theResult {
+    date: Date,
+    status: string
+}
 
 export class OrderIdColumn extends LookupColumn<Order> {
     constructor(context: Context, settings?: ColumnSettings<string>) {

@@ -3,6 +3,7 @@ import { GridSettings, openDialog } from '@remult/angular';
 import { Context } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
+import { Roles } from '../../../users/roles';
 import { OrderItem } from '../../order/orderItem';
 import { Product } from '../product';
 
@@ -15,27 +16,25 @@ export class ProductsListComponent implements OnInit {
 
   products = new GridSettings(this.context.for(Product),
     {
-      orderBy: cur => cur.sid,
-      allowCRUD: false,
+      orderBy: cur => cur.name,
+      allowCRUD: this.context.isAllowed(Roles.admin),
       allowDelete: false,
       numOfColumnsInGrid: 10,
       columnSettings: cur => [
-        cur.firstCategory,
-        cur.secondCategory,
+        cur.cid,
+        cur.ciid,
         cur.sku,
-        cur.name,
-        cur.price,
-        cur.quntity
+        cur.name
       ],
       rowButtons: [
         {
-          textInMenu: 'Edit Product',
+          textInMenu: 'ערוך מוצר',
           icon: 'edit',
           click: async (cur) => await this.editProduct(cur.id.value),
           visible: cur => !cur.isNew()
         },
         {
-          textInMenu: 'Delete Product',
+          textInMenu: 'מחק מוצר',
           icon: 'delete',
           click: async (cur) => await this.deleteProduct(cur.id.value),
           visible: cur => !cur.isNew()
@@ -55,14 +54,12 @@ export class ProductsListComponent implements OnInit {
     let p = await this.context.for(Product).findId(pid);
     if (p) {
       await openDialog(InputAreaComponent, thus => thus.args = {
-        title: `Edit Product ${p.name.value}`,
+        title: `עריכת מוצר: ${p.name.value}`,
         columnSettings: () => [
-          p.firstCategory,
-          p.secondCategory,
+          p.cid,
+          p.ciid,
           p.sku,
-          p.name,
-          p.price,
-          p.quntity
+          p.name
         ],
         ok: async () => {
           await p.save();
@@ -76,12 +73,12 @@ export class ProductsListComponent implements OnInit {
   async deleteProduct(pid: string) {
     let count = await this.context.for(OrderItem).count(cur => cur.pid.isEqualTo(pid));
     if (count > 0) {
-      await this.dialog.error(` Found ${count} OrderItems, Can NOT delete product`);
+      await this.dialog.error(` נמצאו ${count} שורות הזמנה, לא ניתן למחוק מוצר זה`);
     }
     else {
       let p = await this.context.for(Product).findId(pid);
       if (p) {
-        let yes = await this.dialog.confirmDelete(` product ${p.name.value}`);
+        let yes = await this.dialog.confirmDelete(` מוצר ${p.name.value}`);
         if (yes) {
           await p.delete();
         }

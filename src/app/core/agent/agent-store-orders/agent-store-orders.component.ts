@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { GridSettings, openDialog } from '@remult/angular';
-import { Context, NumberColumn } from '@remult/core';
+import { Context } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
 import { addDays } from '../../../shared/utils';
-import { Users } from '../../../users/users';
+import { Roles } from '../../../users/roles';
+import { UserId, Users } from '../../../users/users';
 import { Order } from '../../order/order';
 import { OrderItem } from '../../order/orderItem';
-import { StoreIdColumn } from '../../store/store';
 
 @Component({
   selector: 'app-agent-store-orders',
@@ -17,11 +17,11 @@ import { StoreIdColumn } from '../../store/store';
 })
 export class AgentStoreOrdersComponent implements OnInit {
 
-  store = new StoreIdColumn(this.context, { caption: 'Select Store', valueChange: async () => { await this.refresh(true); } });
+  store = new UserId(this.context, Roles.agent, { caption: 'Select Store', valueChange: async () => { await this.refresh(true); } });
   orders = new GridSettings(
     this.context.for(Order),
     {
-      where: cur => cur.sid.isEqualTo(this.store),
+      where: cur => cur.uid.isEqualTo(this.store),
       orderBy: cur => [{ column: cur.orderNum, descending: true }],
       numOfColumnsInGrid: 10,
       allowCRUD: false,
@@ -91,7 +91,7 @@ export class AgentStoreOrdersComponent implements OnInit {
   async openOrder(oid?: string) {
     if (this.store.item.id.value) {
       let order = this.context.for(Order).create();
-      order.sid.value = this.store.item.id.value;
+      order.uid.value = this.store.item.id.value;
       order.date.value = addDays();
       if (oid) {
         order = await this.context.for(Order).findId(oid);
@@ -129,7 +129,6 @@ export class AgentStoreOrdersComponent implements OnInit {
           where: cur => cur.oid.isEqualTo(oid),
           newRow: (o) => {
             o.oid.value = oid;
-            o.price.value = o.pid.item.price.value
           },
           allowCRUD: false,
           showPagination: false,

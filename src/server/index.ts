@@ -12,6 +12,9 @@ import * as jwt from 'express-jwt';
 import * as compression from 'compression';
 
 import '../app/app.module';
+import { Order } from '../app/core/order/order';
+import { Users } from '../app/users/users';
+import { AppComponent } from '../app/app.component';
 async function startup() {
     config(); //loads the configuration from the .env file
     let dataProvider: DataProvider;
@@ -32,8 +35,37 @@ async function startup() {
     app.use(compression());
     if (!process.env.DEV_MODE)
         app.use(forceHttps);
-    initExpress(app, {
+    let expressBridge = initExpress(app, {
         dataProvider
+    });
+    app.post("/api-req", async (req, res) => { //can be app.get(....)
+        let apiKey = req.body.key;
+        
+        if (apiKey == process.env.apiKey) {
+            let context = await expressBridge.getValidContext(req);
+            let result = "";
+            let r = await Order.getOrders(context);
+            for (const o of r) {
+                // for (const key in o) {
+                //     if (Object.prototype.hasOwnProperty.call(o, key)) {
+                //         const element = o[key];
+                //         result+=element.toString()+"|";
+                //     }
+                // }
+
+
+                result += `${o.date.toLocaleDateString("he-il")}|${o.status} \n`;
+            }
+
+            // for await (const o of context.for(Order).iterate()) {
+            //     result += o.date.value.toLocaleDateString("he-il") + "|" + o.time.value + "|" + o.status.value.id + "\n";
+            // }
+            res.send(result);
+        }
+        else {
+            res.send("NOT ALLOWED");
+        }
+
     });
     app.use(express.static('dist/cafex-app'));
     app.use('/*', async (req, res) => {

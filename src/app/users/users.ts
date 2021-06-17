@@ -1,32 +1,69 @@
 
-import { IdEntity, checkForDuplicateValue, StringColumn, BoolColumn, ColumnSettings, ServerMethod, LookupColumn, Filter } from "@remult/core";
-import { changeDate } from '../shared/types';
-import { Context, EntityClass } from '@remult/core';
+import { extend, openDialog } from "@remult/angular";
+import { BoolColumn, checkForDuplicateValue, ColumnSettings, Context, EntityClass, Filter, IdEntity, LookupColumn, ServerMethod, StringColumn } from "@remult/core";
+import { DynamicServerSideSearchDialogComponent } from "../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
+import { changeDate, FILTER_IGNORE } from '../shared/types';
 import { Roles } from './roles';
-import { extend } from "@remult/angular";
-import { StoreIdColumn } from "../core/store/store";
 
 @EntityClass
 export class Users extends IdEntity {
     name = new StringColumn({
-        caption: "name",
+        caption: "שם",
         validate: () => {
 
             if (!this.name.value || this.name.value.length < 2)
-                this.name.validationError = 'Name is too short';
+                this.name.validationError = 'השם קצר מדי';
         }
     });
     password = new PasswordColumn({
+        caption: "סיסמה",
         includeInApi: false
     });
-    createDate = new changeDate({ caption: 'Create Date' });
+    createDate = new changeDate({ caption: 'נוצר ב' });
 
-    admin = new BoolColumn({ allowApiUpdate: Roles.admin });
-    technician = new BoolColumn({ allowApiUpdate: Roles.admin });
-    agent = new BoolColumn({ allowApiUpdate: Roles.admin });
-    store = new BoolColumn({ allowApiUpdate: Roles.admin });
+    admin = new BoolColumn({
+        allowApiUpdate: Roles.admin, caption: "מנהל",
+        valueChange: () => {
+            if (this.admin.value) {
+                this.technician.value = false;
+                this.agent.value = false;
+                this.store.value = false;
+            }
+        }
+    });
+    technician = new BoolColumn({
+        allowApiUpdate: Roles.admin, caption: "טכנאי",
+        valueChange: () => {
+            if (this.technician.value) {
+                this.admin.value = false;
+                this.agent.value = false;
+                this.store.value = false;
+            }
+        }
+    });
+    agent = new BoolColumn({
+        allowApiUpdate: Roles.admin, caption: "סוכן",
+        valueChange: () => {
+            if (this.agent.value) {
+                this.admin.value = false;
+                this.technician.value = false;
+                this.store.value = false;
+            }
+        }
+    });
+    store = new BoolColumn({
+        allowApiUpdate: Roles.admin, caption: "בית קפה",
+        valueChange: () => {
+            if (this.store.value) {
+                this.admin.value = false;
+                this.technician.value = false;
+                this.agent.value = false;
+            }
+        }
+    });
 
-    defaultStore = new StoreIdColumn(this.context);
+    defaultStore = new UserId(this.context, Roles.store, { caption: "חנות בר.מחדל" });
+    branch = new StringColumn({ caption: "סניף" });
 
     constructor(private context: Context) {
 
@@ -58,14 +95,14 @@ export class Users extends IdEntity {
     @ServerMethod({ allowed: true })
     async create(password: string) {
         if (!this.isNew())
-            throw "Invalid Operation";
+            throw "פעולה לא חוקית";
         await this.password.hashAndSet(password);
         await this.save();
     }
     @ServerMethod({ allowed: context => context.isSignedIn() })
     async updatePassword(password: string) {
         if (this.isNew() || this.id.value != this.context.user.id)
-            throw "Invalid Operation";
+            throw "פעולה לא חוקית";
         await this.password.hashAndSet(password);
         await this.save();
     }
@@ -75,15 +112,28 @@ export class Users extends IdEntity {
 
 export class UserId extends LookupColumn<Users> {
 
-    constructor(context: Context, settings?: ColumnSettings<string>) {
+    constructor(context: Context, role: string, settings?: ColumnSettings<string>) {
         super(context.for(Users), {
+            caption: 'משתמש',
             displayValue: () => this.item.name.value
             , ...settings
         });
-        extend(this).dataControl(settings => {
-            settings.getValue = () => this.displayValue;
-            settings.hideDataOnInput = true;
-            settings.width = '200';
+        extend(this).dataControl(ctrl => {
+            ctrl.getValue = () => this.displayValue;
+            ctrl.hideDataOnInput = true;
+            ctrl.width = '200';
+
+            ctrl.click = async () => {
+                await openDialog(DynamicServerSideSearchDialogComponent,
+                    dlg => dlg.args(Users, {
+                        onClear: () => this.value = '',
+                        onSelect: cur => this.value = cur.id.value,
+                        searchColumn: cur => cur.name,
+                        where: cur => role && role === Roles.store
+                            ? cur.store.isEqualTo(true)
+                            : FILTER_IGNORE
+                    }));
+            };
         });
     }
 
@@ -92,7 +142,7 @@ export class PasswordColumn extends StringColumn {
 
     constructor(settings?: ColumnSettings<string>) {
         super({
-            ...{ caption: 'Password', inputType: 'password' },
+            ...{ caption: 'סיסמה', inputType: 'password' },
             ...settings
         })
     }
