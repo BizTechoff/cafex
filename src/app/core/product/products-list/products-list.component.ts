@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { GridSettings, openDialog } from '@remult/angular';
 import { Context } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
+import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
 import { Roles } from '../../../users/roles';
+import { UserProduct } from '../../../users/userProduct';
 import { OrderItem } from '../../order/orderItem';
 import { Product } from '../product';
 
@@ -27,6 +29,14 @@ export class ProductsListComponent implements OnInit {
         cur.name
       ],
       rowButtons: [
+        {
+          textInMenu: 'משתמשים משוייכים',
+          icon: 'shopping_bag',//await this.showProducts(this.context.user.id, this.context.user.name)
+          click: async (cur) => await this.showUsers(cur.id.value, cur.name.value),
+          visible: cur => !cur.isNew(),
+          showInLine: true,
+        },
+        { textInMenu: '________________________' },
         {
           textInMenu: 'ערוך מוצר',
           icon: 'edit',
@@ -84,6 +94,25 @@ export class ProductsListComponent implements OnInit {
         }
       }
     }
+  }
+
+  async showUsers(pid: string, name?: string) {
+    if (!(name && name.length > 0)) {
+      name = 'אינשם';
+    }
+    await openDialog(GridDialogComponent, gd => gd.args = {
+      title: `משתמשים משוייכים ל- ${name}`,
+      settings: new GridSettings(this.context.for(UserProduct), {
+        where: cur => cur.pid.isEqualTo(pid),
+        newRow: cur => cur.pid.value = pid,
+        allowCRUD: this.context.isSignedIn(),
+        numOfColumnsInGrid: 10,
+        columnSettings: cur => [
+          { column: cur.uid }
+        ],
+      }),
+      ok: () => { }
+    })
   }
 
 }

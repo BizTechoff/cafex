@@ -51,7 +51,7 @@ export class StoresListComponent implements OnInit {
       await this.dialog.error(` נמצאו ${count} מוצרים, לא ניתן למחוק בית קפה זה`);
     }
     else {
-      let yes = await this.dialog.confirmDelete(` ${u.name.value} Store`);
+      let yes = await this.dialog.confirmDelete(`בית הקפה ${u.name.value}`);
       if (yes) {
         await u.delete();
       }
@@ -70,7 +70,7 @@ export class StoresListComponent implements OnInit {
         allowCRUD: this.context.isSignedIn(),
         numOfColumnsInGrid: 10,
         columnSettings: cur => [
-          cur.pid
+          { column: cur.pid, width: '400' }
         ],
       }),
       ok: () => { }

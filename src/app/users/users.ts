@@ -3,6 +3,7 @@ import { extend, openDialog } from "@remult/angular";
 import { BoolColumn, checkForDuplicateValue, ColumnSettings, Context, EntityClass, Filter, IdEntity, LookupColumn, ServerMethod, StringColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
 import { changeDate, FILTER_IGNORE } from '../shared/types';
+import { validString } from "../shared/utils";
 import { Roles } from './roles';
 
 @EntityClass
@@ -10,9 +11,9 @@ export class Users extends IdEntity {
     name = new StringColumn({
         caption: "שם",
         validate: () => {
-
-            if (!this.name.value || this.name.value.length < 2)
-                this.name.validationError = 'השם קצר מדי';
+            if (!validString(this.name, { notNull: true, minLength: 3 })) {
+                throw this.name.defs.caption + ': ' + this.name.validationError;
+            }
         }
     });
     password = new PasswordColumn({
@@ -72,7 +73,7 @@ export class Users extends IdEntity {
             allowApiRead: context.isSignedIn(),
             allowApiDelete: Roles.admin,
             allowApiUpdate: context.isSignedIn(),
-            allowApiInsert: Roles.admin,
+            allowApiInsert: [Roles.admin, Roles.agent],
             saving: async () => {
                 if (context.onServer) {
 
@@ -128,11 +129,13 @@ export class UserId extends LookupColumn<Users> {
                     dlg => dlg.args(Users, {
                         onClear: () => this.value = '',
                         onSelect: cur => this.value = cur.id.value,
-                        searchColumn: cur => cur.name,
-                        where: cur => role && role === Roles.store
-                            ? cur.store.isEqualTo(true)
-                            : FILTER_IGNORE
-                    }));
+                        searchColumn: cur => cur.name//,
+                        // where: cur => cur.store.isEqualTo(true)
+                        // role && role === Roles.store
+                        //     ? cur.store.isEqualTo(true)
+                        //     : FILTER_IGNORE
+                    })
+                    );
             };
         });
     }

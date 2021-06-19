@@ -2,13 +2,26 @@ import { extend, openDialog } from "@remult/angular";
 import { ColumnSettings, Context, EntityClass, IdEntity, LookupColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
 import { ProductIdColumn } from "../core/product/product";
+import { validString } from "../shared/utils";
 import { Roles } from "./roles";
 import { UserId } from "./users";
- 
+
 @EntityClass
 export class UserProduct extends IdEntity {
-    uid = new UserId(this.context, Roles.store);
-    pid = new ProductIdColumn(this.context);
+    uid = new UserId(this.context, Roles.store, {
+        validate: () => {
+            if (!validString(this.uid, { notNull: true, minLength: 3 })) {
+                throw this.uid.defs.caption + ': ' + this.uid.validationError;
+            }
+        }
+    });
+    pid = new ProductIdColumn(this.context, {
+        validate: () => {
+            if (!validString(this.pid, { notNull: true, minLength: 3 })) {
+                throw this.pid.defs.caption + ': ' + this.pid.validationError;
+            }
+        }
+    }); 
     constructor(private context: Context) {
         super({
             name: 'usersProducts',

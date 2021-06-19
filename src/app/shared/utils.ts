@@ -1,4 +1,5 @@
 import { formatDate } from "@angular/common";
+import { DateColumn, NumberColumn, StringColumn } from "@remult/core";
 import { TODAY } from "./types";
 
 export function isDesktop() {
@@ -34,7 +35,8 @@ export class PromiseThrottle {
 }
 
 export function addTime() {
-    return formatDate(addDays(TODAY, undefined, false), 'HH:mm', 'en-US');
+    return addDays(TODAY, undefined, false).toLocaleTimeString();
+    // return formatDate(addDays(TODAY, undefined, false), 'HH:mm', 'en-US');
 }
 
 export function addDays(days: number = TODAY, date?: Date, setTimeToZero: boolean = true) {
@@ -119,4 +121,55 @@ export function isValidMobile(value: string) {
         }
     }
     return true;
+}
+
+export function validString(col: StringColumn, options: { notNull?: boolean, minLength?: number } = { notNull: true, minLength: 2 }): boolean {
+    let result = true;
+    if (options.notNull) {
+        if (!(col.value && col.value.length > 0)) {
+            col.validationError = 'שדה חובה';
+            result = false;
+        }
+    }
+    if (options.minLength && options.minLength > 0) {
+        if (!(col.value && col.value.length >= options.minLength)) {
+            col.validationError = `מינימום ${options.minLength} תוים`;
+            result = false;
+        }
+    }
+    return result;
+}
+
+export function validDate(col: DateColumn, options: { notNull?: boolean, minYear?: number } = { notNull: true, minYear: 2000 }): boolean {
+    let result = true;
+    if (options.notNull) {
+        if (!(col.value)) {
+            col.validationError = 'שדה חובה';
+            result = false;
+        }
+    }
+    if (options.minYear && options.minYear > 0) {
+        if (!(col.value && col.value.getFullYear() >= options.minYear)) {
+            col.validationError = `מינימום שנת ${options.minYear}`;
+            result = false;
+        }
+    }
+    return result;
+}
+
+export function validNumber(col: NumberColumn, options: { notNull?: boolean, minValue?: number } = { notNull: true, minValue: 1 }): boolean {
+    let result = true;
+    if (options.notNull) {
+        if (!(col.value)) {
+            col.validationError = 'שדה חובה';
+            result = false;
+        }
+    }
+    if (options.minValue && options.minValue > 0) {
+        if (!(col.value && col.value >= options.minValue)) {
+            col.validationError = `מינימום ${options.minValue}`;
+            result = false;
+        }
+    }
+    return result;
 }

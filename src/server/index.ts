@@ -1,20 +1,18 @@
 //import { CustomModuleLoader } from '../../../../../../repos/radweb/src/app/server/CustomModuleLoader';
 //let moduleLoader = new CustomModuleLoader('/dist-server/repos/radweb/projects/');
-import * as express from 'express';
-import { initExpress } from '@remult/core/server';
-import * as fs from 'fs';
 import { DataProvider, SqlDatabase } from '@remult/core';
-import { Pool } from 'pg';
-import { config } from 'dotenv';
+import { initExpress } from '@remult/core/server';
 import { PostgresDataProvider, verifyStructureOfAllEntities } from '@remult/server-postgres';
+import * as compression from 'compression';
+import { config } from 'dotenv';
+import * as express from 'express';
 import * as forceHttps from 'express-force-https';
 import * as jwt from 'express-jwt';
-import * as compression from 'compression';
-
+import * as fs from 'fs';
+import { Pool } from 'pg';
 import '../app/app.module';
 import { Order } from '../app/core/order/order';
-import { Users } from '../app/users/users';
-import { AppComponent } from '../app/app.component';
+
 async function startup() {
     config(); //loads the configuration from the .env file
     let dataProvider: DataProvider;
@@ -40,7 +38,7 @@ async function startup() {
     });
     app.post("/api-req", async (req, res) => { //can be app.get(....)
         let apiKey = req.body.key;
-        
+
         if (apiKey == process.env.apiKey) {
             let context = await expressBridge.getValidContext(req);
             let result = "";

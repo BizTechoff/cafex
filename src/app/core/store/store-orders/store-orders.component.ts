@@ -27,14 +27,14 @@ export class StoreOrdersComponent implements OnInit {
       ],
       rowButtons: [
         {
-          textInMenu: 'Show Details',
+          textInMenu: 'שורות הזמנה',
           icon: 'detials',
           click: async (cur) => await this.showOrderItems(cur),
           visible: cur => !cur.isNew(),
           showInLine: true,
         },
         {
-          textInMenu: 'Delete Order',
+          textInMenu: 'מחק הזמנה',
           icon: 'delete',
           click: async (cur) => await this.deleteOrder(cur),
           visible: cur => !cur.isNew()
@@ -63,10 +63,10 @@ export class StoreOrdersComponent implements OnInit {
   async deleteOrder(o: Order) {
     let count = await this.context.for(OrderItem).count(cur => cur.oid.isEqualTo(o.id));
     if (count > 0) {
-      await this.dialog.error(` Found ${count} OrderItems, Can NOT delete order`);
+      await this.dialog.error(` נמצאו ${count} שורות, לא ניתן למחוק הזמנה`);
     }
     else {
-      let yes = await this.dialog.confirmDelete(` ${o.orderNum.value} Order`);
+      let yes = await this.dialog.confirmDelete(`הזמנה ${o.orderNum.value}`);
       if (yes) {
         await o.delete();
       }
@@ -75,16 +75,16 @@ export class StoreOrdersComponent implements OnInit {
 
   async showOrderItems(o: Order) {
     await openDialog(GridDialogComponent, gd => gd.args = {
-      title: `Detaild For Order ${o.date.value}`,
+      title: `שורות הזמנה ${o.orderNum.value}`,
       settings: new GridSettings(this.context.for(OrderItem), {
         where: cur => cur.oid.isEqualTo(o.id),
         newRow: cur => cur.oid.value = o.id.value,
         allowCRUD: this.context.isSignedIn(),
         numOfColumnsInGrid: 10,
         columnSettings: cur => [
-          cur.pid,
-          cur.quntity,
-          cur.price
+         {column: cur.pid,width: '400'},
+          cur.quntity//,
+          // cur.price
         ],
       }),
       ok: () => { }

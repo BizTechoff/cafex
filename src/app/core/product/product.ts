@@ -26,7 +26,7 @@ export class Product extends IdEntity {
 export class ProductIdColumn extends LookupColumn<Product> {
     constructor(context: Context, settings?: ColumnSettings<string>) {
         super(context.for(Product), {
-            caption: 'Product',
+            caption: 'מוצר',
             displayValue: () => this.item.name.value
             , ...settings
         });
@@ -39,7 +39,8 @@ export class ProductIdColumn extends LookupColumn<Product> {
                     dlg => dlg.args(Product, {
                         onClear: () => this.value = '',
                         onSelect: cur => this.value = cur.id.value,
-                        searchColumn: cur => cur.name
+                        searchColumn: cur => cur.name//,
+                        // where: cur => cur.
                     }));
             };
         });

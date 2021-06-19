@@ -3,6 +3,8 @@ import { GridSettings, openDialog } from '@remult/angular';
 import { Context, NumberColumn } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
+import { addDays } from '../../../shared/utils';
+import { Roles } from '../../../users/roles';
 import { Order } from '../order';
 import { OrderItem } from '../orderItem';
 
@@ -16,23 +18,21 @@ export class OrdersListComponent implements OnInit {
   count = new NumberColumn();
   orders = new GridSettings(this.context.for(Order),
     {
-      orderBy: cur => cur.uid,
-      allowCRUD: false,
+      orderBy: cur => [cur.uid, { column: cur.orderNum, descending: true }],
+      newRow: cur => {
+        cur.date.value = addDays();
+      },
+      allowCRUD: this.context.isAllowed(Roles.admin),
       allowDelete: false,
       numOfColumnsInGrid: 10,
       columnSettings: cur => [
         cur.uid,
-        cur.orderNum,
-        cur.date,
-        cur.time,
-        // // cur.created,
-        // cur.modified,
-        // cur.modifiedBy,
-        {
-          column: this.count, caption: 'מס.מוצרים', getValue: () => cur.getCount()
-        },
-        cur.createdBy,
-        cur.isImported
+        // { column: cur.orderNum, visible: o => !o.isNew() },
+        cur.date
+        //,
+        // {
+        //   column: this.count, caption: 'מס.מוצרים'/*, getValue: () => cur.getCount()*/, visible: o => !o.isNew()
+        // }
       ],
       rowButtons: [
         {
@@ -78,9 +78,9 @@ export class OrdersListComponent implements OnInit {
         allowCRUD: this.context.isSignedIn(),
         numOfColumnsInGrid: 10,
         columnSettings: cur => [
-          cur.pid,
-          cur.quntity,
-          cur.price
+          { column: cur.pid, width: '400' },
+          { column: cur.quntity, width: '70' }
+          // cur.price
         ],
       }),
       ok: () => { }

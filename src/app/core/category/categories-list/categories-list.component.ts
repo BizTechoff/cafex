@@ -64,6 +64,7 @@ export class CategoriesListComponent implements OnInit {
       title: `קבוצות משניות ל: ${c.name.value}`,
       settings: new GridSettings(this.context.for(CategoryItem), {
         where: cur => cur.cid.isEqualTo(c.id),
+        orderBy: cur => [cur.name],
         newRow: cur => cur.cid.value = c.id.value,
         allowCRUD: this.context.isSignedIn(),
         numOfColumnsInGrid: 10,

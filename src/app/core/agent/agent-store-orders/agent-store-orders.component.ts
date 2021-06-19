@@ -17,10 +17,10 @@ import { OrderItem } from '../../order/orderItem';
 })
 export class AgentStoreOrdersComponent implements OnInit {
 
-  store = new UserId(this.context, Roles.agent, { caption: 'Select Store', valueChange: async () => { await this.refresh(true); } });
+  store = new UserId(this.context, Roles.store, { caption: 'בחר בית קפה', valueChange: async () => { await this.refresh(true); } });
   orders = new GridSettings(
     this.context.for(Order),
-    {
+    { 
       where: cur => cur.uid.isEqualTo(this.store),
       orderBy: cur => [{ column: cur.orderNum, descending: true }],
       numOfColumnsInGrid: 10,
@@ -28,25 +28,27 @@ export class AgentStoreOrdersComponent implements OnInit {
       // allowDelete: false,
       showPagination: false,
       columnSettings: cur => [
-        { column: cur.date, width: '90' },
-        { column: cur.orderNum, width: '80', caption: 'Order' },
-        { column: cur.status, width: '90' }//,
+        cur.date,
+        cur.orderNum
+        // { column: cur.date, width: '90' },
+        // { column: cur.orderNum, width: '80' }//,
+        // { column: cur.status, width: '90' }//,
         //{ column: new NumberColumn(), getValue: async (o) => { await this.context.for(OrderItem).count(itm => itm.oid.isEqualTo(o.id)) } }
       ],
       rowButtons: [
         {
-          textInMenu: 'Edit Order Items',
+          textInMenu: 'שורות הזמנה',
           icon: 'shopping_bag',
           click: async (cur) => { await this.openOrderItems(cur.id.value); }
         },
         { textInMenu: '__________________________' },
         {
-          textInMenu: 'Edit Order',
+          textInMenu: 'עריכת הזמנה',
           icon: 'edit',
           click: async (cur) => { await this.openOrder(cur.id.value); }
         },
         {
-          textInMenu: 'Delete Order',
+          textInMenu: 'מחק הזמנה',
           icon: 'delete',
           click: async (cur) => { await this.deleteOrder(cur.id.value); }
         }
@@ -75,15 +77,15 @@ export class AgentStoreOrdersComponent implements OnInit {
     let order = await this.context.for(Order).findId(oid);
     if (order) {
       let num = order.orderNum.value;
-      let sure = await this.dialog.confirmDelete(`Order ${num} For ${this.store.item.name.value}`);
+      let sure = await this.dialog.confirmDelete(`הזמנה ${num} ל: ${this.store.item.name.value}`);
       if (sure) {
         await order.delete();
         await this.refresh();
-        await this.dialog.info(`Order ${num} Deleted`);
+        await this.dialog.info(`הזמנה ${num} נמחקה`);
       }
     }
     else {
-      await this.dialog.error("Order Not Exists");
+      await this.dialog.error("הזמנה לא קיימת");
       console.log(`ERROR: AgentStoreOrdersComponent.deleteOrder(oid='${oid}') - Order Not Exists`);
     }
   }
@@ -96,14 +98,14 @@ export class AgentStoreOrdersComponent implements OnInit {
       if (oid) {
         order = await this.context.for(Order).findId(oid);
         if (!(order)) {
-          this.dialog.error(`Order ${oid} NOT found`);
+          this.dialog.error(`הזמנה ${oid} לא נמצאה`);
           return;
         }
       }
       if (order.isNew()) {
       }
       await openDialog(InputAreaComponent, thus => thus.args = {
-        title: `Add Order To ${this.store.item.name.value}`,
+        title: `הוספת הזמנה ל: ${this.store.item.name.value}`,
         columnSettings: () => [
           { column: order.orderNum, visible: () => { return order.orderNum.value > 0; } },
           order.date,
@@ -117,14 +119,14 @@ export class AgentStoreOrdersComponent implements OnInit {
       });
     }
     else {
-      this.dialog.error('Please select store first');
+      this.dialog.error('יש לבחור בית קפה');
     }
   }
 
   async openOrderItems(oid?: string) {
     if (oid) {
       await openDialog(GridDialogComponent, dlg => dlg.args = {
-        title: `Order Items`,
+        title: `שורות הזמנה`,
         settings: new GridSettings(this.context.for(OrderItem), {
           where: cur => cur.oid.isEqualTo(oid),
           newRow: (o) => {
@@ -135,12 +137,12 @@ export class AgentStoreOrdersComponent implements OnInit {
           numOfColumnsInGrid: 10,
           columnSettings: cur => [
             { column: cur.pid, width: '90' },
-            { column: cur.quntity, width: '55' },
-            { column: cur.price, width: '50' }
+            { column: cur.quntity, width: '55' }//,
+            // { column: cur.price, width: '50' }
           ],
           gridButtons: [
             {
-              textInMenu: () => 'Add Item',
+              textInMenu: () => 'שורה חדשה',
               click: async () => {
                 let changed = await this.openOrderItem(oid, '');
                 if (changed) {
@@ -150,7 +152,7 @@ export class AgentStoreOrdersComponent implements OnInit {
             }
           ],
           rowButtons: [{
-            textInMenu: 'Edit Item',
+            textInMenu: 'עריכת שורה',
             click: async (cur) => {
               let changed = await this.openOrderItem(oid, cur.id.value);
               if (changed) {
@@ -172,11 +174,10 @@ export class AgentStoreOrdersComponent implements OnInit {
       item = await this.context.for(OrderItem).findId(oiid);
     }
     await openDialog(InputAreaComponent, thus => thus.args = {
-      title: `${item.isNew() ? 'Add' : 'Edit'} Order Item`,
+      title: `${item.isNew() ? 'שורת הזמנה חדשה' : 'עריכת שורת הזמנה'}`,
       columnSettings: () => [
-        { column: item.pid },
-        item.quntity,
-        { column: item.price }
+        { column: item.pid, width: '400' },
+        item.quntity
       ],
       ok: async () => {
         await item.save();

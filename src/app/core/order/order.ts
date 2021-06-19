@@ -2,16 +2,27 @@ import { extend, openDialog } from "@remult/angular";
 import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, ServerFunction, StringColumn, ValueListColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
 import { STARTING_ORDER_NUM, TimeColumn, TODAY } from "../../shared/types";
-import { addDays, addHours, addTime } from "../../shared/utils";
+import { addDays, addHours, addTime, validDate, validString } from "../../shared/utils";
 import { Roles } from "../../users/roles";
 import { UserId } from "../../users/users";
 import { OrderItem } from "./orderItem";
 
 @EntityClass
 export class Order extends IdEntity {
-    uid = new UserId(this.context, Roles.admin, { caption: 'בית קפה' });
+    uid = new UserId(this.context, Roles.store, { caption: 'בית קפה',
+    validate: () => {
+        if (!validString(this.uid, { notNull: true, minLength: 2 })) {
+            throw this.uid.defs.caption + ': ' + this.uid.validationError;
+        }
+    }
+ });
     orderNum = new NumberColumn({ allowApiUpdate: false,caption: 'מס.הזמנה' });
-    date = new DateColumn({caption: 'תאריך'});
+    date = new DateColumn({caption: 'תאריך',
+    validate: () => {
+        if (!validDate(this.date, { notNull: true, minYear: 2 })) {
+            throw this.date.defs.caption + ': ' + this.date.validationError;
+        }
+    }});
     time = new TimeColumn({caption: 'שעה'});
     status = new OrderStatusColumn({caption: 'סטטוס'});
     isImported = new BoolColumn({ caption: 'נטען?', defaultValue: false });

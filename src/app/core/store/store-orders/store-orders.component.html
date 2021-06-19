@@ -1,6 +1,6 @@
 <div class="full-page">
     <div class="header">
-        <table style="width: 100%;">
+         <!-- <table style="width: 100%;">
             <tr>
                 <td>
                     <div style="display:flex;">
@@ -8,10 +8,10 @@
                         <data-control [column]="params.date" title='day: {{params.date.getDayOfWeek() + 1}}'>
                         </data-control>
                         <button style="height: 40px;" mat-raised-button color="primary" (click)="nextDay()">+</button>
-                        <!-- <button mat-mini-fab title="Refresh" (click)="refresh()" color="primary"
+                         <button mat-mini-fab title="Refresh" (click)="refresh()" color="primary"
                             title="{{ this.refreshed | date: 'HH:mm' }}">
                             <mat-icon>refresh</mat-icon>
-                        </button> -->
+                        </button>
                     </div>
                     <app-root-params></app-root-params>
                 </td>
@@ -21,7 +21,7 @@
                     </button>
                 </td>
             </tr>
-        </table>
+        </table> -->
     </div>
     <div class="grow-item">
         <data-grid [settings]='orders'></data-grid>
