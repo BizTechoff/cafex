@@ -1,12 +1,34 @@
 import { extend, openDialog } from "@remult/angular";
 import { BoolColumn, ColumnSettings, Context, DateColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, StringColumn, ValueListColumn, ValueListTypeInfo } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
+import { validString } from "../../shared/utils";
 import { Roles } from "../../users/roles";
-import { UserId } from "../../users/users";
+import { UserId, Users } from "../../users/users";
 
 @EntityClass
 export class Ceritificate extends IdEntity {
-    uid = new UserId(this.context, Roles.store, { caption: 'משתמש' });
+    uid = extend(new UserId(this.context, Roles.store, {
+        caption: 'בית קפה',
+        validate: () => {
+            if (!validString(this.uid, { notNull: true, minLength: 3 })) {
+                throw this.uid.defs.caption + ': ' + this.uid.validationError;
+            }
+        } 
+    })).dataControl(dcs => {
+        dcs.hideDataOnInput = true;
+        dcs.clickIcon = 'search';
+        dcs.getValue = () => this.uid.displayValue;
+        dcs.click = async () => {
+            await openDialog(DynamicServerSideSearchDialogComponent,
+                dlg => dlg.args(Users, {
+                    onClear: () => this.uid.value = '',
+                    onSelect: cur => this.uid.value = cur.id.value,
+                    searchColumn: cur => cur.name,
+                    where: (cur) => cur.store.isEqualTo(true)
+                })
+            );
+        };
+    });
     type = new CeritificateTypeColumn({ caption: 'סוג תעודה' });
     docNum = new NumberColumn({ caption: 'מס.מסמך' });
     date = new DateColumn({ caption: 'תאריך' });

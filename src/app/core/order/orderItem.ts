@@ -32,7 +32,7 @@ export class OrderItem extends IdEntity {
             await openDialog(DynamicServerSideSearchDialogComponent,
                 dlg => dlg.args(UserProduct, {
                     onClear: () => this.pid.value = '',
-                    onSelect: cur => this.pid.value = cur.id.value,
+                    onSelect: cur => this.pid.value = cur.pid.value,
                     searchColumn: cur => cur.pid.item.name,
                     where: (cur) => cur.uid.isEqualTo(uid)
                 })

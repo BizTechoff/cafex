@@ -4,18 +4,32 @@ import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-ser
 import { STARTING_ORDER_NUM, TimeColumn, TODAY } from "../../shared/types";
 import { addDays, addTime, validDate, validString } from "../../shared/utils";
 import { Roles } from "../../users/roles";
-import { UserId } from "../../users/users";
+import { UserId, Users } from "../../users/users";
 import { OrderItem } from "./orderItem";
 
 @EntityClass
 export class Order extends IdEntity {
-    uid = new UserId(this.context, Roles.store, {
+    uid = extend(new UserId(this.context, Roles.store, {
         caption: 'בית קפה',
         validate: () => {
-            if (!validString(this.uid, { notNull: true, minLength: 2 })) {
+            if (!validString(this.uid, { notNull: true, minLength: 3 })) {
                 throw this.uid.defs.caption + ': ' + this.uid.validationError;
             }
-        }
+        } 
+    })).dataControl(dcs => {
+        dcs.hideDataOnInput = true;
+        dcs.clickIcon = 'search';
+        dcs.getValue = () => this.uid.displayValue;
+        dcs.click = async () => {
+            await openDialog(DynamicServerSideSearchDialogComponent,
+                dlg => dlg.args(Users, {
+                    onClear: () => this.uid.value = '',
+                    onSelect: cur => this.uid.value = cur.id.value,
+                    searchColumn: cur => cur.name,
+                    where: (cur) => cur.store.isEqualTo(true)
+                })
+            );
+        };
     });
     orderNum = new NumberColumn({ allowApiUpdate: false, caption: 'מס.הזמנה' });
     date = new DateColumn({

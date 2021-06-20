@@ -36,6 +36,7 @@ import { CategoryCrudComponent } from './core/category/category-crud/category-cr
 import { CertificatesListComponent } from './core/certificate/certificates-list/certificates-list.component';
 import { CertificateCrudComponent } from './core/certificate/certificate-crud/certificate-crud.component';
 import { TechnicalStoreOrdersComponent } from './core/technician/technical-store-orders/technical-store-orders.component';
+import { AgentStoreCertificatesComponent } from './core/agent/agent-store-certificates/agent-store-certificates.component';
 
 
 @NgModule({
@@ -57,7 +58,8 @@ import { TechnicalStoreOrdersComponent } from './core/technician/technical-store
     CategoryCrudComponent,
     CertificatesListComponent,
     CertificateCrudComponent,
-    TechnicalStoreOrdersComponent
+    TechnicalStoreOrdersComponent,
+    AgentStoreCertificatesComponent
   ],
   imports: [
     BrowserModule,

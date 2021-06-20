@@ -13,6 +13,7 @@ import { OrdersListComponent } from './core/order/orders-list/orders-list.compon
 import { ProductsListComponent } from './core/product/products-list/products-list.component';
 import { CategoriesListComponent } from './core/category/categories-list/categories-list.component';
 import { CertificatesListComponent } from './core/certificate/certificates-list/certificates-list.component';
+import { AgentStoreCertificatesComponent } from './core/agent/agent-store-certificates/agent-store-certificates.component';
 
 const routes: Routes = [
   { path: 'Home', component: HomeComponent, canActivate: [NotSignedInGuard], data: { name: 'ברוכים הבאים' } },
@@ -24,7 +25,7 @@ const routes: Routes = [
   { path: 's/orders', component: StoreOrdersComponent, canActivate: [StoreGuard], data: { name: 'הזמנות' } },
   { path: 't/orders', component: AgentStoreOrdersComponent, canActivate: [TechnicianGuard], data: { name: 'הזמנות' } },
   { path: 'a/orders', component: AgentStoreOrdersComponent, canActivate: [AgentGuard], data: { name: 'הזמנות' } },
-  { path: 'a/certificates', component: CertificatesListComponent, canActivate: [AgentGuard], data: { name: 'תעודות' } },
+  { path: 'a/certificates', component: AgentStoreCertificatesComponent, canActivate: [AgentGuard], data: { name: 'תעודות' } },
   { path: 'User Accounts', component: UsersComponent, canActivate: [AdminGuard], data: { name: 'משתמשים' } },
   { path: '', redirectTo: '/Home', pathMatch: 'full' },
   { path: '**', redirectTo: '/Home', pathMatch: 'full' }

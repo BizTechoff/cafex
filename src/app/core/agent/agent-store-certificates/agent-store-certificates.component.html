@@ -1,0 +1,21 @@
+<div class="full-page">
+    <div class="header" style="padding: 2px;">
+        <table style="width: 100%;">
+            <tr>
+                <td>
+                    <data-control [column]="store"></data-control>
+                </td>
+                <td style="width: 10px;padding-bottom: 10px;">
+                    <!-- *ngIf='store.item' -->
+                    <button title="Add New Certificate" mat-mini-fab *ngIf='this.store.item.id.value' (click)="addCertificate()">
+                        <mat-icon>add</mat-icon>
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="grow-item">
+        <data-grid [settings]='certificates'></data-grid>
+    </div>
+    <div class="footer"></div>
+</div>
