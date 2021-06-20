@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { BusyService } from '@remult/angular';
-import { Context, Entity, EntityWhereItem, SpecificEntityHelper, StringColumn } from '@remult/core';
+import { AndFilter, Context, Entity, EntityWhereItem, SpecificEntityHelper, StringColumn } from '@remult/core';
 import { FILTER_IGNORE } from '../../shared/types';
 
 @Component({
@@ -43,19 +43,14 @@ export class DynamicServerSideSearchDialogComponent implements OnInit {
   }
   async loadProducts() {
     this.items = await this.entityContext.find({
-      // where: cur => this._args.where && true
-        // if there is a search value, search by it
-        // (this._args.where
-        //   ? this._args.where : 
-        //   FILTER_IGNORE)
-        // .and(
-          // where:   this.searchString.value 
-          // ? this._args.searchColumn(p).contains(this.searchString)
-          // : FILTER_IGNORE)
-      // ,
+
+      where:[this._args.where, p =>
+          this.searchString.value ? this._args.searchColumn(p).contains(this.searchString)
+            : FILTER_IGNORE,
+      ],
       orderBy: p => [{ column: this._args.searchColumn(p) }],
     });
-  } 
+  }
 
   searchString = new StringColumn({
     caption: 'search',

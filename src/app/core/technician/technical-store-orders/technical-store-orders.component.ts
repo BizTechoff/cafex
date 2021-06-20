@@ -13,11 +13,11 @@ import { OrderItem } from '../../order/orderItem';
 import { Product } from '../../product/product';
 
 @Component({
-  selector: 'app-agent-store-orders',
-  templateUrl: './agent-store-orders.component.html',
-  styleUrls: ['./agent-store-orders.component.scss']
+  selector: 'app-technical-store-orders',
+  templateUrl: './technical-store-orders.component.html',
+  styleUrls: ['./technical-store-orders.component.scss']
 })
-export class AgentStoreOrdersComponent implements OnInit {
+export class TechnicalStoreOrdersComponent implements OnInit {
 
   store = extend(new UserId(this.context, Roles.store, { caption: 'בחר בית קפה', valueChange: async () => { await this.refresh(true); } }))
     .dataControl(dcs => {

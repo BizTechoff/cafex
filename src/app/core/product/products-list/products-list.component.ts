@@ -18,7 +18,7 @@ export class ProductsListComponent implements OnInit {
 
   products = new GridSettings(this.context.for(Product),
     {
-      orderBy: cur => cur.name,
+      orderBy: cur => [cur.cid, cur.ciid, cur.sku, cur.name],
       allowCRUD: this.context.isAllowed(Roles.admin),
       allowDelete: false,
       numOfColumnsInGrid: 10,
@@ -95,11 +95,8 @@ export class ProductsListComponent implements OnInit {
       }
     }
   }
-
+ 
   async showUsers(pid: string, name?: string) {
-    if (!(name && name.length > 0)) {
-      name = 'אינשם';
-    }
     await openDialog(GridDialogComponent, gd => gd.args = {
       title: `משתמשים משוייכים ל- ${name}`,
       settings: new GridSettings(this.context.for(UserProduct), {
@@ -109,7 +106,7 @@ export class ProductsListComponent implements OnInit {
         numOfColumnsInGrid: 10,
         columnSettings: cur => [
           { column: cur.uid }
-        ],
+        ]
       }),
       ok: () => { }
     })

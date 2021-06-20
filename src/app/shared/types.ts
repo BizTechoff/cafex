@@ -9,7 +9,7 @@ export const STARTING_ORDER_NUM: number = 1000;
 export const FILTER_IGNORE:Filter = new Filter(x => { return true; });
 
 export const sharedParams = new rootParams({ date: addDays() });
- 
+
 export class changeDate extends DateTimeColumn {
   readonly = true;
 }

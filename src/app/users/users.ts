@@ -85,12 +85,12 @@ export class Users extends IdEntity {
                     await checkForDuplicateValue(this, this.name, this.context.for(Users));
 
                 }
-            },
-            apiDataFilter: () => {
-                if (!(context.isAllowed(Roles.admin)))
-                    return this.id.isEqualTo(this.context.user.id);
-                return new Filter(() => { });
-            }
+            }//,
+            // apiDataFilter: () => {
+            //     if (!(context.isAllowed([Roles.admin,Roles.agent])))
+            //         return this.id.isEqualTo(this.context.user.id);
+            //     return new Filter(() => { });
+            // }
         });
     }
     @ServerMethod({ allowed: true })
@@ -119,25 +119,25 @@ export class UserId extends LookupColumn<Users> {
             displayValue: () => this.item.name.value
             , ...settings
         });
-        extend(this).dataControl(ctrl => {
-            ctrl.getValue = () => this.displayValue;
-            ctrl.hideDataOnInput = true;
-            ctrl.width = '200';
+        // extend(this).dataControl(ctrl => {
+        //     ctrl.getValue = () => this.displayValue;
+        //     ctrl.hideDataOnInput = true;
+        //     ctrl.width = '200';
 
-            ctrl.click = async () => {
-                await openDialog(DynamicServerSideSearchDialogComponent,
-                    dlg => dlg.args(Users, {
-                        onClear: () => this.value = '',
-                        onSelect: cur => this.value = cur.id.value,
-                        searchColumn: cur => cur.name//,
-                        // where: cur => cur.store.isEqualTo(true)
-                        // role && role === Roles.store
-                        //     ? cur.store.isEqualTo(true)
-                        //     : FILTER_IGNORE
-                    })
-                    );
-            };
-        });
+        //     ctrl.click = async () => {
+        //         await openDialog(DynamicServerSideSearchDialogComponent,
+        //             dlg => dlg.args(Users, {
+        //                 onClear: () => this.value = '',
+        //                 onSelect: cur => this.value = cur.id.value,
+        //                 searchColumn: cur => cur.name,
+        //                 where: cur => cur.store.isEqualTo(true)
+        //                 // role && role === Roles.store
+        //                 //     ? cur.store.isEqualTo(true)
+        //                 //     : FILTER_IGNORE
+        //             })
+        //             );
+        //     };
+        // });
     }
 
 }

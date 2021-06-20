@@ -15,8 +15,8 @@ import { OrderItem } from '../orderItem';
 })
 export class OrdersListComponent implements OnInit {
 
-  count = new NumberColumn();
-  orders = new GridSettings(this.context.for(Order),
+  count = new NumberColumn({caption: 'מס.שורות'});
+  orders = new GridSettings<Order>(this.context.for(Order),
     {
       orderBy: cur => [cur.uid, { column: cur.orderNum, descending: true }],
       newRow: cur => {
@@ -26,12 +26,14 @@ export class OrdersListComponent implements OnInit {
       allowDelete: false,
       numOfColumnsInGrid: 10,
       columnSettings: cur => [
-        cur.uid,
-        // { column: cur.orderNum, visible: o => !o.isNew() },
-        cur.date
-        //,
+        { column: cur.uid, readOnly: o => !o.isNew() },
+        { column: cur.date, readOnly: o => !o.isNew() },
+        { column: cur.orderNum, visible: o => !o.isNew() }
+        // cur.date
+        ,
+        {column: this.count, getValue: o => o.getCount() }
         // {
-        //   column: this.count, caption: 'מס.מוצרים'/*, getValue: () => cur.getCount()*/, visible: o => !o.isNew()
+        //   column: this.count, getValue: (o) => o.getCount(), visible: o => !o.isNew()
         // }
       ],
       rowButtons: [

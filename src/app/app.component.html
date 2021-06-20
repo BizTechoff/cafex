@@ -26,7 +26,8 @@
 
       <mat-nav-list role="list">
         <ng-container *ngFor="let m of router.config">
-          <mat-divider *ngIf="m.path === 'Categories'"></mat-divider>
+          <mat-divider *ngIf="m.path === 'Stores'"></mat-divider>
+          <mat-divider *ngIf="m.path === 'User Accounts'"></mat-divider>
           <mat-list-item *ngIf="shouldDisplayRoute(m)" routerLinkActive="active-route">
             <a matLine [routerLink]="m.path" (click)="routeClicked()">{{routeName(m)}}</a>
           </mat-list-item>
@@ -42,3 +43,6 @@
   </mat-sidenav-container>
 
 </div>
+<mat-form-field style="display:none">
+  <input matInput>
+</mat-form-field>

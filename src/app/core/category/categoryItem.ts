@@ -32,28 +32,12 @@ export class CategoryItem extends IdEntity {
 }
 
 export class CategoryItemIdColumn extends LookupColumn<CategoryItem> {
-    cid?: string;
     constructor(context: Context, settings?: ColumnSettings<string>) {
         super(context.for(CategoryItem), {
             displayValue: () => this.item.name.value,
             ...settings
         });
-        extend(this).dataControl(dcs => {
-            dcs.hideDataOnInput = true;
-            dcs.clickIcon = 'search';
-            dcs.getValue = () => this.displayValue;
-            dcs.click = async () => {
-                console.log('cid=' + this.cid);
-                await openDialog(DynamicServerSideSearchDialogComponent,
-                    dlg => dlg.args(CategoryItem, {
-                        onClear: () => this.value = '',
-                        onSelect: cur => this.value = cur.id.value,
-                        searchColumn: cur => cur.name,
-                        where: (cur) => this.cid && this.cid.length > 0 ? cur.cid.isEqualTo(this.cid) : FILTER_IGNORE
-                    })
-                );
-            };
-        });
+      
     }
     isEmpty(): boolean {
         return this.value && this.value.length > 0 ? false : true;

@@ -1,35 +1,38 @@
 import { extend, openDialog } from "@remult/angular";
-import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, ServerFunction, StringColumn, ValueListColumn } from "@remult/core";
+import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, ServerFunction, StringColumn, ValueListColumn, ValueListTypeInfo } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
 import { STARTING_ORDER_NUM, TimeColumn, TODAY } from "../../shared/types";
-import { addDays, addHours, addTime, validDate, validString } from "../../shared/utils";
+import { addDays, addTime, validDate, validString } from "../../shared/utils";
 import { Roles } from "../../users/roles";
 import { UserId } from "../../users/users";
 import { OrderItem } from "./orderItem";
 
 @EntityClass
 export class Order extends IdEntity {
-    uid = new UserId(this.context, Roles.store, { caption: 'בית קפה',
-    validate: () => {
-        if (!validString(this.uid, { notNull: true, minLength: 2 })) {
-            throw this.uid.defs.caption + ': ' + this.uid.validationError;
+    uid = new UserId(this.context, Roles.store, {
+        caption: 'בית קפה',
+        validate: () => {
+            if (!validString(this.uid, { notNull: true, minLength: 2 })) {
+                throw this.uid.defs.caption + ': ' + this.uid.validationError;
+            }
         }
-    }
- });
-    orderNum = new NumberColumn({ allowApiUpdate: false,caption: 'מס.הזמנה' });
-    date = new DateColumn({caption: 'תאריך',
-    validate: () => {
-        if (!validDate(this.date, { notNull: true, minYear: 2 })) {
-            throw this.date.defs.caption + ': ' + this.date.validationError;
+    });
+    orderNum = new NumberColumn({ allowApiUpdate: false, caption: 'מס.הזמנה' });
+    date = new DateColumn({
+        caption: 'תאריך',
+        validate: () => {
+            if (!validDate(this.date, { notNull: true, minYear: 2 })) {
+                throw this.date.defs.caption + ': ' + this.date.validationError;
+            }
         }
-    }});
-    time = new TimeColumn({caption: 'שעה'});
-    status = new OrderStatusColumn({caption: 'סטטוס'});
+    });
+    time = new TimeColumn({ caption: 'שעה' });
+    status = new OrderStatusColumn({ caption: 'סטטוס' });
     isImported = new BoolColumn({ caption: 'נטען?', defaultValue: false });
-    created = new DateTimeColumn({caption: 'נוצר'});
-    createdBy = new UserId(this.context, Roles.admin,{caption: 'נוצר ע"י'});
-    modified = new DateTimeColumn({caption: 'השתנה'});
-    modifiedBy = new UserId(this.context, Roles.admin,{caption: 'השתנה ע"י'});
+    created = new DateTimeColumn({ caption: 'נוצר' });
+    createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
+    modified = new DateTimeColumn({ caption: 'השתנה' });
+    modifiedBy = new UserId(this.context, Roles.admin, { caption: 'השתנה ע"י' });
     count: number;
 
     getCount() {
@@ -121,6 +124,9 @@ export class OrderStatusColumn extends ValueListColumn<OrderStatus> {
         super(OrderStatus, {
             defaultValue: OrderStatus.open,
             ...options,
+        });
+        extend(this).dataControl(x => {
+            x.valueList = ValueListTypeInfo.get(OrderStatus).getOptions()
         });
     }
 }

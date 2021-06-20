@@ -33,6 +33,9 @@ import { AdminGuard, AgentGuard, StoreGuard, TechnicianGuard } from './users/rol
 import { UsersComponent } from './users/users.component';
 import { CategoriesListComponent } from './core/category/categories-list/categories-list.component';
 import { CategoryCrudComponent } from './core/category/category-crud/category-crud.component';
+import { CertificatesListComponent } from './core/certificate/certificates-list/certificates-list.component';
+import { CertificateCrudComponent } from './core/certificate/certificate-crud/certificate-crud.component';
+import { TechnicalStoreOrdersComponent } from './core/technician/technical-store-orders/technical-store-orders.component';
 
 
 @NgModule({
@@ -51,7 +54,10 @@ import { CategoryCrudComponent } from './core/category/category-crud/category-cr
     AgentStoreOrdersComponent,
     DynamicServerSideSearchDialogComponent,
     CategoriesListComponent,
-    CategoryCrudComponent
+    CategoryCrudComponent,
+    CertificatesListComponent,
+    CertificateCrudComponent,
+    TechnicalStoreOrdersComponent
   ],
   imports: [
     BrowserModule,
