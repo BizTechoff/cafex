@@ -15,10 +15,14 @@ import { rootParams } from '../../params/root-params/rootParams';
   styleUrls: ['./store-orders.component.scss']
 })
 export class StoreOrdersComponent implements OnInit {
-  params = new rootParams();  
+  params = new rootParams();
   orders = new GridSettings(this.context.for(Order),
     {
       where: cur => cur.date.isEqualTo(this.params.date),
+      newRow: cur => {
+        cur.uid.value = this.context.user.id;
+        cur.date.value = addDays();
+      },
       allowCRUD: this.context.isSignedIn(),
       allowDelete: false,
       numOfColumnsInGrid: 10,
@@ -28,7 +32,7 @@ export class StoreOrdersComponent implements OnInit {
       rowButtons: [
         {
           textInMenu: 'שורות הזמנה',
-          icon: 'detials',
+          icon: 'shopping_bag',
           click: async (cur) => await this.showOrderItems(cur),
           visible: cur => !cur.isNew(),
           showInLine: true,
@@ -82,7 +86,7 @@ export class StoreOrdersComponent implements OnInit {
         allowCRUD: this.context.isSignedIn(),
         numOfColumnsInGrid: 10,
         columnSettings: cur => [
-         {column: cur.pid,width: '400'},
+          { column: cur.pid, width: '400' },
           cur.quntity//,
           // cur.price
         ],

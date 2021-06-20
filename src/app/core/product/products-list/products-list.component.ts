@@ -91,6 +91,7 @@ export class ProductsListComponent implements OnInit {
         let yes = await this.dialog.confirmDelete(` מוצר ${p.name.value}`);
         if (yes) {
           await p.delete();
+          await this.refresh();
         }
       }
     }
