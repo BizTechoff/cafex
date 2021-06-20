@@ -26,7 +26,7 @@ export class OrderItem extends IdEntity {
         dcs.click = async () => {
             let o = await this.context.for(Order).findId(this.oid.value);
             let uid = o.uid.value;
-            if (this.context.user.roles.includes(Roles.technician)) {
+            if (this.context.user.roles.includes(Roles.technician) || this.context.user.roles.includes(Roles.store)) {
                 uid = this.context.user.id;
             }
             await openDialog(DynamicServerSideSearchDialogComponent,
