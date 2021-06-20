@@ -18,7 +18,7 @@ export class StoreOrdersComponent implements OnInit {
   params = new rootParams();
   orders = new GridSettings(this.context.for(Order),
     {
-      where: cur => cur.date.isEqualTo(this.params.date),
+      // where: cur => cur.date.isEqualTo(this.params.date),
       newRow: cur => {
         cur.uid.value = this.context.user.id;
         cur.date.value = addDays();
