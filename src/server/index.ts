@@ -36,12 +36,16 @@ async function startup() {
     let expressBridge = initExpress(app, {
         dataProvider
     });
-    app.get("/api-req", async (req, res) => { //can be app.get(....)
-        let apiKey = req.body.key;
+    //http://localhost:4200/api-req/apikey
+    //app.get("/api-req", async (req, res) => { //can be app.get(....)
+    app.get("/api-req/:key", async (req, res) => { //can be app.get(....)
+        // let apiKey2 = req.query.apiKey;//.body.key;
+        // console.log(apiKey2)
+        let apiKey = req.params.key;
 
-        // if (apiKey == process.env.apiKey) {
+        if (apiKey === process.env.apiKey) {
             let context = await expressBridge.getValidContext(req);
-            let result = "";
+            let result = ""; 
             let r = await Order.getOrders(context);
             for (const o of r) {
                 // for (const key in o) {
@@ -59,10 +63,10 @@ async function startup() {
             //     result += o.date.value.toLocaleDateString("he-il") + "|" + o.time.value + "|" + o.status.value.id + "\n";
             // }
             res.send(result);
-        // }
-        // else {
-        //     res.send("NOT ALLOWED");
-        // }
+        }
+        else {
+            res.send("NOT ALLOWED");
+        }
 
     });
     app.use(express.static('dist/cafex-app'));

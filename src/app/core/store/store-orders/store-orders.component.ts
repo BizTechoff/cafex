@@ -84,8 +84,8 @@ export class StoreOrdersComponent implements OnInit {
       copy.uid.value = o.uid.value;
       let d = addDays();
       copy.date.value = d;
-      console.log(d);
-      console.log(copy.date.value);
+      // console.log(d);
+      // console.log(copy.date.value);
       copy.time.value = addTime();
       await copy.save();
       for await (const oi of this.context.for(OrderItem).iterate({
