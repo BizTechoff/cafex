@@ -142,7 +142,7 @@ export class AgentStoreOrdersComponent implements OnInit {
       order.uid.value = this.store.item.id.value;
       let d = addDays();
       order.date.value = d;
-      console.log('dddddd='+d);
+      // console.log('dddddd='+d);
       if (oid) {
         order = await this.context.for(Order).findId(oid);
         if (!(order)) {

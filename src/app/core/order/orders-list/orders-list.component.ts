@@ -38,7 +38,7 @@ export class OrdersListComponent implements OnInit {
       ],
       rowButtons: [
         {
-          textInMenu: 'שןרןת הזמנה',
+          textInMenu: 'שורות הזמנה',
           icon: 'shopping_bag',
           click: async (cur) => await this.showOrderItems(cur),
           visible: cur => !cur.isNew(),

@@ -1,13 +1,13 @@
 <div class="full-page">
   <div class="grow-item">
-    <div mat-dialog-content class="center-screen">
-      <h2>שלום {{ context && context.isSignedIn() ? context.user.name : ' - ' }}
+    <div style="display:flex;flex-direction: column;flex-grow: 1;justify-content: space-between;">
+      <h2 style="display:flex;justify-content: center;">שלום {{ context && context.isSignedIn() ? context.user.name : ' - ' }}
         <span style="color: green;">{{ context.isSignedIn() ? '' : 'לכניסה יש ללחוץ למעלה' }}</span>
       </h2>
 
-      <h2>Our News..</h2>
+      <h2 style="display:flex;justify-content: center;">חדשות שלנו..</h2>
 
-      <div>
+      <div style="display:flex;justify-content: center;">
         <strong>
           <p style="color: green;">המוצרים שלנו</p>
         </strong>
@@ -17,12 +17,12 @@
             <h2>אנו כאן לכל שאלה</h2>
           </strong></p>
       </div> -->
-      <div>
-        <img src="assets/crema.plus.logo.png" title="About Us" />
-      </div>
 
-      <div>
+      <div style="display:flex;justify-content: center;">
         <img src="assets/home.jpeg" title="About Us" />
+      </div>
+      <div style="display:flex;justify-content: center;">
+        <img src="assets/crema.plus.logo.png" title="About Us" />
       </div>
     </div>
   </div>

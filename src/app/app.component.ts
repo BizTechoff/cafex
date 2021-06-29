@@ -30,10 +30,10 @@ export class AppComponent implements OnInit {
   }
 
   async signIn() {
-    let user = new StringColumn({ caption: "User Name" });
+    let user = new StringColumn({ caption: "משתמש" });
     let password = new PasswordColumn();
     openDialog(InputAreaComponent, i => i.args = {
-      title: "Sign In",
+      title: "כניסה",
       columnSettings: () => [
         user,
         password
@@ -71,7 +71,7 @@ export class AppComponent implements OnInit {
     if (result) {
       return (await import('jsonwebtoken')).sign(result, process.env.TOKEN_SIGN_KEY);
     }
-    throw new Error("Invalid Sign In Info");
+    throw new Error("שגיאה בנתוני כניסה");
   }
   setToken(token: string) {
     if (token) {
@@ -94,9 +94,9 @@ export class AppComponent implements OnInit {
   signUp() {
     let user = this.context.for(Users).create();
     let password = new PasswordColumn();
-    let confirmPassword = new PasswordColumn({ caption: "Confirm Password" });
+    let confirmPassword = new PasswordColumn({ caption: "אימות סיסמא" });
     openDialog(InputAreaComponent, i => i.args = {
-      title: "Sign Up",
+      title: "רישום",
       columnSettings: () => [
         user.name,
         password,
@@ -104,7 +104,7 @@ export class AppComponent implements OnInit {
       ],
       ok: async () => {
         if (password.value != confirmPassword.value) {
-          confirmPassword.validationError = "doesn't match password";
+          confirmPassword.validationError = "סיסמאות לא תואמות";
           throw new Error(confirmPassword.defs.caption + " " + confirmPassword.validationError);
         }
         await user.create(password.value);
@@ -117,7 +117,7 @@ export class AppComponent implements OnInit {
   async updateInfo() {
     let user = await this.context.for(Users).findId(this.context.user.id);
     openDialog(InputAreaComponent, i => i.args = {
-      title: "Update Info",
+      title: "פרטים אישיים",
       columnSettings: () => [
         user.name
       ],
@@ -129,16 +129,16 @@ export class AppComponent implements OnInit {
   async changePassword() {
     let user = await this.context.for(Users).findId(this.context.user.id);
     let password = new PasswordColumn();
-    let confirmPassword = new PasswordColumn({ caption: "Confirm Password" });
+    let confirmPassword = new PasswordColumn({ caption: "אימות סיסמא" });
     openDialog(InputAreaComponent, i => i.args = {
-      title: "Change Password",
+      title: "שנה סיסמא",
       columnSettings: () => [
         password,
         confirmPassword
       ],
       ok: async () => {
         if (password.value != confirmPassword.value) {
-          confirmPassword.validationError = "doesn't match password";
+          confirmPassword.validationError = "סיסמאות לא תואמות";
           throw new Error(confirmPassword.defs.caption + " " + confirmPassword.validationError);
         }
         await user.updatePassword(password.value);
