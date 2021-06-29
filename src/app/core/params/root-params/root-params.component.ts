@@ -23,16 +23,16 @@ export class RootParamsComponent implements OnInit {
   } 
 
   prevDay() {
-    console.log('prevDay');
-    console.log(this.params.date.value);
+    // console.log('prevDay');
+    // console.log(this.params.date.value);
     this.params.date.value = addDays(-1, this.params.date.value);
-    console.log(this.params.date.value);
+    // console.log(this.params.date.value);
   }
   nextDay() {
-    console.log('nextDay');
-    console.log(this.params.date.value);
+    // console.log('nextDay');
+    // console.log(this.params.date.value);
     this.params.date.value = addDays(+1, this.params.date.value);
-    console.log(this.params.date.value);
+    // console.log(this.params.date.value);
   }
   async refresh() {
     await this.params.onChanged();

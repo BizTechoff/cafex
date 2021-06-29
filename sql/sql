@@ -1,0 +1,17 @@
+delete from ordersitems;
+delete from orders;
+delete from certificatesitems;
+delete from certificates;
+
+select * from certificates;
+select * from certificatesitems;
+
+select * from orders;
+--select * from users where id;
+select name from users where uid = ''
+select 
+(select NAME from users where id = up.uid),
+(select NAME from products where id = up.pid)
+from usersproducts as up;
+select * from ordersitems;
+select * from users;

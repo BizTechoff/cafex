@@ -56,7 +56,8 @@ export class TechnicalStoreOrdersComponent implements OnInit {
         {
           textInMenu: 'שורות הזמנה',
           icon: 'shopping_bag',
-          click: async (cur) => { await this.openOrderItems(cur.id.value); }
+          click: async (cur) => { await this.openOrderItems(cur); },
+          showInLine: true
         },
         { textInMenu: '__________________________' },
         {
@@ -140,14 +141,14 @@ export class TechnicalStoreOrdersComponent implements OnInit {
     }
   }
 
-  async openOrderItems(oid?: string) {
-    if (oid) {
+  async openOrderItems(o: Order) {
+    if (o) {
       await openDialog(GridDialogComponent, dlg => dlg.args = {
-        title: `שורות הזמנה`,
+        title: `שורות הזמנה ${o.orderNum.value}`,
         settings: new GridSettings(this.context.for(OrderItem), {
-          where: cur => cur.oid.isEqualTo(oid),
+          where: cur => cur.oid.isEqualTo(o.id),
           newRow: (o) => {
-            o.oid.value = oid;
+            o.oid.value = o.id.value;
           },
           allowCRUD: false,
           showPagination: false,
@@ -161,7 +162,7 @@ export class TechnicalStoreOrdersComponent implements OnInit {
             {
               textInMenu: () => 'שורה חדשה',
               click: async () => {
-                let changed = await this.openOrderItem(oid, '');
+                let changed = await this.openOrderItem(o.id.value, '');
                 if (changed) {
                   await dlg.args.settings.reloadData();
                 }
@@ -171,7 +172,7 @@ export class TechnicalStoreOrdersComponent implements OnInit {
           rowButtons: [{
             textInMenu: 'עריכת שורה',
             click: async (cur) => {
-              let changed = await this.openOrderItem(oid, cur.id.value);
+              let changed = await this.openOrderItem(o.id.value, cur.id.value);
               if (changed) {
                 await dlg.args.settings.reloadData();
               }

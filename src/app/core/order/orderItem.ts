@@ -20,14 +20,15 @@ export class OrderItem extends IdEntity {
             }
         }
     })).dataControl(dcs => {
+        dcs.width = '400';
         dcs.hideDataOnInput = true;
         dcs.clickIcon = 'search';
         dcs.getValue = () => this.pid.displayValue;
         dcs.click = async () => {
-            let o = await this.context.for(Order).findId(this.oid.value);
-            let uid = o.uid.value;
-            if (this.context.user.roles.includes(Roles.technician) || this.context.user.roles.includes(Roles.store)) {
-                uid = this.context.user.id;
+            let uid = this.context.user.id;//individual order-items
+            if (!(this.context.user.roles.includes(Roles.technician) || this.context.user.roles.includes(Roles.store))) {
+                let o = await this.context.for(Order).findId(this.oid.value);
+                uid = o.uid.value;//the store-user-id of order (agent & admin input order-items in specific store)
             }
             await openDialog(DynamicServerSideSearchDialogComponent,
                 dlg => dlg.args(UserProduct, {

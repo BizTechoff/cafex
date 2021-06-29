@@ -4,7 +4,7 @@ import { Context } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
 import { sharedParams, TODAY } from '../../../shared/types';
-import { addDays } from '../../../shared/utils';
+import { addDays, addTime } from '../../../shared/utils';
 import { Order } from '../../order/order';
 import { OrderItem } from '../../order/orderItem';
 import { rootParams } from '../../params/root-params/rootParams';
@@ -19,6 +19,7 @@ export class StoreOrdersComponent implements OnInit {
   orders = new GridSettings(this.context.for(Order),
     {
       // where: cur => cur.date.isEqualTo(this.params.date),
+      orderBy: cur => [{column: cur.orderNum, descending : true}],
       newRow: cur => {
         cur.uid.value = this.context.user.id;
         cur.date.value = addDays();
@@ -28,6 +29,7 @@ export class StoreOrdersComponent implements OnInit {
       numOfColumnsInGrid: 10,
       columnSettings: cur => [
         cur.date,
+        cur.orderNum
       ],
       rowButtons: [
         {
@@ -36,6 +38,13 @@ export class StoreOrdersComponent implements OnInit {
           click: async (cur) => await this.showOrderItems(cur),
           visible: cur => !cur.isNew(),
           showInLine: true,
+        },
+        { textInMenu: '__________________________' },
+        {
+          textInMenu: 'שכפל הזמנה',
+          icon: 'content_copy',
+          click: async (cur) => await this.copyOrder(cur),
+          visible: cur => !cur.isNew()
         },
         {
           textInMenu: 'מחק הזמנה',
@@ -52,6 +61,10 @@ export class StoreOrdersComponent implements OnInit {
     // sharedParams.date.value = addDays();
   }
 
+  async resfresh(){
+    await this.orders.reloadData();
+  }
+
   prevDay() {
     this.params.date.value = addDays(-1, this.params.date.value);
   }
@@ -62,6 +75,32 @@ export class StoreOrdersComponent implements OnInit {
   async addOrder() {
     let order = this.context.for(Order).create();
 
+  }
+
+  async copyOrder(o: Order) {
+    let yes = await this.dialog.yesNoQuestion(`האם לשכפל את הזמנה ${o.orderNum.value}`);
+    if (yes) {
+      let copy = this.context.for(Order).create();
+      copy.uid.value = o.uid.value;
+      let d = addDays();
+      copy.date.value = d;
+      console.log(d);
+      console.log(copy.date.value);
+      copy.time.value = addTime();
+      await copy.save();
+      for await (const oi of this.context.for(OrderItem).iterate({
+        where: cur => cur.oid.isEqualTo(o.id)
+      })) {
+        let itm = this.context.for(OrderItem).create();
+        itm.upid.value = oi.upid.value;
+        itm.oid.value = copy.id.value;
+        itm.pid.value = oi.pid.value;
+        itm.quntity.value = oi.quntity.value;
+        await itm.save();
+      }
+      await this.resfresh();
+      await this.showOrderItems(copy);
+    }
   }
 
   async deleteOrder(o: Order) {

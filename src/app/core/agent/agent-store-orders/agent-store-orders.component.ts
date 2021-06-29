@@ -5,7 +5,7 @@ import { DialogService } from '../../../common/dialog';
 import { DynamicServerSideSearchDialogComponent } from '../../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component';
 import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
-import { addDays } from '../../../shared/utils';
+import { addDays, addTime } from '../../../shared/utils';
 import { Roles } from '../../../users/roles';
 import { UserId, Users } from '../../../users/users';
 import { Order } from '../../order/order';
@@ -56,13 +56,20 @@ export class AgentStoreOrdersComponent implements OnInit {
         {
           textInMenu: 'שורות הזמנה',
           icon: 'shopping_bag',
-          click: async (cur) => { await this.openOrderItems(cur.id.value); }
+          click: async (cur) => { await this.openOrderItems(cur); },
+          showInLine: true
         },
         { textInMenu: '__________________________' },
         {
           textInMenu: 'עריכת הזמנה',
           icon: 'edit',
-          click: async (cur) => { await this.openOrder(cur.id.value); }
+          click: async (cur) => { await this.addOrder(cur.id.value); }
+        },
+        {
+          textInMenu: 'שכפל הזמנה',
+          icon: 'content_copy',
+          click: async (cur) => await this.copyOrder(cur), 
+          visible: cur => !cur.isNew()
         },
         {
           textInMenu: 'מחק הזמנה',
@@ -90,6 +97,28 @@ export class AgentStoreOrdersComponent implements OnInit {
     await this.orders.reloadData();
   }
 
+  async copyOrder(o: Order) {
+    let yes = await this.dialog.yesNoQuestion(`האם לשכפל את הזמנה ${o.orderNum.value}`);
+    if (yes) {
+      let copy = this.context.for(Order).create();
+      copy.uid.value = o.uid.value;
+      copy.date.value = addDays();
+      copy.time.value = addTime();
+      await copy.save();
+      for await (const oi of this.context.for(OrderItem).iterate({
+        where: cur => cur.oid.isEqualTo(o.id)
+      })) {
+        let itm = this.context.for(OrderItem).create();
+        itm.upid.value = oi.upid.value;
+        itm.oid.value = copy.id.value;
+        itm.pid.value = oi.pid.value;
+        itm.quntity.value = oi.quntity.value;
+        await itm.save();
+      }
+      await this.openOrderItems(copy);
+    }
+  }
+
   async deleteOrder(oid?: string) {
     let order = await this.context.for(Order).findId(oid);
     if (order) {
@@ -107,11 +136,13 @@ export class AgentStoreOrdersComponent implements OnInit {
     }
   }
 
-  async openOrder(oid?: string) {
+  async addOrder(oid?: string) {
     if (this.store.item.id.value) {
       let order = this.context.for(Order).create();
       order.uid.value = this.store.item.id.value;
-      order.date.value = addDays();
+      let d = addDays();
+      order.date.value = d;
+      console.log('dddddd='+d);
       if (oid) {
         order = await this.context.for(Order).findId(oid);
         if (!(order)) {
@@ -140,14 +171,14 @@ export class AgentStoreOrdersComponent implements OnInit {
     }
   }
 
-  async openOrderItems(oid?: string) {
-    if (oid) {
+  async openOrderItems(o: Order) {
+    if (o) {
       await openDialog(GridDialogComponent, dlg => dlg.args = {
-        title: `שורות הזמנה`,
+        title: `שורות הזמנה ${o.orderNum.value}`,
         settings: new GridSettings(this.context.for(OrderItem), {
-          where: cur => cur.oid.isEqualTo(oid),
+          where: cur => cur.oid.isEqualTo(o.id),
           newRow: (o) => {
-            o.oid.value = oid;
+            o.oid.value = o.id.value;
           },
           allowCRUD: false,
           showPagination: false,
@@ -161,7 +192,7 @@ export class AgentStoreOrdersComponent implements OnInit {
             {
               textInMenu: () => 'שורה חדשה',
               click: async () => {
-                let changed = await this.openOrderItem(oid, '');
+                let changed = await this.openOrderItem(o.id.value, '');
                 if (changed) {
                   await dlg.args.settings.reloadData();
                 }
@@ -171,7 +202,7 @@ export class AgentStoreOrdersComponent implements OnInit {
           rowButtons: [{
             textInMenu: 'עריכת שורה',
             click: async (cur) => {
-              let changed = await this.openOrderItem(oid, cur.id.value);
+              let changed = await this.openOrderItem(o.id.value, cur.id.value);
               if (changed) {
                 await dlg.args.settings.reloadData();
               }

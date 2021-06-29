@@ -1,8 +1,7 @@
 <div class="full-page">
   <div class="grow-item">
     <div mat-dialog-content class="center-screen">
-      <!-- <h4>Creama+</h4> -->
-      <h2>שלום {{ context.isSignedIn() ? context.user.name : ' - ' }}
+      <h2>שלום {{ context && context.isSignedIn() ? context.user.name : ' - ' }}
         <span style="color: green;">{{ context.isSignedIn() ? '' : 'לכניסה יש ללחוץ למעלה' }}</span>
       </h2>
 
@@ -13,11 +12,11 @@
           <p style="color: green;">המוצרים שלנו</p>
         </strong>
       </div>
-      <div>
+      <!-- <div>
         <p style="color: green;"><strong>
             <h2>אנו כאן לכל שאלה</h2>
           </strong></p>
-      </div>
+      </div> -->
       <div>
         <img src="assets/crema.plus.logo.png" title="About Us" />
       </div>

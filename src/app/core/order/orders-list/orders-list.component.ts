@@ -3,7 +3,7 @@ import { GridSettings, openDialog } from '@remult/angular';
 import { Context, NumberColumn } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
-import { addDays } from '../../../shared/utils';
+import { addDays, addTime } from '../../../shared/utils';
 import { Roles } from '../../../users/roles';
 import { Order } from '../order';
 import { OrderItem } from '../orderItem';
@@ -15,7 +15,7 @@ import { OrderItem } from '../orderItem';
 })
 export class OrdersListComponent implements OnInit {
 
-  count = new NumberColumn({caption: 'מס.שורות'});
+  count = new NumberColumn({ caption: 'מס.שורות' });
   orders = new GridSettings<Order>(this.context.for(Order),
     {
       orderBy: cur => [cur.uid, { column: cur.orderNum, descending: true }],
@@ -31,25 +31,32 @@ export class OrdersListComponent implements OnInit {
         { column: cur.orderNum, visible: o => !o.isNew() }
         // cur.date
         ,
-        {column: this.count, getValue: o => o.getCount() }
+        { column: this.count, getValue: o => o.getCount() }
         // {
         //   column: this.count, getValue: (o) => o.getCount(), visible: o => !o.isNew()
         // }
       ],
       rowButtons: [
         {
-          textInMenu: 'הצג שורות',
+          textInMenu: 'שןרןת הזמנה',
           icon: 'shopping_bag',
           click: async (cur) => await this.showOrderItems(cur),
           visible: cur => !cur.isNew(),
           showInLine: true,
         },
+        { textInMenu: '__________________________' },
         {
           textInMenu: 'מחק הזמנה',
           icon: 'delete',
           click: async (cur) => await this.deleteOrder(cur),
           visible: cur => !cur.isNew()
-        }
+        }//,
+        // {
+        //   textInMenu: 'שכפל הזמנה',
+        //   icon: 'content_copy',
+        //   click: async (cur) => await this.copyOrder(cur),
+        //   visible: cur => !cur.isNew()
+        // }
       ],
     });
 
@@ -68,6 +75,28 @@ export class OrdersListComponent implements OnInit {
       if (yes) {
         await o.delete();
       }
+    }
+  }
+
+  async copyOrder(o: Order) {
+    let yes = await this.dialog.yesNoQuestion(`האם לשכפל את הזמנה ${o.orderNum.value}`);
+    if (yes) {
+      let copy = this.context.for(Order).create();
+      copy.uid.value = o.uid.value;
+      copy.date.value = addDays();
+      copy.time.value = addTime();
+      await copy.save();
+      for await (const oi of this.context.for(OrderItem).iterate({
+        where: cur => cur.oid.isEqualTo(o.id)
+      })) {
+        let itm = this.context.for(OrderItem).create();
+        itm.upid.value = oi.upid.value;
+        itm.oid.value = copy.id.value;
+        itm.pid.value = oi.pid.value;
+        itm.quntity.value = oi.quntity.value;
+        await itm.save();
+      }
+      await this.showOrderItems(copy);
     }
   }
 

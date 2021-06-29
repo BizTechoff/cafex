@@ -39,7 +39,7 @@ export function addTime() {
     // return formatDate(addDays(TODAY, undefined, false), 'HH:mm', 'en-US');
 }
 
-export function addDays(days: number = TODAY, date?: Date, setTimeToZero: boolean = true) {
+export function addDays(days: number = TODAY, date?: Date, setTimeToZero = true) {
     var result = date ? new Date(date.getDate()) : new Date();
     if (setTimeToZero) {
         result = new Date(result.getFullYear(), result.getMonth(), result.getDate());
