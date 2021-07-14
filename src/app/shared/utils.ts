@@ -40,11 +40,17 @@ export function addTime() {
 }
 
 export function addDays(days: number = TODAY, date?: Date, setTimeToZero = true) {
-    var result = date ? new Date(date.getDate()) : new Date();
+    var result = date;
+    if (!(result)) {
+        result = new Date();
+    }
     if (setTimeToZero) {
         result = new Date(result.getFullYear(), result.getMonth(), result.getDate());
     }
-    result.setDate(result.getDate() + days);
+    if (days !== 0) {
+        result.setTime(result.getTime() + days * 24 * 60 * 60 * 1000);
+    }
+    // console.log('result=' + result);
     return result;
 }
 
@@ -105,7 +111,7 @@ export function isValidMobile(value: string) {
     if (!(value)) {
         return false;
     }
-    value = value.replace('-', '').trim();
+    value = value.replace('-', '').replace('-', '').replace('-', '').replace('-', '').trim();
     if (value.length < 9) {
         return false;
     }
@@ -140,7 +146,7 @@ export function validString(col: StringColumn, options: { notNull?: boolean, min
     return result;
 }
 
-export function validDate(col: DateColumn, options: { notNull?: boolean, minYear?: number } = { notNull: true, minYear: 2000 }): boolean {
+export function validDate(col: DateColumn, options: { notNull?: boolean, minYear?: number, greaterThenToday?: boolean } = { notNull: true, minYear: 2000, greaterThenToday: false }): boolean {
     let result = true;
     if (options.notNull) {
         if (!(col.value)) {
@@ -151,6 +157,13 @@ export function validDate(col: DateColumn, options: { notNull?: boolean, minYear
     if (options.minYear && options.minYear > 0) {
         if (!(col.value && col.value.getFullYear() >= options.minYear)) {
             col.validationError = `מינימום שנת ${options.minYear}`;
+            result = false;
+        }
+    }
+    if (options.greaterThenToday) {
+        let today = addDays(TODAY, undefined, true);
+        if (!(col.value && col.value >= today)) {
+            col.validationError = `מינימום היום וקדימה`;
             result = false;
         }
     }

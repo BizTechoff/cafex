@@ -27,7 +27,7 @@ import { FILTER_IGNORE } from '../../shared/types';
 </div>
 <div mat-dialog-actions>
 
-    <button mat-icon-button mat-dialog-close title="Clear Selection"  (click)="clear()">
+    <button mat-icon-button mat-dialog-close title="נקה בחירה"  (click)="clear()">
         <mat-icon>clear</mat-icon>
     </button>
 </div>    `,
@@ -53,7 +53,7 @@ export class DynamicServerSideSearchDialogComponent implements OnInit {
   }
 
   searchString = new StringColumn({
-    caption: 'search',
+    caption: 'חיפוש',
     valueChange: async () => {
       // the call to `this.busy.donotWait` causes the load products method to run without the "Busy" circle in the ui
       await this.busy.donotWait(async () => await this.loadProducts());

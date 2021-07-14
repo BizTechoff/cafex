@@ -26,6 +26,7 @@ async function startup() {
         let database = new SqlDatabase(new PostgresDataProvider(pool));
         await verifyStructureOfAllEntities(database);
         dataProvider = database;
+        await database.execute("alter table orders add column if not exists ordernum serial");
     }
 
     let app = express();

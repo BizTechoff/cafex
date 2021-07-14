@@ -13,7 +13,7 @@ export class UserProduct extends IdEntity {
             if (!validString(this.uid, { notNull: true, minLength: 3 })) {
                 throw this.uid.defs.caption + ': ' + this.uid.validationError;
             }
-        } 
+        }
     })).dataControl(dcs => {
         dcs.hideDataOnInput = true;
         dcs.clickIcon = 'search';
@@ -63,7 +63,7 @@ export class UserProduct extends IdEntity {
 export class UserProductIdColumn extends LookupColumn<UserProduct> {
     constructor(context: Context, settings?: ColumnSettings<string>) {
         super(context.for(UserProduct), {
-            caption: 'Product',
+            caption: 'מוצר',
             displayValue: () => this.item.pid.displayValue,
             ...settings
         });

@@ -37,6 +37,7 @@ import { CertificatesListComponent } from './core/certificate/certificates-list/
 import { CertificateCrudComponent } from './core/certificate/certificate-crud/certificate-crud.component';
 import { TechnicalStoreOrdersComponent } from './core/technician/technical-store-orders/technical-store-orders.component';
 import { AgentStoreCertificatesComponent } from './core/agent/agent-store-certificates/agent-store-certificates.component';
+import { OrderItemsComponent } from './core/order/order-items/order-items.component';
 
 
 @NgModule({
@@ -59,7 +60,8 @@ import { AgentStoreCertificatesComponent } from './core/agent/agent-store-certif
     CertificatesListComponent,
     CertificateCrudComponent,
     TechnicalStoreOrdersComponent,
-    AgentStoreCertificatesComponent
+    AgentStoreCertificatesComponent,
+    OrderItemsComponent
   ],
   imports: [
     BrowserModule,
@@ -82,6 +84,7 @@ import { AgentStoreCertificatesComponent } from './core/agent/agent-store-certif
   ],
   providers: [DialogService, AdminGuard, TechnicianGuard, AgentGuard, StoreGuard],
   bootstrap: [AppComponent],
-  entryComponents: [YesNoQuestionComponent, InputAreaComponent, GridDialogComponent, DynamicServerSideSearchDialogComponent]
+  entryComponents: [YesNoQuestionComponent, InputAreaComponent, GridDialogComponent, DynamicServerSideSearchDialogComponent,
+    OrderItemsComponent]
 })
 export class AppModule { }

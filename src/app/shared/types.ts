@@ -6,6 +6,9 @@ import { addDays } from "./utils";
 export const TODAY: number = 0;
 export const IsDevMode: boolean = true;
 export const STARTING_ORDER_NUM: number = 1000;
+export const WIDTH_COLUMN_SHORT_PLUS: string = '175';
+export const WIDTH_COLUMN_SHORT: string = '150';
+export const WIDTH_COLUMN_SHORT_MINUS: string = '80';
 export const FILTER_IGNORE:Filter = new Filter(x => { return true; });
 
 export const sharedParams = new rootParams({ date: addDays() });

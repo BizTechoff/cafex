@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { GridSettings, openDialog } from '@remult/angular';
-import { Context } from '@remult/core';
+import { Context, NumberColumn } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
+import { WIDTH_COLUMN_SHORT, WIDTH_COLUMN_SHORT_MINUS } from '../../../shared/types';
 import { Roles } from '../../../users/roles';
 import { UserProduct } from '../../../users/userProduct';
 import { Users } from '../../../users/users';
@@ -14,14 +15,17 @@ import { Users } from '../../../users/users';
 })
 export class StoresListComponent implements OnInit {
 
-  stores = new GridSettings(this.context.for(Users), {
+  count = new NumberColumn({ caption: 'מוצרים' });
+  stores = new GridSettings<Users>(this.context.for(Users), {
     where: cur => cur.store.isIn(true),
+    orderBy: cur => cur.name,
     newRow: cur => cur.store.value = true,
     allowCRUD: this.context.isAllowed(Roles.admin),
     allowDelete: false,
     numOfColumnsInGrid: 10,
     columnSettings: cur => [
-      cur.name,
+      { column: cur.name, width: WIDTH_COLUMN_SHORT },
+      { column: this.count, getValue: u => u.getCount(), width: WIDTH_COLUMN_SHORT_MINUS, hideDataOnInput: true }
     ],
     rowButtons: [
       {

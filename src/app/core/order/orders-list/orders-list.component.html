@@ -1,5 +1,22 @@
 <div class="full-page">
-    <div class="header"></div>
+    <div class="header">
+        <div style="display: flex; flex-direction: column; justify-content: space-between; ">
+            <div style="display: flex; flex-direction: row; justify-content: space-between; ">
+                <div style="width: 100%;">
+                    <data-control [column]="store"></data-control>
+                </div>
+                <div style="min-width: 150px; padding-right: 5px;">
+                    <data-control [column]="status"></data-control>
+                </div>
+            </div>
+            <div style="width: 100%; padding-top: 3.5px;">
+                <button style="width: 100%;" mat-raised-button color='primary' (click)="addOrder()">
+                    <mat-icon>add</mat-icon>
+                    <mat-label style="padding-right: 10px;">הוספת הזמנה חדשה</mat-label>
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="grow-item">
         <data-grid [settings]='orders'></data-grid>
     </div>

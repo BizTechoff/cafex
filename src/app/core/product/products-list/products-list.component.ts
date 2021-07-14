@@ -83,7 +83,7 @@ export class ProductsListComponent implements OnInit {
   async deleteProduct(pid: string) {
     let count = await this.context.for(OrderItem).count(cur => cur.pid.isEqualTo(pid));
     if (count > 0) {
-      await this.dialog.error(` נמצאו ${count} שורות הזמנה, לא ניתן למחוק מוצר זה`);
+      await this.dialog.error(` נמצאו ${count} שורות להזמנה, לא ניתן למחוק מוצר זה`);
     }
     else {
       let p = await this.context.for(Product).findId(pid);

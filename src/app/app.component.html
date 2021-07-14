@@ -5,8 +5,8 @@
     </button>
     <span class="toolbar-title">{{currentTitle()}}</span>
     <ng-container *ngIf="!context.isSignedIn()">
-      <button mat-flat-button color="primary" (click)="signIn()">כניסה</button>
       <button mat-flat-button color="primary" (click)="signUp()">רישום</button>
+      <button mat-flat-button color="primary" (click)="signIn()">כניסה</button>
     </ng-container>
     <ng-container *ngIf="context.isSignedIn()">
       <button mat-flat-button color="primary" [matMenuTriggerFor]="menu">{{context.user.name}}</button>

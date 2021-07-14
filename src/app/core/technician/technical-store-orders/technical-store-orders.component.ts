@@ -54,7 +54,7 @@ export class TechnicalStoreOrdersComponent implements OnInit {
       ],
       rowButtons: [
         {
-          textInMenu: 'שורות הזמנה',
+          textInMenu: 'הצג הזמנה',
           icon: 'shopping_bag',
           click: async (cur) => { await this.openOrderItems(cur); },
           showInLine: true
@@ -144,7 +144,7 @@ export class TechnicalStoreOrdersComponent implements OnInit {
   async openOrderItems(o: Order) {
     if (o) {
       await openDialog(GridDialogComponent, dlg => dlg.args = {
-        title: `שורות הזמנה ${o.orderNum.value}`,
+        title: `פרטי הזמנה ${o.orderNum.value}`,
         settings: new GridSettings(this.context.for(OrderItem), {
           where: cur => cur.oid.isEqualTo(o.id),
           newRow: (o) => {

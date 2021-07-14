@@ -5,6 +5,7 @@ import { DynamicServerSideSearchDialogComponent } from "../common/dynamic-server
 import { changeDate, FILTER_IGNORE } from '../shared/types';
 import { validString } from "../shared/utils";
 import { Roles } from './roles';
+import { UserProduct } from "./userProduct";
 
 @EntityClass
 export class Users extends IdEntity {
@@ -74,6 +75,13 @@ export class Users extends IdEntity {
             allowApiDelete: Roles.admin,
             allowApiUpdate: context.isSignedIn(),
             allowApiInsert: [Roles.admin, Roles.agent],
+            defaultOrderBy: () => [
+                { column: this.admin, descending: true },
+                { column: this.technician, descending: true },
+                { column: this.agent, descending: true },
+                { column: this.store, descending: true },
+                this.name
+            ],
             saving: async () => {
                 if (context.onServer) {
 
@@ -106,6 +114,14 @@ export class Users extends IdEntity {
             throw "פעולה לא חוקית";
         await this.password.hashAndSet(password);
         await this.save();
+    }
+    count: number;
+    getCount() {
+        if (this.count !== undefined)
+            return this.count;
+        this.count = 0;
+        this.context.for(UserProduct).count(c => c.uid.isEqualTo(this.id)).then(result => { this.count = result; })
+        return this.count;
     }
 }
 

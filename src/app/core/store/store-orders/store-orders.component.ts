@@ -3,7 +3,7 @@ import { GridSettings, openDialog } from '@remult/angular';
 import { Context } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
-import { sharedParams, TODAY } from '../../../shared/types';
+import { sharedParams, WIDTH_COLUMN_SHORT, TODAY } from '../../../shared/types';
 import { addDays, addTime } from '../../../shared/utils';
 import { Order } from '../../order/order';
 import { OrderItem } from '../../order/orderItem';
@@ -16,44 +16,47 @@ import { rootParams } from '../../params/root-params/rootParams';
 })
 export class StoreOrdersComponent implements OnInit {
   params = new rootParams();
-  orders = new GridSettings(this.context.for(Order),
-    {
-      // where: cur => cur.date.isEqualTo(this.params.date),
-      orderBy: cur => [{column: cur.orderNum, descending : true}],
-      newRow: cur => {
-        cur.uid.value = this.context.user.id;
-        cur.date.value = addDays();
+  orders = new GridSettings(this.context.for(Order), {
+    // where: cur => cur.date.isEqualTo(this.params.date),
+    orderBy: cur => [{ column: cur.orderNum, descending: true }],
+    newRow: cur => {
+      cur.uid.value = this.context.user.id;
+      cur.date.value = addDays();
+    },
+    allowCRUD: this.context.isSignedIn(),
+    allowDelete: false,
+    numOfColumnsInGrid: 10,
+    columnSettings: cur => [
+      //  { column: cur.date, width: SHORT_COLUMN_WIDTH, readOnly: o => !o.isNew() },
+      // { column: cur.orderNum, readOnly: true }
+      cur.date,
+      cur.orderNum,
+      cur.worker,
+      cur.status
+    ],
+    rowButtons: [
+      {
+        textInMenu: 'הצג הזמנה',
+        icon: 'shopping_bag',
+        click: async (cur) => await this.showOrderItems(cur),
+        visible: cur => !cur.isNew(),
+        showInLine: true,
       },
-      allowCRUD: this.context.isSignedIn(),
-      allowDelete: false,
-      numOfColumnsInGrid: 10,
-      columnSettings: cur => [
-        cur.date,
-        cur.orderNum
-      ],
-      rowButtons: [
-        {
-          textInMenu: 'שורות הזמנה',
-          icon: 'shopping_bag',
-          click: async (cur) => await this.showOrderItems(cur),
-          visible: cur => !cur.isNew(),
-          showInLine: true,
-        },
-        { textInMenu: '__________________________' },
-        {
-          textInMenu: 'שכפל הזמנה',
-          icon: 'content_copy',
-          click: async (cur) => await this.copyOrder(cur),
-          visible: cur => !cur.isNew()
-        },
-        {
-          textInMenu: 'מחק הזמנה',
-          icon: 'delete',
-          click: async (cur) => await this.deleteOrder(cur),
-          visible: cur => !cur.isNew()
-        }
-      ],
-    });
+      { textInMenu: '__________________________' },
+      {
+        textInMenu: 'שכפל הזמנה',
+        icon: 'content_copy',
+        click: async (cur) => await this.copyOrder(cur),
+        visible: cur => !cur.isNew()
+      },
+      {
+        textInMenu: 'מחק הזמנה',
+        icon: 'delete',
+        click: async (cur) => await this.deleteOrder(cur),
+        visible: cur => !cur.isNew()
+      }
+    ],
+  });
 
   constructor(private context: Context, private dialog: DialogService) { }
 
@@ -61,7 +64,7 @@ export class StoreOrdersComponent implements OnInit {
     // sharedParams.date.value = addDays();
   }
 
-  async resfresh(){
+  async resfresh() {
     await this.orders.reloadData();
   }
 
@@ -118,7 +121,7 @@ export class StoreOrdersComponent implements OnInit {
 
   async showOrderItems(o: Order) {
     await openDialog(GridDialogComponent, gd => gd.args = {
-      title: `שורות הזמנה ${o.orderNum.value}`,
+      title: `פרטי הזמנה ${o.orderNum.value}`,
       settings: new GridSettings(this.context.for(OrderItem), {
         where: cur => cur.oid.isEqualTo(o.id),
         newRow: cur => cur.oid.value = o.id.value,

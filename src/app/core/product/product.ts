@@ -43,9 +43,11 @@ export class Product extends IdEntity {
     });
     sku = new StringColumn({ caption: 'מק"ט' });//makat
     name = new StringColumn({ caption: 'שם' });
+    remark = new StringColumn({ caption: 'הערה' });
 
     constructor(private context: Context) {
         super({
+            caption: 'מוצר',
             name: 'products',
             allowApiCRUD: c => c.isSignedIn(),
             allowApiRead: c => c.isSignedIn()

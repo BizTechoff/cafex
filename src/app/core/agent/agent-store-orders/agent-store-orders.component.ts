@@ -5,6 +5,7 @@ import { DialogService } from '../../../common/dialog';
 import { DynamicServerSideSearchDialogComponent } from '../../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component';
 import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
+import { WIDTH_COLUMN_SHORT_MINUS, WIDTH_COLUMN_SHORT_PLUS } from '../../../shared/types';
 import { addDays, addTime } from '../../../shared/utils';
 import { Roles } from '../../../users/roles';
 import { UserId, Users } from '../../../users/users';
@@ -40,13 +41,14 @@ export class AgentStoreOrdersComponent implements OnInit {
     {
       where: cur => cur.uid.isEqualTo(this.store),
       orderBy: cur => [{ column: cur.orderNum, descending: true }],
-      numOfColumnsInGrid: 10,
       allowCRUD: false,
       // allowDelete: false,
       showPagination: false,
+      numOfColumnsInGrid: 10,
       columnSettings: cur => [
         cur.date,
-        cur.orderNum
+        cur.orderNum,
+        cur.remark
         // { column: cur.date, width: '90' },
         // { column: cur.orderNum, width: '80' }//,
         // { column: cur.status, width: '90' }//,
@@ -54,7 +56,7 @@ export class AgentStoreOrdersComponent implements OnInit {
       ],
       rowButtons: [
         {
-          textInMenu: 'שורות הזמנה',
+          textInMenu: 'הצג הזמנה',
           icon: 'shopping_bag',
           click: async (cur) => { await this.openOrderItems(cur); },
           showInLine: true
@@ -68,7 +70,7 @@ export class AgentStoreOrdersComponent implements OnInit {
         {
           textInMenu: 'שכפל הזמנה',
           icon: 'content_copy',
-          click: async (cur) => await this.copyOrder(cur), 
+          click: async (cur) => await this.copyOrder(cur),
           visible: cur => !cur.isNew()
         },
         {
@@ -153,7 +155,7 @@ export class AgentStoreOrdersComponent implements OnInit {
       if (order.isNew()) {
       }
       await openDialog(InputAreaComponent, thus => thus.args = {
-        title: `הוספת הזמנה ל: ${this.store.item.name.value}`,
+        title: `הוספת קריאת שירות ל: ${this.store.item.name.value}`,
         columnSettings: () => [
           { column: order.orderNum, visible: () => { return order.orderNum.value > 0; } },
           order.date,
@@ -174,7 +176,7 @@ export class AgentStoreOrdersComponent implements OnInit {
   async openOrderItems(o: Order) {
     if (o) {
       await openDialog(GridDialogComponent, dlg => dlg.args = {
-        title: `שורות הזמנה ${o.orderNum.value}`,
+        title: `פרטי הזמנה ${o.orderNum.value}`,
         settings: new GridSettings(this.context.for(OrderItem), {
           where: cur => cur.oid.isEqualTo(o.id),
           newRow: (o) => {
@@ -184,9 +186,8 @@ export class AgentStoreOrdersComponent implements OnInit {
           showPagination: false,
           numOfColumnsInGrid: 10,
           columnSettings: cur => [
-            { column: cur.pid, width: '90' },
-            { column: cur.quntity, width: '55' }//,
-            // { column: cur.price, width: '50' }
+            { column: cur.pid, width: WIDTH_COLUMN_SHORT_PLUS },
+            { column: cur.quntity, width: WIDTH_COLUMN_SHORT_MINUS }
           ],
           gridButtons: [
             {

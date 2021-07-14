@@ -15,7 +15,7 @@ export class Order extends IdEntity {
             if (!validString(this.uid, { notNull: true, minLength: 3 })) {
                 throw this.uid.defs.caption + ': ' + this.uid.validationError;
             }
-        } 
+        }
     })).dataControl(dcs => {
         dcs.hideDataOnInput = true;
         dcs.clickIcon = 'search';
@@ -31,17 +31,34 @@ export class Order extends IdEntity {
             );
         };
     });
-    orderNum = new NumberColumn({ allowApiUpdate: false, caption: 'מס.הזמנה' });
+    orderNum = new NumberColumn({ allowApiUpdate: false, dbReadOnly: true, caption: 'מס.הזמנה' });
     date = new DateColumn({
         caption: 'תאריך',
+        defaultValue: addDays(TODAY, undefined, true),
         validate: () => {
-            if (!validDate(this.date, { notNull: true, minYear: 2 })) {
+            if (!validDate(this.date, { notNull: true, minYear: 2000 })) {
                 throw this.date.defs.caption + ': ' + this.date.validationError;
+            }
+            if (this.isNew()) {
+                if (!validDate(this.date, { greaterThenToday: true })) {
+                    throw this.date.defs.caption + ': ' + this.date.validationError;
+                }
+            }
+        }
+    });
+    worker = new StringColumn({
+        caption: 'שם עובד ממלא',
+        validate: () => {
+            if (this.context.isAllowed(Roles.store)) {
+                if (!validString(this.worker, { notNull: true, minLength: 3 })) {
+                    throw this.worker.defs.caption + ': ' + this.worker.validationError;
+                }
             }
         }
     });
     time = new TimeColumn({ caption: 'שעה' });
-    status = new OrderStatusColumn({ caption: 'סטטוס' });
+    status = new OrderStatusColumn();
+    remark = new StringColumn({ caption: 'הערה' });
     isImported = new BoolColumn({ caption: 'נטען?', defaultValue: false });
     created = new DateTimeColumn({ caption: 'נוצר' });
     createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
@@ -126,21 +143,26 @@ export class OrderIdColumn extends LookupColumn<Order> {
 }
 
 export class OrderStatus {
-    static closed = new OrderStatus();
-    static working = new OrderStatus();
-    static open = new OrderStatus();
-    constructor() { }
-    id: string = '';//for ValueListItem
+    static closed = new OrderStatus('סגורה');
+    // static working = new OrderStatus();
+    static open = new OrderStatus('פתוחה');
+    constructor(caption = '') { this.caption = caption; }
+    id: string;
+    caption: string;
 }
 
 export class OrderStatusColumn extends ValueListColumn<OrderStatus> {
-    constructor(options?: ColumnSettings<OrderStatus>) {
+    constructor(all = false, options?: ColumnSettings<OrderStatus>) {
         super(OrderStatus, {
-            defaultValue: OrderStatus.open,
-            ...options,
+            caption: 'סטטוס',
+            defaultValue: OrderStatus.open,// all ? { caption: 'הכל', id: 'all' } : OrderStatus.open,
+            ...options
         });
         extend(this).dataControl(x => {
             x.valueList = ValueListTypeInfo.get(OrderStatus).getOptions()
+            // all
+            //     ? x.valueList = [{ caption: 'הכל', id: 'all' }, ...this.getOptions()]
+            //     : x.valueList = ValueListTypeInfo.get(OrderStatus).getOptions()
         });
     }
 }
