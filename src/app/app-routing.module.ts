@@ -7,8 +7,6 @@ import { AdminGuard, StoreGuard, AgentGuard, TechnicianGuard } from './users/rol
 import { ShowDialogOnErrorErrorHandler } from './common/dialog';
 import { JwtModule } from '@auth0/angular-jwt';
 import { StoresListComponent } from './core/store/stores-list/stores-list.component';
-import { StoreOrdersComponent } from './core/store/store-orders/store-orders.component';
-import { AgentStoreOrdersComponent } from './core/agent/agent-store-orders/agent-store-orders.component';
 import { OrdersListComponent } from './core/order/orders-list/orders-list.component';
 import { ProductsListComponent } from './core/product/products-list/products-list.component';
 import { CategoriesListComponent } from './core/category/categories-list/categories-list.component';

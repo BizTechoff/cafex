@@ -22,11 +22,9 @@ import { DynamicServerSideSearchDialogComponent } from './common/dynamic-server-
 import { GridDialogComponent } from './common/grid-dialog/grid-dialog.component';
 import { InputAreaComponent } from './common/input-area/input-area.component';
 import { YesNoQuestionComponent } from './common/yes-no-question/yes-no-question.component';
-import { AgentStoreOrdersComponent } from './core/agent/agent-store-orders/agent-store-orders.component';
 import { OrdersListComponent } from './core/order/orders-list/orders-list.component';
 import { RootParamsComponent } from './core/params/root-params/root-params.component';
 import { ProductsListComponent } from './core/product/products-list/products-list.component';
-import { StoreOrdersComponent } from './core/store/store-orders/store-orders.component';
 import { StoresListComponent } from './core/store/stores-list/stores-list.component';
 import { HomeComponent } from './home/home.component';
 import { AdminGuard, AgentGuard, StoreGuard, TechnicianGuard } from './users/roles';
@@ -35,7 +33,6 @@ import { CategoriesListComponent } from './core/category/categories-list/categor
 import { CategoryCrudComponent } from './core/category/category-crud/category-crud.component';
 import { CertificatesListComponent } from './core/certificate/certificates-list/certificates-list.component';
 import { CertificateCrudComponent } from './core/certificate/certificate-crud/certificate-crud.component';
-import { TechnicalStoreOrdersComponent } from './core/technician/technical-store-orders/technical-store-orders.component';
 import { AgentStoreCertificatesComponent } from './core/agent/agent-store-certificates/agent-store-certificates.component';
 import { OrderItemsComponent } from './core/order/order-items/order-items.component';
 
@@ -51,15 +48,12 @@ import { OrderItemsComponent } from './core/order/order-items/order-items.compon
     StoresListComponent,
     ProductsListComponent,
     OrdersListComponent,
-    StoreOrdersComponent,
     RootParamsComponent,
-    AgentStoreOrdersComponent,
     DynamicServerSideSearchDialogComponent,
     CategoriesListComponent,
     CategoryCrudComponent,
     CertificatesListComponent,
     CertificateCrudComponent,
-    TechnicalStoreOrdersComponent,
     AgentStoreCertificatesComponent,
     OrderItemsComponent
   ],
