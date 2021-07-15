@@ -5,7 +5,7 @@ import { Product, ProductIdColumn } from "../../core/product/product";
 import { validString } from "../../shared/utils";
 import { Roles } from "../roles";
 import { UserId, Users } from "../users";
-
+ 
 @EntityClass
 export class UserProduct extends IdEntity {
     uid = extend(new UserId(this.context, Roles.store, {
