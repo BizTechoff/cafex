@@ -1,10 +1,10 @@
 import { extend, openDialog } from "@remult/angular";
 import { ColumnSettings, Context, EntityClass, IdEntity, LookupColumn } from "@remult/core";
-import { DynamicServerSideSearchDialogComponent } from "../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
-import { Product, ProductIdColumn } from "../core/product/product";
-import { validString } from "../shared/utils";
-import { Roles } from "./roles";
-import { UserId, Users } from "./users";
+import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
+import { Product, ProductIdColumn } from "../../core/product/product";
+import { validString } from "../../shared/utils";
+import { Roles } from "../roles";
+import { UserId, Users } from "../users";
 
 @EntityClass
 export class UserProduct extends IdEntity {
@@ -14,11 +14,12 @@ export class UserProduct extends IdEntity {
                 throw this.uid.defs.caption + ': ' + this.uid.validationError;
             }
         }
-    })).dataControl(dcs => {
-        dcs.hideDataOnInput = true;
-        dcs.clickIcon = 'search';
-        dcs.getValue = () => this.uid.displayValue;
-        dcs.click = async () => {
+    })).dataControl(it => {
+        it.caption = 'בית קפה/טכנאי',
+        it.hideDataOnInput = true;
+        it.clickIcon = 'search';
+        it.getValue = () => this.uid.displayValue;
+        it.click = async () => {
             await openDialog(DynamicServerSideSearchDialogComponent,
                 dlg => dlg.args(Users, {
                     onClear: () => this.uid.value = '',
@@ -52,7 +53,7 @@ export class UserProduct extends IdEntity {
         };
     });
     constructor(private context: Context) {
-        super({
+        super({caption: context.isAllowed(Roles.technician)? 'פריטים' : 'מוצרים',
             name: 'usersProducts',
             allowApiCRUD: Roles.admin,
             allowApiRead: c => c.isSignedIn()

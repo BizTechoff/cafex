@@ -50,7 +50,7 @@ export function addDays(days: number = TODAY, date?: Date, setTimeToZero = true)
     if (days !== 0) {
         result.setTime(result.getTime() + days * 24 * 60 * 60 * 1000);
     }
-    // console.log('result=' + result);
+    //  console.log('result=' + result);
     return result;
 }
 

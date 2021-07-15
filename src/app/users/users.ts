@@ -5,7 +5,7 @@ import { DynamicServerSideSearchDialogComponent } from "../common/dynamic-server
 import { changeDate, FILTER_IGNORE } from '../shared/types';
 import { validString } from "../shared/utils";
 import { Roles } from './roles';
-import { UserProduct } from "./userProduct";
+import { UserProduct } from "./userProduct/userProduct";
 
 @EntityClass
 export class Users extends IdEntity {
@@ -70,6 +70,7 @@ export class Users extends IdEntity {
     constructor(private context: Context) {
 
         super({
+            caption: `בית קפה/טכנאי`,
             name: "Users",
             allowApiRead: context.isSignedIn(),
             allowApiDelete: Roles.admin,

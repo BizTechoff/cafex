@@ -7,7 +7,15 @@ import { FILTER_IGNORE } from '../../shared/types';
 @Component({
   selector: 'app-dynamic-server-side-search-dialog',
   template: `
-<h1 mat-dialog-title>בחירת {{title}}</h1>
+
+<div style="display: flex; flex-direction: row; justify-content: flex-start;">
+  <!-- <button mat-icon-button mat-dialog-close title="סגור" (click)="this.dialogRef.close()">
+      <mat-icon>close</mat-icon>
+  </button> -->
+  <h1 mat-dialog-title>בחירת {{title}}</h1>
+</div>
+
+
 
 <div mat-dialog-content>
     <form (submit)="selectFirst()">
@@ -26,17 +34,19 @@ import { FILTER_IGNORE } from '../../shared/types';
     </mat-nav-list>
 </div>
 <div mat-dialog-actions>
-
-    <button mat-icon-button mat-dialog-close title="נקה בחירה"  (click)="clear()">
-        <mat-icon>clear</mat-icon>
-    </button>
+  <div style="display: flex; flex-direction: row; justify-content: space-between; flex-grow: 1;">
+      <button mat-flat-button title="נקה בחירה"  (click)="clear()">
+          <mat-icon>backspace</mat-icon>
+          <mat-label style="padding: 7px;">נקה בחירה</mat-label>
+      </button>
+  </div>
 </div>    `,
   styles: []
 })
 export class DynamicServerSideSearchDialogComponent implements OnInit {
 
 
-  constructor(private context: Context, private busy: BusyService, private dialogRef: MatDialogRef<any>) { }
+  constructor(private context: Context, private busy: BusyService, public dialogRef: MatDialogRef<any>) { }
   items: Entity[] = [];
   ngOnInit() {
     this.loadProducts();
@@ -44,9 +54,9 @@ export class DynamicServerSideSearchDialogComponent implements OnInit {
   async loadProducts() {
     this.items = await this.entityContext.find({
 
-      where:[this._args.where, p =>
-          this.searchString.value ? this._args.searchColumn(p).contains(this.searchString)
-            : FILTER_IGNORE,
+      where: [this._args.where, p =>
+        this.searchString.value ? this._args.searchColumn(p).contains(this.searchString)
+          : FILTER_IGNORE,
       ],
       orderBy: p => [{ column: this._args.searchColumn(p) }],
     });

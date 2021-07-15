@@ -7,7 +7,7 @@
             <div *ngIf="!this.readonly" style="width: 100%; padding-top: 3.5px;">
                 <button style="width: 100%;" mat-raised-button color='primary' (click)="addOrderItem()">
                     <mat-icon>add</mat-icon>
-                    <mat-label style="padding-right: 10px;">הוספת שורה חדשה</mat-label>
+                    <mat-label style="padding-right: 10px;">{{ isTechnician() ? 'הוספת פריט חדש' : 'הוספת מוצר חדש' }}</mat-label>
                 </button>
             </div>
         </div>

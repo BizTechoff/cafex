@@ -27,18 +27,19 @@ export class OrdersListComponent implements OnInit {
     }
   });
   store = extend(new UserId(this.context, Roles.store, {
-    caption: 'בחירת בית קפה',
+    caption: this.isStore()? 'בית קפה' : 'בחירת בית קפה',
     valueChange: async () => {
       await this.saveUserDefaults();
       await this.refresh();
     }
   }))
-    .dataControl(dcs => {
-      dcs.hideDataOnInput = true;
-      dcs.clickIcon = 'search';
-      dcs.getValue = () => this.store.item.name;
-      dcs.readOnly = () => this.isStore();
-      dcs.click = async () => {
+    .dataControl(it => {
+      it.cssClass = 'cfx-font-bold',
+      it.hideDataOnInput = true;
+      it.clickIcon = 'search';
+      it.getValue = () => this.store.item.name;
+      it.readOnly = () => this.isStore();
+      it.click = async () => {
         await openDialog(DynamicServerSideSearchDialogComponent,
           dlg => dlg.args(Users, {
             onClear: () => this.store.value = '',
@@ -78,9 +79,9 @@ export class OrdersListComponent implements OnInit {
         this.isStore() ? undefined : { column: cur.uid, readOnly: o => !o.isNew(), width: '95' },
         { column: cur.date, readOnly: o => !o.isNew(), width: '80' },
         { column: cur.orderNum, readOnly: o => !o.isNew(), width: '80' },
-        this.isStore() ? undefined : { column: cur.worker, readOnly: o => !o.isNew(), width: '80' },
-        { column: this.count, readOnly: o => true, getValue: o => o.getCount(), hideDataOnInput: true, width: '100', allowClick: (o) => false },
-        { column: cur.status, readOnly: o => true, width: '80' }
+        { column: cur.worker, readOnly: o => !o.isNew(), width: '80' }, //this.isStore() ? undefined : { column: cur.worker, readOnly: o => !o.isNew(), width: '80' },
+        { column: cur.status, readOnly: o => true, width: '80' },
+        { column: this.count, readOnly: o => true, getValue: o => o.getCount(), hideDataOnInput: true, width: '100', allowClick: (o) => false }
       ],
       rowButtons: [
         {
@@ -162,6 +163,9 @@ export class OrdersListComponent implements OnInit {
   isAgent() {
     return this.context.isAllowed(Roles.agent);
   }
+  isTechnician() {
+    return this.context.isAllowed(Roles.technician);
+  }
 
   async closeOrder(o: Order) {
     let yes = await this.dialog.yesNoQuestion(`לסגור הזמנה ${o.orderNum.value}?`);
@@ -176,13 +180,15 @@ export class OrdersListComponent implements OnInit {
   async addOrder() {
     let order = this.context.for(Order).create();
     order.uid.value = this.isStore() ? this.context.user.id : this.store.value;
+    order.date.value = addDays();
     await openDialog(InputAreaComponent,
       it => it.args = {
-        title: 'הזמנה חדשה',
+        title: this.isTechnician() ? 'קריאת שירות חדשה' : 'הזמנה חדשה',
         columnSettings: () => [
           { column: order.uid, visible: () => this.store.value ? false : true, readOnly: () => this.isStore() },
           order.date,
-          { column: order.worker, visible: () => this.isStore(), readOnly: () => !this.isStore() }
+          { column: order.worker, visible: () => this.isStore(), readOnly: () => !this.isStore() },
+          order.remark
         ],
         ok: async () => {
           await order.save();
@@ -217,6 +223,7 @@ export class OrdersListComponent implements OnInit {
       copy.uid.value = o.uid.value;
       copy.date.value = addDays();
       copy.time.value = addTime();
+      copy.remark.value = o.remark.value;
       await copy.save();
       for await (const oi of this.context.for(OrderItem).iterate({
         where: cur => cur.oid.isEqualTo(o.id)
@@ -226,6 +233,7 @@ export class OrdersListComponent implements OnInit {
         itm.oid.value = copy.id.value;
         itm.pid.value = oi.pid.value;
         itm.quntity.value = oi.quntity.value;
+        // itm.re
         await itm.save();
       }
       await this.showOrderItems(copy);

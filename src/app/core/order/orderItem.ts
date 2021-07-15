@@ -3,7 +3,7 @@ import { Context, EntityClass, IdEntity, NumberColumn, StringColumn } from "@rem
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
 import { validNumber, validString } from "../../shared/utils";
 import { Roles } from "../../users/roles";
-import { UserProduct, UserProductIdColumn } from "../../users/userProduct";
+import { UserProduct, UserProductIdColumn } from "../../users/userProduct/userProduct";
 import { ProductIdColumn } from "../product/product";
 import { Order, OrderIdColumn } from "./order";
 
@@ -20,7 +20,7 @@ export class OrderItem extends IdEntity {
             }
         }
     })).dataControl(dcs => {
-        dcs.width = '400';
+        // dcs.width = '400';
         dcs.hideDataOnInput = true;
         dcs.clickIcon = 'search';
         dcs.getValue = () => this.pid.displayValue;

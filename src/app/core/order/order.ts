@@ -143,9 +143,8 @@ export class OrderIdColumn extends LookupColumn<Order> {
 }
 
 export class OrderStatus {
-    static closed = new OrderStatus('סגורה');
-    // static working = new OrderStatus();
     static open = new OrderStatus('פתוחה');
+    static closed = new OrderStatus('סופקה');
     constructor(caption = '') { this.caption = caption; }
     id: string;
     caption: string;

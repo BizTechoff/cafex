@@ -5,9 +5,10 @@ import { DialogService } from '../../../common/dialog';
 import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
 import { Roles } from '../../../users/roles';
-import { UserProduct } from '../../../users/userProduct';
+import { UserProduct } from '../../../users/userProduct/userProduct';
 import { OrderItem } from '../../order/orderItem';
 import { Product } from '../product';
+import { ProductUsersComponent } from '../product-users/product-users.component';
 
 @Component({
   selector: 'app-products-list',
@@ -96,21 +97,28 @@ export class ProductsListComponent implements OnInit {
       }
     }
   }
- 
+
   async showUsers(pid: string, name?: string) {
-    await openDialog(GridDialogComponent, gd => gd.args = {
-      title: `משתמשים משוייכים ל- ${name}`,
-      settings: new GridSettings(this.context.for(UserProduct), {
-        where: cur => cur.pid.isEqualTo(pid),
-        newRow: cur => cur.pid.value = pid,
-        allowCRUD: this.context.isSignedIn(),
-        numOfColumnsInGrid: 10,
-        columnSettings: cur => [
-          { column: cur.uid }
-        ]
-      }),
-      ok: () => { }
-    })
+
+    let changed = await openDialog(ProductUsersComponent,
+      it => it.args = { in: { pid: pid, name: name } },
+      it => it ? it.args.out.changed : false);
+    if (changed) { 
+      await this.refresh();
+    }
+    // await openDialog(GridDialogComponent, gd => gd.args = {
+    //   title: `משתמשים משוייכים ל- ${name}`,
+    //   settings: new GridSettings(this.context.for(UserProduct), {
+    //     where: cur => cur.pid.isEqualTo(pid),
+    //     newRow: cur => cur.pid.value = pid,
+    //     allowCRUD: this.context.isSignedIn(),
+    //     numOfColumnsInGrid: 10,
+    //     columnSettings: cur => [
+    //       { column: cur.uid }
+    //     ]
+    //   }),
+    //   ok: () => { }
+    // })
   }
 
 }

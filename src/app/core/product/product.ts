@@ -1,6 +1,7 @@
 import { extend, openDialog } from "@remult/angular";
 import { ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, StringColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
+import { Roles } from "../../users/roles";
 import { Category, CategoryIdColumn } from "../category/category";
 import { CategoryItem, CategoryItemIdColumn } from "../category/categoryItem";
 
@@ -58,7 +59,7 @@ export class Product extends IdEntity {
 export class ProductIdColumn extends LookupColumn<Product> {
     constructor(context: Context, settings?: ColumnSettings<string>) {
         super(context.for(Product), {
-            caption: 'מוצר',
+            caption: context.isAllowed(Roles.technician) ? 'פריט' : 'מוצר',
             displayValue: () => this.item.name.value
             , ...settings
         });

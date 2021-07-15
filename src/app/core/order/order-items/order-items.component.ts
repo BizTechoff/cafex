@@ -4,6 +4,7 @@ import { GridSettings, openDialog } from '@remult/angular';
 import { Context } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
+import { Roles } from '../../../users/roles';
 import { Order, OrderStatus } from '../order';
 import { OrderItem } from '../orderItem';
 
@@ -25,7 +26,7 @@ export class OrderItemsComponent implements OnInit {
       allowCRUD: false,
       numOfColumnsInGrid: 10,
       columnSettings: cur => [
-        { column: cur.pid, width: '200', readOnly: this.readonly },
+        { column: cur.pid, width: '170', readOnly: this.readonly },
         { column: cur.quntity, width: '70', readOnly: this.readonly }
       ],
       rowButtons: [
@@ -45,7 +46,7 @@ export class OrderItemsComponent implements OnInit {
       let o = await this.context.for(Order).findId(this.args.in.oid);
       if (o) {
         this.readonly = o.status.value === OrderStatus.closed;
-        console.log('this.readonly='+this.readonly);
+        // console.log('this.readonly='+this.readonly);
         this.orderNum = o.orderNum.value;
 
         if (!this.readonly) {
@@ -61,6 +62,10 @@ export class OrderItemsComponent implements OnInit {
     }
   }
 
+  isTechnician(){
+    return this.context.isAllowed(Roles.technician);
+  }
+
   async refresh() {
     await this.orderItems.reloadData();
   }
@@ -74,8 +79,9 @@ export class OrderItemsComponent implements OnInit {
     oi.oid.value = this.args.in.oid;
     let ok = await openDialog(InputAreaComponent,
       it => it.args = {
-        title: `הוספת מוצר להזמנה ${this.orderNum}`,
-        columnSettings: () => [oi.pid, oi.quntity],
+        title: `הוספת ${this.isTechnician()?'פריט':'מוצר'} להזמנה ${this.orderNum}`,
+        columnSettings: () => [
+          oi.pid, oi.quntity],
         ok: async () => {
           await oi.save();
           this.args.out.changed = true;
@@ -87,11 +93,11 @@ export class OrderItemsComponent implements OnInit {
   }
 
   async deleteOrderItem(oi: OrderItem) {
-    let yes = await this.dialog.confirmDelete(`השורה הזו מההזמנה`);
+    let yes = await this.dialog.confirmDelete(`הפריט הזה מההזמנה`);
     if (yes) {
       await oi.delete();
       await this.refresh();
-      await this.dialog.info(`שורת ההזמנה נמחקה`);
+      await this.dialog.info(`פריט נמחק`);
     }
   }
 }

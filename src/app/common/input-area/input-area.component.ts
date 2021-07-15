@@ -54,7 +54,6 @@ export class InputAreaComponent implements OnInit {
   async confirm() {
     if (this.args.validate) {
       await this.args.validate();
-
     }
     await this.args.ok();
     this.ok = true;

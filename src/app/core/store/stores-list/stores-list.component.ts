@@ -5,7 +5,8 @@ import { DialogService } from '../../../common/dialog';
 import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
 import { WIDTH_COLUMN_SHORT, WIDTH_COLUMN_SHORT_MINUS } from '../../../shared/types';
 import { Roles } from '../../../users/roles';
-import { UserProduct } from '../../../users/userProduct';
+import { UserProductsComponent } from '../../../users/userProduct/user-products/user-products.component';
+import { UserProduct } from '../../../users/userProduct/userProduct';
 import { Users } from '../../../users/users';
 
 @Component({
@@ -49,6 +50,10 @@ export class StoresListComponent implements OnInit {
   ngOnInit() {
   }
 
+  async resfresh() {
+    await this.stores.reloadData();
+  }
+
   async deleteStore(u: Users) {
     let count = await this.context.for(UserProduct).count(cur => cur.uid.isEqualTo(u.id));
     if (count > 0) {
@@ -63,22 +68,15 @@ export class StoresListComponent implements OnInit {
   }
 
   async showProducts(uid: string, name?: string) {
-    if (!(name && name.length > 0)) {
+    if (name && name.length > 0 ? false : true) {
       name = 'אינשם';
     }
-    await openDialog(GridDialogComponent, gd => gd.args = {
-      title: `מוצרים משוייכים ל- ${name}`,
-      settings: new GridSettings(this.context.for(UserProduct), {
-        where: cur => cur.uid.isEqualTo(uid),
-        newRow: cur => cur.uid.value = uid,
-        allowCRUD: this.context.isSignedIn(),
-        numOfColumnsInGrid: 10,
-        columnSettings: cur => [
-          { column: cur.pid, width: '400' }
-        ],
-      }),
-      ok: () => { }
-    })
+    let changed = await openDialog(UserProductsComponent,
+      it => it.args = { in: { uid: uid, name: name } },
+      it => it ? it.args.out.changed : false);
+    if (changed) {
+      await this.resfresh();
+    }
   }
 
 }

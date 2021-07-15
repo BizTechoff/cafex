@@ -71,7 +71,7 @@ export class GridDialogComponent implements OnInit {
     if (!b.visible)
       return true;
     return b.visible();
-    return true;
+    // return true;
   }
 
 
