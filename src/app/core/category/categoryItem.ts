@@ -19,6 +19,7 @@ export class CategoryItem extends IdEntity {
     });
     constructor(private context: Context) {
         super({
+            caption: 'קטגוריה משנית',
             name: 'categoriesItems',
             allowApiCRUD: Roles.admin,
             allowApiRead: c => c.isSignedIn(),

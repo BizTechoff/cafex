@@ -19,9 +19,9 @@ export class ProductUsersComponent implements OnInit {
   readonly = false;
 
   users = new GridSettings(this.context.for(UserProduct), {
-    where: cur => cur.pid.isEqualTo(this.args.in.pid),
+    where: cur => cur.cid.isEqualTo(this.args.in.pid),
     orderBy: cur => [cur.uid],
-    newRow: cur => cur.pid.value = this.args.in.pid,
+    newRow: cur => cur.cid.value = this.args.in.pid,
     allowCRUD: false,
     numOfColumnsInGrid: 10,
     columnSettings: cur => [
@@ -59,7 +59,7 @@ export class ProductUsersComponent implements OnInit {
 
   async addUserProduct() {
     let add = this.context.for(UserProduct).create();
-    add.pid.value = this.args.in.pid;
+    add.cid.value = this.args.in.pid;
     let changed = await openDialog(InputAreaComponent,
       it => it.args = {
         title: 'בחר משתמש לשיוך',

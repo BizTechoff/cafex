@@ -30,22 +30,22 @@ export class UserProduct extends IdEntity {
             );
         };
     });
-    pid = extend(new ProductIdColumn(this.context, {
+    cid = extend(new ProductIdColumn(this.context, {
         caption: 'מוצר',
         validate: () => {
-            if (!validString(this.pid, { notNull: true, minLength: 2 })) {
-                throw this.pid.defs.caption + ': ' + this.pid.validationError;
+            if (!validString(this.cid, { notNull: true, minLength: 2 })) {
+                throw this.cid.defs.caption + ': ' + this.cid.validationError;
             }
         }
     })).dataControl(dcs => {
         dcs.hideDataOnInput = true;
         dcs.clickIcon = 'search';
-        dcs.getValue = () => this.pid.displayValue;
+        dcs.getValue = () => this.cid.displayValue;
         dcs.click = async () => {
             await openDialog(DynamicServerSideSearchDialogComponent,
                 dlg => dlg.args(Product, {
-                    onClear: () => this.pid.value = '',
-                    onSelect: cur => this.pid.value = cur.id.value,
+                    onClear: () => this.cid.value = '',
+                    onSelect: cur => this.cid.value = cur.id.value,
                     searchColumn: cur => cur.name//,
                     // where: (cur) => cur.uid.item.store.isEqualTo(true)// cur.uid.isEqualTo(this.uid)
                 })
@@ -65,7 +65,7 @@ export class UserProductIdColumn extends LookupColumn<UserProduct> {
     constructor(context: Context, settings?: ColumnSettings<string>) {
         super(context.for(UserProduct), {
             caption: 'מוצר',
-            displayValue: () => this.item.pid.displayValue,
+            displayValue: () => this.item.cid.displayValue,
             ...settings
         });
         extend(this).dataControl(dcs => {
@@ -77,7 +77,7 @@ export class UserProductIdColumn extends LookupColumn<UserProduct> {
                     dlg => dlg.args(UserProduct, {
                         onClear: () => this.value = '',
                         onSelect: cur => this.value = cur.id.value,
-                        searchColumn: cur => cur.pid
+                        searchColumn: cur => cur.cid
                     })
                 );
             };
@@ -92,7 +92,7 @@ export class ProductUserIdColumn extends LookupColumn<UserProduct> {
     constructor(context: Context, settings?: ColumnSettings<string>) {
         super(context.for(UserProduct), {
             caption: 'משתמש',
-            displayValue: () => this.item.pid.displayValue,
+            displayValue: () => this.item.cid.displayValue,
             ...settings
         });
         extend(this).dataControl(dcs => {

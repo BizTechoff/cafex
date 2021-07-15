@@ -167,7 +167,7 @@ export class AgentStoreCertificatesComponent implements OnInit {
         allowCRUD: this.context.isSignedIn(),
         numOfColumnsInGrid: 10,
         columnSettings: cur => [
-          { column: cur.pid, width: '400' },
+          { column: cur.pid, width: '250' },
           cur.quantity,
           cur.quantitySent,
           cur.quantityLeft,

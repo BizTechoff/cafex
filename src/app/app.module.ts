@@ -37,8 +37,9 @@ import { AgentStoreCertificatesComponent } from './core/agent/agent-store-certif
 import { OrderItemsComponent } from './core/order/order-items/order-items.component';
 import { UserProductsComponent } from './users/userProduct/user-products/user-products.component';
 import { ProductUsersComponent } from './core/product/product-users/product-users.component';
+import { CategoryItemsComponent } from './core/category/category-items/category-items.component';
  
-
+ 
 @NgModule({
   declarations: [
     AppComponent,
@@ -59,7 +60,8 @@ import { ProductUsersComponent } from './core/product/product-users/product-user
     AgentStoreCertificatesComponent,
     OrderItemsComponent,
     UserProductsComponent,
-    ProductUsersComponent
+    ProductUsersComponent,
+    CategoryItemsComponent
   ],
   imports: [
     BrowserModule,
@@ -83,6 +85,6 @@ import { ProductUsersComponent } from './core/product/product-users/product-user
   providers: [DialogService, AdminGuard, TechnicianGuard, AgentGuard, StoreGuard],
   bootstrap: [AppComponent],
   entryComponents: [YesNoQuestionComponent, InputAreaComponent, GridDialogComponent, DynamicServerSideSearchDialogComponent,
-    OrderItemsComponent, UserProductsComponent, ProductUsersComponent]
+    OrderItemsComponent, UserProductsComponent, ProductUsersComponent, CategoryItemsComponent]
 })
 export class AppModule { }

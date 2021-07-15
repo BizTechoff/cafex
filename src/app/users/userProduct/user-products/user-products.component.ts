@@ -23,7 +23,7 @@ export class UserProductsComponent implements OnInit {
     allowCRUD: false,
     numOfColumnsInGrid: 10,
     columnSettings: cur => [
-      { column: cur.pid, width: '400' }
+      { column: cur.cid, width: '250' }
     ],
     rowButtons: [
       {
@@ -61,7 +61,7 @@ export class UserProductsComponent implements OnInit {
     let changed = await openDialog(InputAreaComponent,
       it => it.args = {
         title: 'בחר מוצר לשיוך',
-        columnSettings: () => [add.pid],
+        columnSettings: () => [{ column: add.cid, width: '' }],
         ok: async () => {
           await add.save();
           this.args.out.changed = true;

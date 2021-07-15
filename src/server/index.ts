@@ -26,9 +26,18 @@ async function startup() {
         let database = new SqlDatabase(new PostgresDataProvider(pool));
         await verifyStructureOfAllEntities(database);
         dataProvider = database;
+        // findorcreate orderNum serial restart at 1000.
         await database.execute("alter table orders add column if not exists ordernum serial");
+        let result = await database.execute("SELECT last_value FROM orders_ordernum_seq");
+        if (result && result.rows && result.rows.length > 0) {
+            let count = parseInt(result.rows[0].last_value);
+            if (count < 1000) {
+                await database.execute("SELECT setval('orders_ordernum_seq'::regclass, 1000, false)");
+            }
+        }
+        //https://wiki.postgresql.org/wiki/Fixing_Sequences
     }
-
+ 
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(compression());
@@ -46,7 +55,7 @@ async function startup() {
 
         if (apiKey === process.env.apiKey) {
             let context = await expressBridge.getValidContext(req);
-            let result = ""; 
+            let result = "";
             let r = await Order.getOrders(context);
             for (const o of r) {
                 // for (const key in o) {
