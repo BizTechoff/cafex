@@ -12,6 +12,7 @@ import * as fs from 'fs';
 import { Pool } from 'pg';
 import '../app/app.module';
 import { Order } from '../app/core/order/order';
+import { STARTING_ORDER_NUM } from '../app/shared/types';
 
 async function startup() {
     config(); //loads the configuration from the .env file
@@ -31,13 +32,13 @@ async function startup() {
         let result = await database.execute("SELECT last_value FROM orders_ordernum_seq");
         if (result && result.rows && result.rows.length > 0) {
             let count = parseInt(result.rows[0].last_value);
-            if (count < 1000) {
-                await database.execute("SELECT setval('orders_ordernum_seq'::regclass, 1000, false)");
+            if (count < STARTING_ORDER_NUM) {
+                await database.execute(`SELECT setval('orders_ordernum_seq'::regclass, ${STARTING_ORDER_NUM}, false)`);
             }
         }
         //https://wiki.postgresql.org/wiki/Fixing_Sequences
     }
- 
+
     let app = express();
     app.use(jwt({ secret: process.env.TOKEN_SIGN_KEY, credentialsRequired: false, algorithms: ['HS256'] }));
     app.use(compression());

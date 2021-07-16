@@ -61,7 +61,7 @@ export class CategoryItemsComponent implements OnInit {
     add.cid.value = this.args.in.cid;
     let changed = await openDialog(InputAreaComponent,
       it => it.args = {
-        title: 'הוספת קטגוריה משנית',
+        title: `הוספת קב.משנית ל- ${this.args.in.name}`,
         columnSettings: () => [add.name],
         ok: async () => {
           await add.save();

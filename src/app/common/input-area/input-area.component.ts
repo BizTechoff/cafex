@@ -15,6 +15,7 @@ import { DialogService } from '../dialog';
 export class InputAreaComponent implements OnInit {
   args: {
     title: string,
+    mainButtonText?: string,
     helpText?: string,
     columnSettings?: () => DataArealColumnSetting<any>[];
     areaSettings?: IDataAreaSettings,

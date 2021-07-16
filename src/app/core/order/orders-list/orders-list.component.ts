@@ -243,7 +243,7 @@ export class OrdersListComponent implements OnInit {
 
   async showOrderItems(o: Order) {
     let changed = await openDialog(OrderItemsComponent,
-      it => it.args = { in: { oid: o.id.value } },
+      it => it.args = { in: { oid: o.id.value, oNum: o.orderNum.value } },
       it => it && it.args.out ? it.args.out.changed : false);
     if (changed) {
       await this.refresh();

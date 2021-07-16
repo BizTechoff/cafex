@@ -15,7 +15,7 @@ import { OrderItem } from '../orderItem';
 })
 export class OrderItemsComponent implements OnInit {
 
-  args: { in: { oid: string }, out?: { changed: boolean } } = { in: { oid: '' }, out: { changed: false } };
+  args: { in: { oid: string, oNum: number }, out?: { changed: boolean } } = { in: { oid: '', oNum: 0 }, out: { changed: false } };
   readonly = false;
   orderNum = 0;
 
@@ -62,7 +62,7 @@ export class OrderItemsComponent implements OnInit {
     }
   }
 
-  isTechnician(){
+  isTechnician() {
     return this.context.isAllowed(Roles.technician);
   }
 
@@ -70,20 +70,19 @@ export class OrderItemsComponent implements OnInit {
     await this.orderItems.reloadData();
   }
 
-  close(){
+  close() {
     this.dialogRef.close();
   }
 
   async addOrderItem() {
-    let oi = this.context.for(OrderItem).create();
-    oi.oid.value = this.args.in.oid;
+    let add = this.context.for(OrderItem).create();
+    add.oid.value = this.args.in.oid;
     let ok = await openDialog(InputAreaComponent,
       it => it.args = {
-        title: `הוספת ${this.isTechnician()?'פריט':'מוצר'} להזמנה ${this.orderNum}`,
-        columnSettings: () => [
-          oi.pid, oi.quntity],
+        title: this.isTechnician() ? `הוספת פריט לקריאת שירות  ${this.orderNum}`: `הוספת מוצר להזמנה  ${this.orderNum}`,
+        columnSettings: () => [add.pid, add.quntity],
         ok: async () => {
-          await oi.save();
+          await add.save();
           this.args.out.changed = true;
           await this.refresh();
         }

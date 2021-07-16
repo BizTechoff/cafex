@@ -14,7 +14,7 @@ import { CategoryItem } from '../categoryItem';
 })
 export class CategoriesListComponent implements OnInit {
 
-  count = new NumberColumn({ caption: 'משניות' });
+  count = new NumberColumn({ caption: 'קב.משניות' });
   categories = new GridSettings<Category>(this.context.for(Category),
     {
       orderBy: cur => cur.name,

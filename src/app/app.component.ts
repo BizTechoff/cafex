@@ -33,7 +33,8 @@ export class AppComponent implements OnInit {
     let user = new StringColumn({ caption: "משתמש" });
     let password = new PasswordColumn();
     openDialog(InputAreaComponent, i => i.args = {
-      title: "כניסה",
+      title: 'פרטי כניסה',
+      mainButtonText:'כניסה',
       columnSettings: () => [
         user,
         password
