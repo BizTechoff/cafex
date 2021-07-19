@@ -83,6 +83,7 @@ export class Users extends IdEntity {
             ],
             saving: async () => {
                 if (context.onServer) {
+                    this.name.value = this.name.value.trim();//remult check if changed
 
                     if (this.isNew()) {
                         this.createDate.value = new Date();

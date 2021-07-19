@@ -14,7 +14,7 @@ export class OrderItem extends IdEntity {
     upid = new UserProductIdColumn(this.context, { caption: 'Product' });
     oid = new OrderIdColumn(this.context, { caption: 'הזמנה' });
     pid = extend(new ProductIdColumn(this.context, {
-        caption: 'מוצר',
+        caption: 'פריט',
         displayValue: () => this.pid.item.name.value,
         validate: () => {
             validString(this.pid, { notNull: true, minLength: 2 });
@@ -41,7 +41,7 @@ export class OrderItem extends IdEntity {
         };
     });
     // pid = new ProductIdColumn(this.context, {
-    //     caption: 'מוצר',
+    //     caption: 'פריט',
     //     validate: () => {
     //         if (!validString(this.pid, { notNull: true, minLength: 2 })) {
     //             throw this.pid.defs.caption + ': ' + this.pid.validationError;

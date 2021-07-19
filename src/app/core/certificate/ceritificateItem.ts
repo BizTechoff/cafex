@@ -8,7 +8,7 @@ import { CeritificateIdColumn } from "./certificate";
 export class CeritificateItem extends IdEntity {
     cid = new CeritificateIdColumn(this.context,{caption: 'תעודה'});
     pid = new ProductIdColumn(this.context, {
-        caption: 'מוצר',
+        caption: 'פריט',
         validate: () => {
             validString(this.pid, { notNull: true, minLength: 2 });
         }

@@ -40,11 +40,11 @@ export class ProductUsersComponent implements OnInit {
 
   async ngOnInit() {
     if (!this.args) {
-      throw 'לא צויין המוצר';
+      throw 'לא צויין הפריט';
     }
     let p = await this.context.for(Product).findId(this.args.in.pid);
     if (!p) {
-      throw 'לא נמצא המוצר';
+      throw 'לא נמצא הפריט';
     }
     this.args.out = { changed: false };
   }

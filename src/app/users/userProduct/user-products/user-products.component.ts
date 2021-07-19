@@ -60,7 +60,7 @@ export class UserProductsComponent implements OnInit {
     add.uid.value = this.args.in.uid;
     let changed = await openDialog(InputAreaComponent,
       it => it.args = {
-        title: 'בחר מוצר לשיוך',
+        title: 'בחר פריט לשיוך',
         columnSettings: () => [{ column: add.cid, width: '' }],
         ok: async () => {
           await add.save();
@@ -74,7 +74,7 @@ export class UserProductsComponent implements OnInit {
   }
 
   async deleteUserProduct(up: UserProduct) {
-    let yes = await this.dialog.yesNoQuestion(`לבטל שיוך מוצר זה מ${this.args.in.name}`);
+    let yes = await this.dialog.yesNoQuestion(`לבטל שיוך פריט זה מ${this.args.in.name}`);
     if (yes) {
       await up.delete();
       await this.refresh();

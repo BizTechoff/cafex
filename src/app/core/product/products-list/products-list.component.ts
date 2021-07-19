@@ -39,13 +39,13 @@ export class ProductsListComponent implements OnInit {
         },
         { textInMenu: '________________________' },
         {
-          textInMenu: 'ערוך מוצר',
+          textInMenu: 'ערוך פריט',
           icon: 'edit',
           click: async (cur) => await this.editProduct(cur.id.value),
           visible: cur => !cur.isNew()
         },
         {
-          textInMenu: 'מחק מוצר',
+          textInMenu: 'מחק פריט',
           icon: 'delete',
           click: async (cur) => await this.deleteProduct(cur.id.value),
           visible: cur => !cur.isNew()
@@ -65,7 +65,7 @@ export class ProductsListComponent implements OnInit {
     let p = await this.context.for(Product).findId(pid);
     if (p) {
       await openDialog(InputAreaComponent, thus => thus.args = {
-        title: `עריכת מוצר: ${p.name.value}`,
+        title: `עריכת פריט: ${p.name.value}`,
         columnSettings: () => [
           p.cid,
           p.ciid,
@@ -84,12 +84,12 @@ export class ProductsListComponent implements OnInit {
   async deleteProduct(pid: string) {
     let count = await this.context.for(OrderItem).count(cur => cur.pid.isEqualTo(pid));
     if (count > 0) {
-      await this.dialog.error(` נמצאו ${count} שורות להזמנה, לא ניתן למחוק מוצר זה`);
+      await this.dialog.error(` נמצאו ${count} שורות להזמנה, לא ניתן למחוק פריט זה`);
     }
     else {
       let p = await this.context.for(Product).findId(pid);
       if (p) {
-        let yes = await this.dialog.confirmDelete(` מוצר ${p.name.value}`);
+        let yes = await this.dialog.confirmDelete(` פריט ${p.name.value}`);
         if (yes) {
           await p.delete();
           await this.refresh();

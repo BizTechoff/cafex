@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { BusyService } from '@remult/angular';
-import { AndFilter, Context, Entity, EntityWhereItem, SpecificEntityHelper, StringColumn } from '@remult/core';
+import { Context, Entity, EntityWhereItem, SpecificEntityHelper, StringColumn } from '@remult/core';
 import { FILTER_IGNORE } from '../../shared/types';
 
 @Component({
@@ -15,32 +15,33 @@ import { FILTER_IGNORE } from '../../shared/types';
   <h1 mat-dialog-title>בחירת {{title}}</h1>
 </div>
 
-
-
-<div mat-dialog-content>
-    <form (submit)="selectFirst()">
-        <mat-form-field>
-            <input matInput [(ngModel)]="searchString.value" [ngModelOptions]="{standalone: true}"> 
-        </mat-form-field>
-    </form>
-    <mat-nav-list role="list" *ngIf="items">
-        <ng-container *ngFor="let o of items">
-            <mat-list-item role="listitem" style="height:36px"
-                 (click)="select(o)">
-                {{_args.searchColumn(o).value}}
-            </mat-list-item>
-            <mat-divider ></mat-divider>
-        </ng-container>
-    </mat-nav-list>
-</div>
-<div mat-dialog-actions>
-  <div style="display: flex; flex-direction: row; justify-content: space-between; flex-grow: 1;">
-      <button mat-flat-button title="נקה בחירה"  (click)="clear()">
-          <mat-icon>backspace</mat-icon>
-          <mat-label style="padding: 7px;">נקה בחירה</mat-label>
-      </button>
+<mat-label *ngIf="items.length === 0">לא נמצאו רשומות לבחירה</mat-label>
+<div *ngIf="items.length > 0">
+  <div mat-dialog-content>
+      <form (submit)="selectFirst()">
+          <mat-form-field>
+              <input matInput [(ngModel)]="searchString.value" [ngModelOptions]="{standalone: true}"> 
+          </mat-form-field>
+      </form>
+      <mat-nav-list role="list" *ngIf="items">
+          <ng-container *ngFor="let o of items">
+              <mat-list-item role="listitem" style="height:36px"
+                  (click)="select(o)">
+                  {{_args.searchColumn(o).value}}
+              </mat-list-item>
+              <mat-divider ></mat-divider>
+          </ng-container>
+      </mat-nav-list>
   </div>
-</div>    `,
+  <div mat-dialog-actions>
+    <div style="display: flex; flex-direction: row; justify-content: space-between; flex-grow: 1;">
+        <button mat-flat-button title="נקה בחירה"  (click)="clear()">
+            <mat-icon>backspace</mat-icon>
+            <mat-label style="padding: 7px;">נקה בחירה</mat-label>
+        </button>
+    </div>
+  </div>  
+<div>  `,
   styles: []
 })
 export class DynamicServerSideSearchDialogComponent implements OnInit {

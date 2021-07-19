@@ -80,7 +80,7 @@ export class OrderItemsComponent implements OnInit {
     add.oid.value = this.args.in.oid;
     let ok = await openDialog(InputAreaComponent,
       it => it.args = { 
-        title: this.isTechnician() ? `הוספת פריט לקריאת שירות  ${this.orderNum}`: `הוספת מוצר להזמנה  ${this.orderNum}`,
+        title: this.isTechnician() ? `הוספת פריט לקריאת שירות  ${this.orderNum}`: `הוספת פריט להזמנה  ${this.orderNum}`,
         columnSettings: () => [add.pid, add.quntity, add.remark],
         ok: async () => {
           await add.save();

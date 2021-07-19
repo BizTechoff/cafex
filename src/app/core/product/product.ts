@@ -47,7 +47,7 @@ export class Product extends IdEntity {
 
     constructor(private context: Context) {
         super({
-            caption: 'מוצר',
+            caption: 'פריט',
             name: 'products',
             allowApiCRUD: c => c.isSignedIn(),
             allowApiRead: c => c.isSignedIn()
@@ -58,7 +58,7 @@ export class Product extends IdEntity {
 export class ProductIdColumn extends LookupColumn<Product> {
     constructor(context: Context, settings?: ColumnSettings<string>) {
         super(context.for(Product), {
-            caption: context.isAllowed(Roles.technician) ? 'פריט' : 'מוצר',
+            caption: context.isAllowed(Roles.technician) ? 'פריט' : 'פריט',
             displayValue: () => this.item.name.value
             , ...settings
         });

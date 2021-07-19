@@ -16,7 +16,7 @@ import { Users } from '../../../users/users';
 })
 export class StoresListComponent implements OnInit {
 
-  count = new NumberColumn({ caption: 'מוצרים' });
+  count = new NumberColumn({ caption: 'פריטים' });
   stores = new GridSettings<Users>(this.context.for(Users), {
     where: cur => cur.store.isIn(true),
     orderBy: cur => cur.name,
@@ -30,7 +30,7 @@ export class StoresListComponent implements OnInit {
     ],
     rowButtons: [
       {
-        textInMenu: 'מוצרים משוייכים',
+        textInMenu: 'פריטים משוייכים',
         icon: 'shopping_bag',//await this.showProducts(this.context.user.id, this.context.user.name)
         click: async (cur) => await this.showProducts(cur.id.value, cur.name.value),
         visible: cur => !cur.isNew(),
@@ -57,7 +57,7 @@ export class StoresListComponent implements OnInit {
   async deleteStore(u: Users) {
     let count = await this.context.for(UserProduct).count(cur => cur.uid.isEqualTo(u.id));
     if (count > 0) {
-      await this.dialog.error(` נמצאו ${count} מוצרים, לא ניתן למחוק בית קפה זה`);
+      await this.dialog.error(` נמצאו ${count} פריטים, לא ניתן למחוק בית קפה זה`);
     }
     else {
       let yes = await this.dialog.confirmDelete(`בית הקפה ${u.name.value}`);

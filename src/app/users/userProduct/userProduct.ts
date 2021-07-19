@@ -29,7 +29,7 @@ export class UserProduct extends IdEntity {
         };
     });
     cid = extend(new ProductIdColumn(this.context, {
-        caption: 'מוצר',
+        caption: 'פריט',
         validate: () => {
             validString(this.cid, { notNull: true, minLength: 2 });
         }
@@ -49,7 +49,7 @@ export class UserProduct extends IdEntity {
         };
     });
     constructor(private context: Context) {
-        super({caption: context.isAllowed(Roles.technician)? 'פריטים' : 'מוצרים',
+        super({caption: context.isAllowed(Roles.technician)? 'פריטים' : 'פריטים',
             name: 'usersProducts',
             allowApiCRUD: Roles.admin,
             allowApiRead: c => c.isSignedIn()
@@ -60,7 +60,7 @@ export class UserProduct extends IdEntity {
 export class UserProductIdColumn extends LookupColumn<UserProduct> {
     constructor(context: Context, settings?: ColumnSettings<string>) {
         super(context.for(UserProduct), {
-            caption: 'מוצר',
+            caption: 'פריט',
             displayValue: () => this.item.cid.displayValue,
             ...settings
         });

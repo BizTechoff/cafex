@@ -8,13 +8,13 @@
                     (click)="close()">
                     <mat-icon>close</mat-icon>
                 </button>
-                <h3>מוצרים משוייכים ל- {{ this.args.in.name }}</h3>
+                <h3>פריטים משוייכים ל- {{ this.args.in.name }}</h3>
             </div>
 
             <div *ngIf="!this.readonly" style="width: 100%; padding-top: 3.5px;">
                 <button style="width: 100%;" mat-raised-button color='primary' (click)="addUserProduct()">
                     <mat-icon>add</mat-icon>
-                    <mat-label style="padding-right: 10px;">שיוך מוצר חדש</mat-label>
+                    <mat-label style="padding-right: 10px;">שיוך פריט חדש</mat-label>
                 </button>
             </div>
         </div>

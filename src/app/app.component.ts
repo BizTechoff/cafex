@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Router, Route,  ActivatedRoute } from '@angular/router';
+import { Router, Route, ActivatedRoute } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 
 import { Context, ServerFunction, StringColumn, UserInfo } from '@remult/core';
@@ -34,12 +34,15 @@ export class AppComponent implements OnInit {
     let password = new PasswordColumn();
     openDialog(InputAreaComponent, i => i.args = {
       title: 'פרטי כניסה',
-      mainButtonText:'כניסה',
+      mainButtonText: 'כניסה',
       columnSettings: () => [
         user,
         password
       ],
       ok: async () => {
+        if (user.value) {
+          user.value = user.value.trim();//remult check if changed
+        }
         this.setToken(await AppComponent.signIn(user.value, password.value));
       }
     });
@@ -49,7 +52,7 @@ export class AppComponent implements OnInit {
     let result: UserInfo;
     let u = await context.for(Users).findFirst(h => h.name.isEqualTo(user));
     if (u)
-      if (await u.password.matches(password) ) {
+      if (await u.password.matches(password)) {
         result = {
           id: u.id.value,
           roles: [],
