@@ -106,7 +106,7 @@ export class Users extends IdEntity {
             throw "פעולה לא חוקית";
         await this.password.hashAndSet(password);
         await this.save();
-    }
+    } 
     @ServerMethod({ allowed: context => context.isSignedIn() })
     async updatePassword(password: string) {
         if (this.isNew() || this.id.value != this.context.user.id)
