@@ -1,5 +1,5 @@
 import { extend, openDialog } from "@remult/angular";
-import { ColumnSettings, Context, EntityClass, IdEntity, LookupColumn } from "@remult/core";
+import { ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, StringColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
 import { Product, ProductIdColumn } from "../../core/product/product";
 import { validString } from "../../shared/utils";
@@ -10,9 +10,7 @@ import { UserId, Users } from "../users";
 export class UserProduct extends IdEntity {
     uid = extend(new UserId(this.context, Roles.store, {
         validate: () => {
-            if (!validString(this.uid, { notNull: true, minLength: 3 })) {
-                throw this.uid.defs.caption + ': ' + this.uid.validationError;
-            }
+            validString(this.uid, { notNull: true, minLength: 3 });
         }
     })).dataControl(it => {
         it.caption = 'בית קפה/טכנאי',
@@ -33,9 +31,7 @@ export class UserProduct extends IdEntity {
     cid = extend(new ProductIdColumn(this.context, {
         caption: 'מוצר',
         validate: () => {
-            if (!validString(this.cid, { notNull: true, minLength: 2 })) {
-                throw this.cid.defs.caption + ': ' + this.cid.validationError;
-            }
+            validString(this.cid, { notNull: true, minLength: 2 });
         }
     })).dataControl(dcs => {
         dcs.hideDataOnInput = true;

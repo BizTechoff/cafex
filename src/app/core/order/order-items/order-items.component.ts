@@ -15,8 +15,8 @@ import { OrderItem } from '../orderItem';
 })
 export class OrderItemsComponent implements OnInit {
 
-  args: { in: { oid: string, oNum: number }, out?: { changed: boolean } } = { in: { oid: '', oNum: 0 }, out: { changed: false } };
-  readonly = false;
+  args: { in: { oid: string, oNum: number, autoNew: boolean }, out?: { changed: boolean } } = { in: { oid: '', oNum: 0, autoNew: false }, out: { changed: false } };
+  readonly = true;
   orderNum = 0;
 
   orderItems = new GridSettings(this.context.for(OrderItem),
@@ -27,7 +27,8 @@ export class OrderItemsComponent implements OnInit {
       numOfColumnsInGrid: 10,
       columnSettings: cur => [
         { column: cur.pid, width: '170', readOnly: this.readonly },
-        { column: cur.quntity, width: '70', readOnly: this.readonly }
+        { column: cur.quntity, width: '70', readOnly: this.readonly },
+        { column: cur.remark, readOnly: this.readonly }
       ],
       rowButtons: [
         {
@@ -49,7 +50,7 @@ export class OrderItemsComponent implements OnInit {
         // console.log('this.readonly='+this.readonly);
         this.orderNum = o.orderNum.value;
 
-        if (!this.readonly) {
+        if (!this.readonly && this.args.in.autoNew) {
           let count = await this.context.for(OrderItem).count(cur => cur.oid.isEqualTo(o.id));
           if (count === 0) {
             let changed = await this.addOrderItem();
@@ -78,9 +79,9 @@ export class OrderItemsComponent implements OnInit {
     let add = this.context.for(OrderItem).create();
     add.oid.value = this.args.in.oid;
     let ok = await openDialog(InputAreaComponent,
-      it => it.args = {
+      it => it.args = { 
         title: this.isTechnician() ? `הוספת פריט לקריאת שירות  ${this.orderNum}`: `הוספת מוצר להזמנה  ${this.orderNum}`,
-        columnSettings: () => [add.pid, add.quntity],
+        columnSettings: () => [add.pid, add.quntity, add.remark],
         ok: async () => {
           await add.save();
           this.args.out.changed = true;
@@ -95,6 +96,7 @@ export class OrderItemsComponent implements OnInit {
     let yes = await this.dialog.confirmDelete(`הפריט הזה מההזמנה`);
     if (yes) {
       await oi.delete();
+      this.args.out.changed = true;
       await this.refresh();
       await this.dialog.info(`פריט נמחק`);
     }

@@ -12,9 +12,7 @@ export class Users extends IdEntity {
     name = new StringColumn({
         caption: "שם",
         validate: () => {
-            if (!validString(this.name, { notNull: true, minLength: 3 })) {
-                throw this.name.defs.caption + ': ' + this.name.validationError;
-            }
+            validString(this.name, { notNull: true, minLength: 3 });
         }
     });
     password = new PasswordColumn({
@@ -125,7 +123,7 @@ export class Users extends IdEntity {
         return this.count;
     }
 }
-
+ 
 
 
 export class UserId extends LookupColumn<Users> {

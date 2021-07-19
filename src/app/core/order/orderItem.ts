@@ -17,10 +17,7 @@ export class OrderItem extends IdEntity {
         caption: 'מוצר',
         displayValue: () => this.pid.item.name.value,
         validate: () => {
-            //validString(this.pid, { notNull: true, minLength: 2 });
-            if (!validString(this.pid, { notNull: true, minLength: 2 })) {
-                throw this.pid.defs.caption + ': ' + this.pid.validationError;
-            }
+            validString(this.pid, { notNull: true, minLength: 2 });
         }
     })).dataControl(it => {
         // dcs.width = '400';
@@ -54,13 +51,12 @@ export class OrderItem extends IdEntity {
     quntity = new NumberColumn({
         caption: 'כמות',
         validate: () => {
-            if (!validNumber(this.quntity, { notNull: true, minValue: 1 })) {
-                throw this.quntity.defs.caption + ': ' + this.quntity.validationError;
-            }
+            validNumber(this.quntity, { notNull: true, minValue: 1 });
         }
     });//cur item quantity
     // price = new NumberColumn({ decimalDigits: 2 ,caption: 'מחיר'});//cur item price
 
+    remark = new StringColumn({ caption: 'הערה' });
     created = new DateTimeColumn({ caption: 'נוצר' });
     createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
     modified = new DateTimeColumn({ caption: 'השתנה' });

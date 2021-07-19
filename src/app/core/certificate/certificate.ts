@@ -10,9 +10,7 @@ export class Ceritificate extends IdEntity {
     uid = extend(new UserId(this.context, Roles.store, {
         caption: 'בית קפה',
         validate: () => {
-            if (!validString(this.uid, { notNull: true, minLength: 3 })) {
-                throw this.uid.defs.caption + ': ' + this.uid.validationError;
-            }
+            validString(this.uid, { notNull: true, minLength: 3 });
         } 
     })).dataControl(dcs => {
         dcs.hideDataOnInput = true;

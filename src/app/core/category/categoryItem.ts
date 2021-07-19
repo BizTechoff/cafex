@@ -12,9 +12,7 @@ export class CategoryItem extends IdEntity {
     name = new StringColumn({
         caption: 'שם קבוצה משנית',
         validate: () => {
-            if (!validString(this.name, { notNull: true, minLength: 2 })) {
-                throw this.name.defs.caption + ': ' + this.name.validationError;
-            }
+            validString(this.name, { notNull: true, minLength: 2 });
         }
     });
     constructor(private context: Context) {

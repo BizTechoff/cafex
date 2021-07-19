@@ -10,9 +10,7 @@ export class CeritificateItem extends IdEntity {
     pid = new ProductIdColumn(this.context, {
         caption: 'מוצר',
         validate: () => {
-            if (!validString(this.pid, { notNull: true, minLength: 2 })) {
-                throw this.pid.defs.caption + ': ' + this.pid.validationError;
-            }
+            validString(this.pid, { notNull: true, minLength: 2 });
         }
     }); 
     quantity = new NumberColumn({caption: 'כמות', decimalDigits: 2});

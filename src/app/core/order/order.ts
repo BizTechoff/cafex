@@ -12,9 +12,7 @@ export class Order extends IdEntity {
     uid = extend(new UserId(this.context, Roles.store, {
         caption: 'בית קפה',
         validate: () => {
-            if (!validString(this.uid, { notNull: true, minLength: 3 })) {
-                throw this.uid.defs.caption + ': ' + this.uid.validationError;
-            }
+            validString(this.uid, { notNull: true, minLength: 3 });
         }
     })).dataControl(dcs => {
         dcs.hideDataOnInput = true;
@@ -36,23 +34,25 @@ export class Order extends IdEntity {
         caption: 'תאריך',
         defaultValue: addDays(TODAY, undefined, true),
         validate: () => {
-            if (!validDate(this.date, { notNull: true, minYear: 2000 })) {
-                throw this.date.defs.caption + ': ' + this.date.validationError;
-            }
+            validDate(this.date, { notNull: true, minYear: 2000 });
             if (this.isNew()) {
-                if (!validDate(this.date, { greaterThenToday: true })) {
-                    throw this.date.defs.caption + ': ' + this.date.validationError;
-                }
+                validDate(this.date, { greaterThenToday: true });
             }
+            // if (!validDate(this.date, { notNull: true, minYear: 2000 })) {
+            //     throw this.date.defs.caption + ': ' + this.date.validationError;
+            // }
+            // if (this.isNew()) {
+            //     if (!validDate(this.date, { greaterThenToday: true })) {
+            //         throw this.date.defs.caption + ': ' + this.date.validationError;
+            //     }
+            // }
         }
     });
     worker = new StringColumn({
         caption: 'שם עובד ממלא',
         validate: () => {
             if (this.context.isAllowed(Roles.store)) {
-                if (!validString(this.worker, { notNull: true, minLength: 3 })) {
-                    throw this.worker.defs.caption + ': ' + this.worker.validationError;
-                }
+                validString(this.worker, { notNull: true, minLength: 3 });
             }
         }
     });

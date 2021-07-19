@@ -3,7 +3,6 @@ import { extend, GridSettings, openDialog } from '@remult/angular';
 import { Context, NumberColumn } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { DynamicServerSideSearchDialogComponent } from '../../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component';
-import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
 import { FILTER_IGNORE } from '../../../shared/types';
 import { addDays, addTime } from '../../../shared/utils';
@@ -27,7 +26,7 @@ export class OrdersListComponent implements OnInit {
     }
   });
   store = extend(new UserId(this.context, Roles.store, {
-    caption: this.isStore()? 'בית קפה' : 'בחירת בית קפה',
+    caption: this.isStore() ? 'בית קפה' : 'בחירת בית קפה',
     valueChange: async () => {
       await this.saveUserDefaults();
       await this.refresh();
@@ -35,7 +34,7 @@ export class OrdersListComponent implements OnInit {
   }))
     .dataControl(it => {
       it.cssClass = 'cfx-font-bold',
-      it.hideDataOnInput = true;
+        it.hideDataOnInput = true;
       it.clickIcon = 'search';
       it.getValue = () => this.store.item.name;
       it.readOnly = () => this.isStore();
@@ -70,6 +69,7 @@ export class OrdersListComponent implements OnInit {
           cur.uid.value = this.store.value;
         }
         cur.date.value = addDays();
+        cur.time.value = addTime();
         cur.status.value = OrderStatus.open;
       },
       allowCRUD: false,// this.context.isAllowed(Roles.admin),
@@ -81,7 +81,8 @@ export class OrdersListComponent implements OnInit {
         { column: cur.orderNum, readOnly: o => !o.isNew(), width: '80' },
         { column: cur.worker, readOnly: o => !o.isNew(), width: '80' }, //this.isStore() ? undefined : { column: cur.worker, readOnly: o => !o.isNew(), width: '80' },
         { column: cur.status, readOnly: o => true, width: '80' },
-        { column: this.count, readOnly: o => true, getValue: o => o.getCount(), hideDataOnInput: true, width: '100', allowClick: (o) => false }
+        { column: this.count, readOnly: o => true, getValue: o => o.getCount(), hideDataOnInput: true, width: '100', allowClick: (o) => false },
+        { column: cur.remark, readOnly: o => true }
       ],
       rowButtons: [
         {
@@ -95,7 +96,7 @@ export class OrdersListComponent implements OnInit {
           textInMenu: 'שכפל הזמנה',
           icon: 'content_copy',
           click: async (cur) => await this.copyOrder(cur),
-          visible: cur => !cur.isNew() && cur.status.value === OrderStatus.open && (this.isAgent() || this.isStore())
+          visible: cur => !cur.isNew() && (this.isAgent() || this.isStore())//&& cur.status.value === OrderStatus.open 
         },
         {
           textInMenu: '__________________________',
@@ -181,6 +182,7 @@ export class OrdersListComponent implements OnInit {
     let order = this.context.for(Order).create();
     order.uid.value = this.isStore() ? this.context.user.id : this.store.value;
     order.date.value = addDays();
+    // console.log('order.date.value='+order.date.value);
     await openDialog(InputAreaComponent,
       it => it.args = {
         title: this.isTechnician() ? 'קריאת שירות חדשה' : 'הזמנה חדשה',
@@ -196,7 +198,7 @@ export class OrdersListComponent implements OnInit {
             this.store.value = order.uid.value;
           }
           await this.refresh();
-          await this.showOrderItems(order);
+          await this.showOrderItems(order, true);
         }
       });
     // this.orders.addNewRow();
@@ -224,6 +226,8 @@ export class OrdersListComponent implements OnInit {
       copy.date.value = addDays();
       copy.time.value = addTime();
       copy.remark.value = o.remark.value;
+      copy.worker.value = o.worker.value;
+      copy.status.value = OrderStatus.open;
       await copy.save();
       for await (const oi of this.context.for(OrderItem).iterate({
         where: cur => cur.oid.isEqualTo(o.id)
@@ -233,17 +237,17 @@ export class OrdersListComponent implements OnInit {
         itm.oid.value = copy.id.value;
         itm.pid.value = oi.pid.value;
         itm.quntity.value = oi.quntity.value;
-        // itm.re
+        // itm.remark.value = oi.remark.value;
         await itm.save();
       }
-      await this.showOrderItems(copy);
+      await this.showOrderItems(copy, true);
       await this.dialog.info(`הזמנה ${o.orderNum.value} שוכפלה`);
     }
   }
 
-  async showOrderItems(o: Order) {
+  async showOrderItems(o: Order, isNew = false) {
     let changed = await openDialog(OrderItemsComponent,
-      it => it.args = { in: { oid: o.id.value, oNum: o.orderNum.value } },
+      it => it.args = { in: { oid: o.id.value, oNum: o.orderNum.value, autoNew: isNew } },
       it => it && it.args.out ? it.args.out.changed : false);
     if (changed) {
       await this.refresh();

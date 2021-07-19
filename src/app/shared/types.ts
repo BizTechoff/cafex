@@ -1,4 +1,4 @@
-import { ColumnSettings, DateTimeColumn, Filter, StringColumn } from "@remult/core";
+import { ColumnSettings, DateColumn, DateTimeColumn, Filter, StringColumn } from "@remult/core";
 import { rootParams } from "../core/params/root-params/rootParams";
 import { addDays } from "./utils";
 
@@ -9,7 +9,7 @@ export const STARTING_ORDER_NUM: number = 1000;
 export const WIDTH_COLUMN_SHORT_PLUS: string = '175';
 export const WIDTH_COLUMN_SHORT: string = '150';
 export const WIDTH_COLUMN_SHORT_MINUS: string = '80';
-export const FILTER_IGNORE:Filter = new Filter(x => { return true; });
+export const FILTER_IGNORE: Filter = new Filter(x => { return true; });
 
 export const sharedParams = new rootParams({ date: addDays() });
 
@@ -29,6 +29,14 @@ export class TimeColumn extends StringColumn {
     return !this.value || this.value.length === 0 || this.value === TimeColumn.Empty;
   }
 }
+
+// export class DateColumnEx extends DateColumn {
+//   constructor(options?: ColumnSettings<Date>) {
+//     super({
+//       ...options
+//     });
+//   }
+// }
 
 export interface paramOptions {
   date?: Date

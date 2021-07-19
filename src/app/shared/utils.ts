@@ -45,12 +45,16 @@ export function addDays(days: number = TODAY, date?: Date, setTimeToZero = true)
         result = new Date();
     }
     if (setTimeToZero) {
-        result = new Date(result.getFullYear(), result.getMonth(), result.getDate());
+        let d = new Date(result.getFullYear(), result.getMonth(), result.getDate());
+        result.setTime(d.getTime());
     }
     if (days !== 0) {
         result.setTime(result.getTime() + days * 24 * 60 * 60 * 1000);
     }
-    //  console.log('result=' + result);
+    // console.log('result=' + result);
+    // let dc = new DateColumn();
+    // dc.value = result;
+    // console.log('dc=' + dc.value);
     return result;
 }
 
@@ -133,13 +137,13 @@ export function validString(col: StringColumn, options: { notNull?: boolean, min
     let result = true;
     if (options.notNull) {
         if (!(col.value && col.value.length > 0)) {
-            col.validationError = 'שדה חובה';
+            col.validationError = ' שדה חובה';
             result = false;
         }
     }
     if (options.minLength && options.minLength > 0) {
         if (!(col.value && col.value.length >= options.minLength)) {
-            col.validationError = `מינימום ${options.minLength} תוים`;
+            col.validationError = ` מינימום ${options.minLength} תוים`;
             result = false;
         }
     }
@@ -150,20 +154,20 @@ export function validDate(col: DateColumn, options: { notNull?: boolean, minYear
     let result = true;
     if (options.notNull) {
         if (!(col.value)) {
-            col.validationError = 'שדה חובה';
+            col.validationError = ' שדה חובה';
             result = false;
         }
     }
     if (options.minYear && options.minYear > 0) {
         if (!(col.value && col.value.getFullYear() >= options.minYear)) {
-            col.validationError = `מינימום שנת ${options.minYear}`;
+            col.validationError = ` מינימום שנת ${options.minYear}`;
             result = false;
         }
     }
     if (options.greaterThenToday) {
         let today = addDays(TODAY, undefined, true);
         if (!(col.value && col.value >= today)) {
-            col.validationError = `מינימום היום וקדימה`;
+            col.validationError = ` מינימום היום וקדימה`;
             result = false;
         }
     }
@@ -174,13 +178,13 @@ export function validNumber(col: NumberColumn, options: { notNull?: boolean, min
     let result = true;
     if (options.notNull) {
         if (!(col.value)) {
-            col.validationError = 'שדה חובה';
+            col.validationError = ' שדה חובה';
             result = false;
         }
     }
     if (options.minValue && options.minValue > 0) {
         if (!(col.value && col.value >= options.minValue)) {
-            col.validationError = `מינימום ${options.minValue}`;
+            col.validationError = ` מינימום ${options.minValue}`;
             result = false;
         }
     }
