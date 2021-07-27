@@ -19,7 +19,7 @@ export class OrderItemsComponent implements OnInit {
   readonly = true;
   orderNum = 0;
 
-  orderItems = new GridSettings(this.context.for(OrderItem),
+  orderItems = new GridSettings<OrderItem>(this.context.for(OrderItem),
     {
       where: cur => cur.oid.isEqualTo(this.args.in.oid),
       newRow: cur => cur.oid.value = this.args.in.oid,
@@ -41,7 +41,7 @@ export class OrderItemsComponent implements OnInit {
 
   constructor(private context: Context, private dialog: DialogService, private dialogRef: MatDialogRef<any>) { }
 
-  async ngOnInit() {
+  async ngOnInit() { 
     this.args.out = { changed: false };
     if (this.args.in.oid && this.args.in.oid.length > 0) {
       let o = await this.context.for(Order).findId(this.args.in.oid);
@@ -50,6 +50,8 @@ export class OrderItemsComponent implements OnInit {
         // console.log('this.readonly='+this.readonly);
         this.orderNum = o.orderNum.value;
 
+        console.log('this.readonly='+this.readonly);
+        console.log('this.args.in.autoNew='+this.args.in.autoNew);
         if (!this.readonly && this.args.in.autoNew) {
           let count = await this.context.for(OrderItem).count(cur => cur.oid.isEqualTo(o.id));
           if (count === 0) {

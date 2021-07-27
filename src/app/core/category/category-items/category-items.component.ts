@@ -46,6 +46,11 @@ export class CategoryItemsComponent implements OnInit {
       throw 'לא נמצאה קבוצה ראשית';
     }
     this.args.out = { changed: false };
+    
+    let count = await this.context.for(CategoryItem).count(cur => cur.cid.isEqualTo(c.id));
+    if (count === 0) {
+      await this.addCategoryItem();
+    }
   }
 
   close() {

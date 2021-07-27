@@ -1,8 +1,5 @@
-
-import { extend, openDialog } from "@remult/angular";
-import { BoolColumn, checkForDuplicateValue, ColumnSettings, Context, EntityClass, Filter, IdEntity, LookupColumn, ServerMethod, StringColumn } from "@remult/core";
-import { DynamicServerSideSearchDialogComponent } from "../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
-import { changeDate, FILTER_IGNORE } from '../shared/types';
+import { BoolColumn, checkForDuplicateValue, ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, ServerMethod, StringColumn } from "@remult/core";
+import { changeDate } from '../shared/types';
 import { validString } from "../shared/utils";
 import { Roles } from './roles';
 import { UserProduct } from "./userProduct/userProduct";
@@ -87,8 +84,9 @@ export class Users extends IdEntity {
 
                     if (this.isNew()) {
                         this.createDate.value = new Date();
-                        if ((await context.for(Users).count()) == 0)
+                        if ((await context.for(Users).count()) == 0) {
                             this.admin.value = true;// If it's the first user, make it an admin
+                        }
                     }
                     await checkForDuplicateValue(this, this.name, this.context.for(Users));
 
@@ -103,11 +101,13 @@ export class Users extends IdEntity {
     }
     @ServerMethod({ allowed: true })
     async create(password: string) {
-        if (!this.isNew())
+        if (!this.isNew()) {
             throw "פעולה לא חוקית";
+        }
+        console.log(password);
         await this.password.hashAndSet(password);
         await this.save();
-    } 
+    }
     @ServerMethod({ allowed: context => context.isSignedIn() })
     async updatePassword(password: string) {
         if (this.isNew() || this.id.value != this.context.user.id)
@@ -124,7 +124,7 @@ export class Users extends IdEntity {
         return this.count;
     }
 }
- 
+
 
 
 export class UserId extends LookupColumn<Users> {

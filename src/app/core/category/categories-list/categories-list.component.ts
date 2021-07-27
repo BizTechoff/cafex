@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { GridSettings, openDialog } from '@remult/angular';
-import { Context, NumberColumn } from '@remult/core';
+import { BusyService, extend, GridSettings, openDialog } from '@remult/angular';
+import { Context, NumberColumn, StringColumn } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
+import { InputAreaComponent } from '../../../common/input-area/input-area.component';
+import { FILTER_IGNORE } from '../../../shared/types';
 import { Roles } from '../../../users/roles';
 import { Category } from '../category';
 import { CategoryItemsComponent } from '../category-items/category-items.component';
@@ -13,13 +15,20 @@ import { CategoryItem } from '../categoryItem';
   styleUrls: ['./categories-list.component.scss']
 })
 export class CategoriesListComponent implements OnInit {
+  args: { out?: { changed: boolean } } = { out: { changed: false } };
+
+  search = extend(new StringColumn({
+    caption: 'חפש כאן שם קבוצה ראשית',
+    valueChange: () => this.busy.donotWait(async () => this.refresh())
+  }))
+    .dataControl(() => ({ clickIcon: 'search', click: async () => await this.refresh() }));
 
   count = new NumberColumn({ caption: 'קב.משניות' });
   categories = new GridSettings<Category>(this.context.for(Category),
     {
+      where: cur => this.search.value ? cur.name.contains(this.search) : FILTER_IGNORE,
       orderBy: cur => cur.name,
-      allowCRUD: this.context.isAllowed(Roles.admin),
-      allowDelete: false,
+      allowCRUD: false,
       numOfColumnsInGrid: 10,
       columnSettings: cur => [
         cur.name,
@@ -42,7 +51,8 @@ export class CategoriesListComponent implements OnInit {
       ],
     });
 
-  constructor(private context: Context, private dialog: DialogService) { }
+  constructor(private dialog: DialogService, public context: Context, private busy: BusyService) {
+  }
 
   ngOnInit() {
   }
@@ -70,6 +80,24 @@ export class CategoriesListComponent implements OnInit {
       it => it ? it.args.out.changed : false);
     if (changed) {
       await this.refresh();
+    }
+  }
+
+  async addCategory() {
+    let add = this.context.for(Category).create();
+    let changed = await openDialog(InputAreaComponent,
+      it => it.args = {
+        title: 'הוספת קב.ראשית חדשה',
+        columnSettings: () => [add.name],
+        ok: async () => {
+          await add.save();
+          this.args.out.changed = true;
+        }
+      },
+      it => it ? it.ok : false);
+    if (changed) {
+      await this.refresh();
+      await this.showCategoryItems(add);
     }
   }
 

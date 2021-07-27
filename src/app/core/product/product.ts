@@ -1,7 +1,10 @@
 import { extend, openDialog } from "@remult/angular";
 import { ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, StringColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
+import { FILTER_IGNORE } from "../../shared/types";
+import { validString } from "../../shared/utils";
 import { Roles } from "../../users/roles";
+import { UserProduct } from "../../users/userProduct/userProduct";
 import { Category, CategoryIdColumn } from "../category/category";
 import { CategoryItem, CategoryItemIdColumn } from "../category/categoryItem";
 
@@ -9,12 +12,14 @@ import { CategoryItem, CategoryItemIdColumn } from "../category/categoryItem";
 export class Product extends IdEntity {
     cid = extend(new CategoryIdColumn(this.context, {
         caption: 'קבוצה ראשית',
-
-    })).dataControl(dcs => {
-        dcs.hideDataOnInput = true;
-        dcs.clickIcon = 'search';
-        dcs.getValue = () => this.cid.displayValue;
-        dcs.click = async () => {
+        validate: () => {
+            validString(this.cid, { notNull: true, minLength: 3 });
+        }
+    })).dataControl(it => {
+        it.hideDataOnInput = true;
+        it.clickIcon = 'search';
+        it.getValue = () => this.cid.displayValue;
+        it.click = async () => {
             await openDialog(DynamicServerSideSearchDialogComponent,
                 dlg => dlg.args(Category, {
                     onClear: () => this.cid.value = '',
@@ -27,11 +32,17 @@ export class Product extends IdEntity {
             );
         };
     });
-    ciid = extend(new CategoryItemIdColumn(this.context, { caption: 'קבוצה משנית' })).dataControl(dcs => {
-        dcs.hideDataOnInput = true;
-        dcs.clickIcon = 'search';
-        dcs.getValue = () => this.ciid.displayValue;
-        dcs.click = async () => {
+    ciid = extend(new CategoryItemIdColumn(this.context, {
+        caption: 'קבוצה משנית',
+        validate: () => {
+            validString(this.ciid, { notNull: true, minLength: 3 });
+        }
+    })).dataControl(it => {
+        // it.readOnly = this.cid.value && this.cid.value.length > 0 ? false : true;
+        it.hideDataOnInput = true;
+        it.clickIcon = 'search';
+        it.getValue = () => this.ciid.displayValue;
+        it.click = async () => {
             await openDialog(DynamicServerSideSearchDialogComponent,
                 dlg => dlg.args(CategoryItem, {
                     onClear: () => this.ciid.value = '',
@@ -42,8 +53,27 @@ export class Product extends IdEntity {
             );
         };
     });
-    sku = new StringColumn({ caption: 'מק"ט' });//makat
-    name = new StringColumn({ caption: 'שם' });
+    sku = new StringColumn({
+        caption: 'מק"ט',
+        validate: () => {
+            validString(this.sku, { notNull: true, minLength: 3 });
+        }
+    });
+    name = new StringColumn({
+        caption: 'שם',
+        validate: () => {
+            validString(this.name, { notNull: true, minLength: 3 });
+        }
+    });
+    count: number;
+
+    getCount() {
+        if (this.count !== undefined)
+            return this.count;
+        this.count = 0;
+        this.context.for(UserProduct).count(c => c.pid.isEqualTo(this.id)).then(result => { this.count = result; })
+        return this.count;
+    }
 
     constructor(private context: Context) {
         super({
@@ -62,19 +92,20 @@ export class ProductIdColumn extends LookupColumn<Product> {
             displayValue: () => this.item.name.value
             , ...settings
         });
-        // extend(this).dataControl(ctrl => {
-        //     ctrl.hideDataOnInput = true;
-        //     ctrl.clickIcon = 'search';
-        //     ctrl.getValue = () => this.displayValue;
-        //     ctrl.click = async () => {
-        //         await openDialog(DynamicServerSideSearchDialogComponent,
-        //             dlg => dlg.args(Product, {
-        //                 onClear: () => this.value = '',
-        //                 onSelect: cur => this.value = cur.id.value,
-        //                 searchColumn: cur => cur.name//,
-        //                 // where: cur => cur.
-        //             }));
-        //     };
-        // });
+        extend(this).dataControl(it => {
+            // dcs.width = '400';
+            it.hideDataOnInput = true;
+            it.clickIcon = 'search';
+            it.getValue = () => this.displayValue;
+            it.click = async () => {
+                await openDialog(DynamicServerSideSearchDialogComponent,
+                    it => it.args(Product, {
+                        onClear: () => this.value = '',
+                        onSelect: cur => this.value = cur.id.value,
+                        searchColumn: cur => cur.name
+                    })
+                );
+            };
+        });
     }
 }

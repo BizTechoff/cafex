@@ -1,14 +1,17 @@
 <div class="full-page">
     <div class="header">
-        <div style="display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1;">
-            
-        <div style="display: flex; flex-direction: row; justify-content: space-between; flex-grow: 1;">
-            <button mat-icon-button mat-dialog-close title="סגור" style="justify-content: flex-start" (click)="close()">
-                <mat-icon>close</mat-icon>
-            </button>
-            <h3>משתמשים משוייכים ל- {{ this.args.in.name }}</h3>
-        </div>
-            
+        <div style="display: flex; flex-direction: column; justify-content: space-between; ">
+            <div style="display: flex; flex-direction: row; ">
+                <div style="display: flex; justify-content: flex-start;">
+                    <button mat-icon-button mat-dialog-close title="סגור" (click)="close()">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </div>
+
+                <div style="display: flex; justify-content: center;">
+                    <h3>משתמשים משוייכים ל- {{ this.args.in.name }}</h3>
+                </div>
+            </div>
             <div *ngIf="!this.readonly" style="width: 100%; padding-top: 3.5px;">
                 <button style="width: 100%;" mat-raised-button color='primary' (click)="addUserProduct()">
                     <mat-icon>add</mat-icon>

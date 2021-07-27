@@ -17,19 +17,21 @@ export class ProductUsersComponent implements OnInit {
 
   args: { in: { pid: string, name: string }, out?: { changed: boolean } } = { in: { pid: '', name: '' } };
   readonly = false;
-
+ 
   users = new GridSettings(this.context.for(UserProduct), {
-    where: cur => cur.cid.isEqualTo(this.args.in.pid),
+    where: cur => cur.pid.isEqualTo(this.args.in.pid),
     orderBy: cur => [cur.uid],
-    newRow: cur => cur.cid.value = this.args.in.pid,
-    allowCRUD: false,
+    newRow: cur => cur.pid.value = this.args.in.pid,
+    allowCRUD: false, 
     numOfColumnsInGrid: 10,
     columnSettings: cur => [
       { column: cur.uid, width: '222' }
     ],
-    rowButtons: [
+    rowButtons: [ 
       {
-        textInMenu: 'מחק שורה',
+        textInMenu: 'בטל שיוך של משתמש זה',
+        icon: 'cancel',
+        showInLine: true,
         visible: () => !this.readonly,
         click: async (cur) => await this.deleteUserProduct(cur)
       }
@@ -59,10 +61,10 @@ export class ProductUsersComponent implements OnInit {
 
   async addUserProduct() {
     let add = this.context.for(UserProduct).create();
-    add.cid.value = this.args.in.pid;
+    add.pid.value = this.args.in.pid;
     let changed = await openDialog(InputAreaComponent,
       it => it.args = {
-        title: 'בחר משתמש לשיוך',
+        title: 'בחירת משתמש לשיוך',
         columnSettings: () => [add.uid],
         ok: async () => {
           await add.save();
@@ -73,6 +75,10 @@ export class ProductUsersComponent implements OnInit {
     if (changed) {
       await this.refresh();
     }
+    // let yes = await this.dialog.yesNoQuestion('להוסיף פריט נוסף?');
+    // if(yes){
+    //   await this.addUserProduct();
+    // }
   }
 
   async deleteUserProduct(up: UserProduct) {

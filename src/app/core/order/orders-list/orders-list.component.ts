@@ -96,7 +96,7 @@ export class OrdersListComponent implements OnInit {
           textInMenu: 'שכפל הזמנה',
           icon: 'content_copy',
           click: async (cur) => await this.copyOrder(cur),
-          visible: cur => !cur.isNew() && (this.isAgent() || this.isStore())//&& cur.status.value === OrderStatus.open 
+          visible: cur => !cur.isNew() && (this.isAgent() || this.isStore())
         },
         {
           textInMenu: '__________________________',
@@ -233,7 +233,7 @@ export class OrdersListComponent implements OnInit {
         where: cur => cur.oid.isEqualTo(o.id)
       })) {
         let itm = this.context.for(OrderItem).create();
-        itm.upid.value = oi.upid.value;
+        // itm.upid.value = oi.upid.value;
         itm.oid.value = copy.id.value;
         itm.pid.value = oi.pid.value;
         itm.quntity.value = oi.quntity.value;
@@ -245,7 +245,7 @@ export class OrdersListComponent implements OnInit {
     }
   }
 
-  async showOrderItems(o: Order, isNew = false) {
+  async showOrderItems(o: Order, isNew = true) {
     let changed = await openDialog(OrderItemsComponent,
       it => it.args = { in: { oid: o.id.value, oNum: o.orderNum.value, autoNew: isNew } },
       it => it && it.args.out ? it.args.out.changed : false);

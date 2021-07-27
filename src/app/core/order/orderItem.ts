@@ -1,7 +1,7 @@
 import { extend, openDialog } from "@remult/angular";
 import { Context, DateTimeColumn, EntityClass, IdEntity, NumberColumn, StringColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
-import { TODAY } from "../../shared/types";
+import { FILTER_IGNORE, TODAY } from "../../shared/types";
 import { addDays, validNumber, validString } from "../../shared/utils";
 import { Roles } from "../../users/roles";
 import { UserProduct, UserProductIdColumn } from "../../users/userProduct/userProduct";
@@ -11,7 +11,7 @@ import { Order, OrderIdColumn } from "./order";
 
 @EntityClass
 export class OrderItem extends IdEntity {
-    upid = new UserProductIdColumn(this.context, { caption: 'Product' });
+    // upid = new UserProductIdColumn(this.context, { caption: 'Product' });
     oid = new OrderIdColumn(this.context, { caption: 'הזמנה' });
     pid = extend(new ProductIdColumn(this.context, {
         caption: 'פריט',
@@ -25,17 +25,23 @@ export class OrderItem extends IdEntity {
         it.clickIcon = 'search';
         it.getValue = () => this.pid.displayValue;
         it.click = async () => {
-            let uid = this.context.user.id;//individual order-items
-            if (!(this.context.user.roles.includes(Roles.technician) || this.context.user.roles.includes(Roles.store))) {
-                let o = await this.context.for(Order).findId(this.oid.value);
-                uid = o.uid.value;//the store-user-id of order (agent & admin input order-items in specific store)
+            let isAdminOrAgent = this.context.user.roles.includes(Roles.admin) || this.context.user.roles.includes(Roles.agent);
+
+            let uid = this.context.user.id;//store||technician
+            if (isAdminOrAgent) {
+                if (this.oid.value) {
+                    let o = await this.context.for(Order).findId(this.oid.value);
+                    if (o) {
+                        uid = o.uid.value;//the store-user-id of order (agent & admin input order-items in specific store)
+                    }
+                }
             }
             await openDialog(DynamicServerSideSearchDialogComponent,
-                dlg => dlg.args(UserProduct, {
+                it => it.args(UserProduct, {
                     onClear: () => this.pid.value = '',
-                    onSelect: cur => this.pid.value = cur.cid.value,
-                    searchColumn: cur => cur.cid.item.name,
-                    where: (cur) => cur.uid.isEqualTo(uid)
+                    onSelect: cur => this.pid.value = cur.pid.value,
+                    searchColumn: cur => cur.pid.item.name,
+                    where: cur => uid ? cur.uid.isEqualTo(uid) : FILTER_IGNORE
                 })
             );
         };

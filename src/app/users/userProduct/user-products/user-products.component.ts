@@ -18,12 +18,16 @@ export class UserProductsComponent implements OnInit {
   readonly = false;
 
   products = new GridSettings(this.context.for(UserProduct), {
-    where: cur => cur.uid.isEqualTo(this.args.in.uid),
+    where: cur => {
+      console.log('cur.uid=');
+      console.log('cur.uid=' + cur.uid && cur.uid.value && cur.uid.value.length > 0 ? cur.uid.value : 'NULL ');
+      return cur.uid.isEqualTo(this.args.in.uid);
+    },
     newRow: cur => cur.uid.value = this.args.in.uid,
     allowCRUD: false,
     numOfColumnsInGrid: 10,
     columnSettings: cur => [
-      { column: cur.cid, width: '250' }
+      { column: cur.pid, width: '250' }
     ],
     rowButtons: [
       {
@@ -61,7 +65,7 @@ export class UserProductsComponent implements OnInit {
     let changed = await openDialog(InputAreaComponent,
       it => it.args = {
         title: 'בחר פריט לשיוך',
-        columnSettings: () => [{ column: add.cid, width: '' }],
+        columnSettings: () => [{ column: add.pid, width: '' }],
         ok: async () => {
           await add.save();
           this.args.out.changed = true;
@@ -71,6 +75,10 @@ export class UserProductsComponent implements OnInit {
     if (changed) {
       await this.refresh();
     }
+    // let yes = await this.dialog.yesNoQuestion('להוסיף פריט נוסף?');
+    // if(yes){
+    //   await this.addUserProduct();
+    // }
   }
 
   async deleteUserProduct(up: UserProduct) {

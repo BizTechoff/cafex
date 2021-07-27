@@ -1,5 +1,17 @@
 <div class="full-page">
-    <div class="header"></div>
+    <div class="header">
+        <div style="display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1;">
+            <div style="display: flex; flex-direction: row; justify-content: space-between; flex-grow: 1;">
+                <data-control [column]="search" style="width: 100%;"></data-control>
+            </div>
+            <div style="width: 100%; padding-top: 3.5px;">
+                <button style="width: 100%;" mat-raised-button color='primary' (click)="addCategory()">
+                    <mat-icon>add</mat-icon>
+                    <mat-label style="padding-right: 10px;">הוספת קבוצה ראשית חדשה</mat-label>
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="grow-item">
         <data-grid [settings]='categories'></data-grid>
     </div>

@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { GridSettings, openDialog } from '@remult/angular';
-import { Context } from '@remult/core';
+import { Context, NumberColumn, StringColumn } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
+import { FILTER_IGNORE } from '../../../shared/types';
 import { Roles } from '../../../users/roles';
 import { UserProduct } from '../../../users/userProduct/userProduct';
 import { OrderItem } from '../../order/orderItem';
@@ -17,17 +18,26 @@ import { ProductUsersComponent } from '../product-users/product-users.component'
 })
 export class ProductsListComponent implements OnInit {
 
-  products = new GridSettings(this.context.for(Product),
+  count = new NumberColumn({ caption: 'משוייכים' });
+  search = new StringColumn({
+    caption: 'חיפוש לפי שם מוצר',
+    valueChange: async () => await this.refresh()
+  });
+  products = new GridSettings<Product>(this.context.for(Product),
     {
+      where: cur => this.search.value && this.search.value.length > 0
+        ? cur.name.contains(this.search.value)
+        : FILTER_IGNORE,
       orderBy: cur => [cur.cid, cur.ciid, cur.sku, cur.name],
-      allowCRUD: this.context.isAllowed(Roles.admin),
+      allowCRUD: false,
       allowDelete: false,
       numOfColumnsInGrid: 10,
       columnSettings: cur => [
         cur.cid,
         cur.ciid,
         cur.sku,
-        cur.name
+        cur.name,
+        { column: this.count, readOnly: o => true, getValue: c => c.getCount(), hideDataOnInput: true, width: '85', allowClick: (c) => false }
       ],
       rowButtons: [
         {
@@ -41,7 +51,7 @@ export class ProductsListComponent implements OnInit {
         {
           textInMenu: 'ערוך פריט',
           icon: 'edit',
-          click: async (cur) => await this.editProduct(cur.id.value),
+          click: async (cur) => await this.editOrAddProduct(cur.id.value),
           visible: cur => !cur.isNew()
         },
         {
@@ -61,11 +71,11 @@ export class ProductsListComponent implements OnInit {
     await this.products.reloadData();
   }
 
-  async editProduct(pid: string) {
-    let p = await this.context.for(Product).findId(pid);
-    if (p) {
-      await openDialog(InputAreaComponent, thus => thus.args = {
-        title: `עריכת פריט: ${p.name.value}`,
+  async editOrAddProduct(pid: string = '') {
+    let p = await this.context.for(Product).findOrCreate(cur => cur.id.isEqualTo(pid));
+    let changed = await openDialog(InputAreaComponent,
+      it => it.args = {
+        title: p.isNew() ? `פריט חדש` : `עריכת פריט: ${p.name.value}`,
         columnSettings: () => [
           p.cid,
           p.ciid,
@@ -77,7 +87,9 @@ export class ProductsListComponent implements OnInit {
           await this.refresh();
           //await order.reload();
         }
-      });
+      },
+      it => it ? it.ok : false);
+    if (changed) {
     }
   }
 
@@ -103,7 +115,7 @@ export class ProductsListComponent implements OnInit {
     let changed = await openDialog(ProductUsersComponent,
       it => it.args = { in: { pid: pid, name: name } },
       it => it ? it.args.out.changed : false);
-    if (changed) { 
+    if (changed) {
       await this.refresh();
     }
     // await openDialog(GridDialogComponent, gd => gd.args = {

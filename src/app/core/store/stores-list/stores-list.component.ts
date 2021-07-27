@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { GridSettings, openDialog } from '@remult/angular';
-import { Context, NumberColumn } from '@remult/core';
+import { Context, NumberColumn, StringColumn } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
-import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
-import { WIDTH_COLUMN_SHORT, WIDTH_COLUMN_SHORT_MINUS } from '../../../shared/types';
+import { InputAreaComponent } from '../../../common/input-area/input-area.component';
+import { FILTER_IGNORE, WIDTH_COLUMN_SHORT, WIDTH_COLUMN_SHORT_MINUS } from '../../../shared/types';
 import { Roles } from '../../../users/roles';
 import { UserProductsComponent } from '../../../users/userProduct/user-products/user-products.component';
 import { UserProduct } from '../../../users/userProduct/userProduct';
@@ -16,9 +16,15 @@ import { Users } from '../../../users/users';
 })
 export class StoresListComponent implements OnInit {
 
+  search = new StringColumn({
+    caption: 'חיפוש לפי שם בית קפה',
+    valueChange: async () => await this.refresh()
+  });
   count = new NumberColumn({ caption: 'פריטים' });
   stores = new GridSettings<Users>(this.context.for(Users), {
-    where: cur => cur.store.isIn(true),
+    where: cur => cur.store.isIn(true)
+      .and(this.search.value && this.search.value.length > 0
+        ? cur.name.contains(this.search.value) : FILTER_IGNORE),
     orderBy: cur => cur.name,
     newRow: cur => cur.store.value = true,
     allowCRUD: this.context.isAllowed(Roles.admin),
@@ -50,8 +56,28 @@ export class StoresListComponent implements OnInit {
   ngOnInit() {
   }
 
-  async resfresh() {
+  async refresh() {
     await this.stores.reloadData();
+  }
+  
+  async editOrAddStore(uid: string = ''){
+    let u = await this.context.for(Users).findOrCreate(cur => cur.id.isEqualTo(uid));
+    u.store.value = true;
+    let changed = await openDialog(InputAreaComponent,
+      it => it.args = {
+        title: u.isNew() ? `בית קפה חדש` : `עריכת בית קפה: ${u.name.value}`,
+        columnSettings: () => [
+          u.name
+        ], 
+        ok: async () => {
+          // await u.create();
+          await this.refresh();
+          //await order.reload();
+        }
+      },
+      it => it ? it.ok : false);
+    if (changed) {
+    }
   }
 
   async deleteStore(u: Users) {
@@ -75,7 +101,7 @@ export class StoresListComponent implements OnInit {
       it => it.args = { in: { uid: uid, name: name } },
       it => it ? it.args.out.changed : false);
     if (changed) {
-      await this.resfresh();
+      await this.refresh();
     }
   }
 

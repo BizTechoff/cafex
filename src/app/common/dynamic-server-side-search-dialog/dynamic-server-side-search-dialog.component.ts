@@ -15,8 +15,8 @@ import { FILTER_IGNORE } from '../../shared/types';
   <h1 mat-dialog-title>בחירת {{title}}</h1>
 </div>
 
-<mat-label *ngIf="items.length === 0">לא נמצאו רשומות לבחירה</mat-label>
-<div *ngIf="items.length > 0">
+<!-- <mat-label *ngIf="items.length === 0">לא נמצאו רשומות לבחירה</mat-label> -->
+<!-- <div *ngIf="items.length > 0"> -->
   <div mat-dialog-content>
       <form (submit)="selectFirst()">
           <mat-form-field>
@@ -30,6 +30,12 @@ import { FILTER_IGNORE } from '../../shared/types';
                   {{_args.searchColumn(o).value}}
               </mat-list-item>
               <mat-divider ></mat-divider>
+          </ng-container> 
+          <ng-container *ngIf="items.length === 0 && this.loaded">
+              <mat-list-item role="listitem" style="height:36px">
+                 <i> {{ '(לא נמצאו רשומות תואמות)' }} </i>
+              </mat-list-item>
+              <mat-divider ></mat-divider>
           </ng-container>
       </mat-nav-list>
   </div>
@@ -40,19 +46,21 @@ import { FILTER_IGNORE } from '../../shared/types';
             <mat-label style="padding: 7px;">נקה בחירה</mat-label>
         </button>
     </div>
-  </div>  
+  <!-- </div>   -->
 <div>  `,
   styles: []
 })
 export class DynamicServerSideSearchDialogComponent implements OnInit {
 
-
+  loaded = false;
   constructor(private context: Context, private busy: BusyService, public dialogRef: MatDialogRef<any>) { }
   items: Entity[] = [];
-  ngOnInit() {
-    this.loadProducts();
+  async ngOnInit() {
+    await this.loadProducts();
+    this.loaded = true;
   }
   async loadProducts() {
+    console.log(this._args.where);
     this.items = await this.entityContext.find({
 
       where: [this._args.where, p =>
