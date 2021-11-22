@@ -1,12 +1,19 @@
 import { extend, openDialog } from "@remult/angular";
 import { ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, StringColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
-import { FILTER_IGNORE } from "../../shared/types";
 import { validString } from "../../shared/utils";
 import { Roles } from "../../users/roles";
 import { UserProduct } from "../../users/userProduct/userProduct";
 import { Category, CategoryIdColumn } from "../category/category";
 import { CategoryItem, CategoryItemIdColumn } from "../category/categoryItem";
+
+
+export class ProductType {
+    static general = new ProductType();
+    static select = new ProductType();
+    constructor() { }
+    id: number;
+}
 
 @EntityClass
 export class Product extends IdEntity {

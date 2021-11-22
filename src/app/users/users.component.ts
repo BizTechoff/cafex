@@ -45,6 +45,13 @@ export class UsersComponent implements OnInit {
       { column: users.agent, width: '65', hideDataOnInput: true },
       { column: users.store, width: '95', hideDataOnInput: true }
     ],
+    gridButtons: [
+      {
+        textInMenu: () => 'רענן',
+        icon: 'refresh',
+        click: async () => { await this.refresh(); }
+      }
+    ],
     rowButtons: [{
       name: 'איפוס סיסמא',
       icon: 'password',

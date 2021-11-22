@@ -51,10 +51,13 @@ async function startup() {
     //app.get("/api-req", async (req, res) => { //can be app.get(....)
     app.get("/api-req/:key", async (req, res) => { //can be app.get(....)
         // let apiKey2 = req.query.apiKey;//.body.key;
-        // console.log(apiKey2)
         let apiKey = req.params.key;
+        console.log(apiKey);
+        console.debug(apiKey);
 
-        if (apiKey === process.env.apiKey) {
+        if (apiKey === process.env.APIKEY) {
+            console.log('OK');
+            console.debug('OK');
             let context = await expressBridge.getValidContext(req);
             let result = "";
             let r = await Order.getOrders(context);
