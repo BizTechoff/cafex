@@ -12,7 +12,7 @@ export class rootParams {
     defaultValue: this.options.date ? this.options.date : addDays(),
     valueChange: async () => { await this.onChanged(); }
   });
-   
+
   constructor(options?: paramOptions, onChanged?: () => Promise<void>, private context?: Context) {
     if (onChanged) {
       this.onChanged = onChanged;

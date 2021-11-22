@@ -1,7 +1,7 @@
 import { extend, openDialog } from "@remult/angular";
 import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, ServerFunction, StringColumn, ValueListColumn, ValueListTypeInfo } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
-import { STARTING_ORDER_NUM, TimeColumn, TODAY } from "../../shared/types";
+import { FILTER_IGNORE, MagicGetOrders, STARTING_ORDER_NUM, TimeColumn, TODAY } from "../../shared/types";
 import { addDays, addTime, validDate, validString } from "../../shared/utils";
 import { Roles } from "../../users/roles";
 import { UserId, Users } from "../../users/users";
@@ -29,7 +29,9 @@ export class Order extends IdEntity {
             );
         };
     });
+    magicId = new StringColumn({ allowApiUpdate: false });
     orderNum = new NumberColumn({ allowApiUpdate: false, dbReadOnly: true, caption: 'מס.הזמנה' });
+
     date = new DateColumn({
         caption: 'תאריך',
         defaultValue: addDays(TODAY, undefined, true),
@@ -104,9 +106,26 @@ export class Order extends IdEntity {
         });
     }
     @ServerFunction({ allowed: true })
-    static async getOrders(context?: Context) {
+    static async getOrders(req: MagicGetOrders, context?: Context) {
         let r: theResult[] = [];
-        for await (const o of context.for(Order).iterate()) {
+        for await (const o of context.for(Order).iterate({
+            where: row =>
+                req.id
+                    ? row.id.isEqualTo(req.id)
+                    : req.magicId
+                        ? row.magicId.isEqualTo(req.magicId)
+                        : req.orderNum 
+                            ? row.orderNum.isEqualTo(req.orderNum)
+                            : req.fdate
+                                ? row.date.isGreaterOrEqualTo(req.fdate)
+                                    .and(req.tdate
+                                        ? row.date.isLessOrEqualTo(req.tdate)
+                                        : FILTER_IGNORE)
+                                : FILTER_IGNORE
+                                    .and(req.status
+                                        ? row.status.isEqualTo(req.status)
+                                        : FILTER_IGNORE)
+        })) {
             r.push({
                 date: o.date.value,
                 status: o.status.value.id

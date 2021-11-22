@@ -38,6 +38,7 @@ import { OrderItemsComponent } from './core/order/order-items/order-items.compon
 import { UserProductsComponent } from './users/userProduct/user-products/user-products.component';
 import { ProductUsersComponent } from './core/product/product-users/product-users.component';
 import { CategoryItemsComponent } from './core/category/category-items/category-items.component';
+import { StoreDetailsComponent } from './core/store/store-details/store-details.component';
  
  
 @NgModule({
@@ -61,7 +62,8 @@ import { CategoryItemsComponent } from './core/category/category-items/category-
     OrderItemsComponent,
     UserProductsComponent,
     ProductUsersComponent,
-    CategoryItemsComponent
+    CategoryItemsComponent,
+    StoreDetailsComponent
   ],
   imports: [
     BrowserModule,

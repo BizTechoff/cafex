@@ -74,6 +74,10 @@ export class Product extends IdEntity {
     });
     count: number;
 
+    getKey(){
+        // return
+    }
+
     getCount() {
         if (this.count !== undefined)
             return this.count;

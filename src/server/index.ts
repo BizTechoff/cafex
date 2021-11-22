@@ -11,8 +11,10 @@ import * as jwt from 'express-jwt';
 import * as fs from 'fs';
 import { Pool } from 'pg';
 import '../app/app.module';
-import { Order } from '../app/core/order/order';
-import { STARTING_ORDER_NUM } from '../app/shared/types';
+import { Container } from '../app/core/container/container';
+import { ContainerItem } from '../app/core/container/containerItem';
+import { Order, OrderStatus } from '../app/core/order/order';
+import { MagicGetOrders, STARTING_ORDER_NUM } from '../app/shared/types';
 
 async function startup() {
     config(); //loads the configuration from the .env file
@@ -49,39 +51,90 @@ async function startup() {
     });
     //http://localhost:4200/api-req/apikey
     //app.get("/api-req", async (req, res) => { //can be app.get(....)
-    app.get("/api-req/:key", async (req, res) => { //can be app.get(....)
-        // let apiKey2 = req.query.apiKey;//.body.key;
+    app.get("/api-req/ping", async (req, res) => {
+        res.send(`Hi from cafex server clock: ${new Date().toLocaleString()}`)
+    });
+    app.post("/api-req/:key/containers", async (req, res) => {
         let apiKey = req.params.key;
-        console.log(apiKey);
-        console.debug(apiKey);
-
         if (apiKey === process.env.APIKEY) {
-            console.log('OK');
-            console.debug('OK');
             let context = await expressBridge.getValidContext(req);
-            let result = "";
-            let r = await Order.getOrders(context);
-            for (const o of r) {
-                // for (const key in o) {
-                //     if (Object.prototype.hasOwnProperty.call(o, key)) {
-                //         const element = o[key];
-                //         result+=element.toString()+"|";
-                //     }
-                // }
-
-
-                result += `${o.date.toLocaleDateString("he-il")}|${o.status} \n`;
+            let con: Container = context.for(Container).create();
+            con.name.value = req.query.name as string;
+            con.sid.value = req.query.storeid as string;
+            con.aid.value = req.query.agentid as string;
+            await con.save();
+            res.send(con.id);
+        }
+        else {
+            res.send("NOT ALLOWED");
+        }
+    });
+    app.post("/api-req/:key/containersItems", async (req, res) => {
+        let apiKey = req.params.key;
+        if (apiKey === process.env.APIKEY) {
+            let context = await expressBridge.getValidContext(req);
+            let conItem: ContainerItem = context.for(ContainerItem).create();
+            conItem.conid.value = req.query.conid as string;
+            conItem.pid.value = req.query.pid as string;
+            conItem.quntity.value = parseInt(req.query.quntity as string);
+            await conItem.save();
+            res.send(conItem.id);
+        }
+        else {
+            res.send("NOT ALLOWED");
+        }
+    });
+    app.get("/api-req/:key/orders", async (req, res) => {
+        let apiKey = req.params.key;
+        if (apiKey === process.env.APIKEY) {
+            let magic: MagicGetOrders = {
+                id: req.query.id ? req.query.id as string : undefined,
+                magicId: req.query.magicid ? req.query.magicid as string : undefined,
+                orderNum: req.query.ordernum ? parseInt(req.query.ordernum as string) : undefined,
+                fdate: req.query.fdate ? new Date(req.query.fdate as string) : undefined,
+                tdate: req.query.tdate ? new Date(req.query.tdate as string) : undefined,
+                status: req.query.status ? (OrderStatus)[req.query.status as string] : undefined
             }
 
-            // for await (const o of context.for(Order).iterate()) {
-            //     result += o.date.value.toLocaleDateString("he-il") + "|" + o.time.value + "|" + o.status.value.id + "\n";
-            // }
+            console.log('orders', magic);
+
+            let context = await expressBridge.getValidContext(req);
+            let result = "";
+            let r = await Order.getOrders(magic, context);
+            for (const o of r) {
+                result += `${o.date.toLocaleDateString("he-il")}|${o.status} \n`;
+            }
             res.send(result);
         }
         else {
             res.send("NOT ALLOWED");
         }
+    });
+    app.get("/api-req/:key/containers", async (req, res) => {
+        let apiKey = req.params.key;
+        if (apiKey === process.env.APIKEY) {
+            let magic: MagicGetOrders = {
+                id: req.query.id ? req.query.id as string : undefined,
+                magicId: req.query.magicid ? req.query.magicid as string : undefined,
+                orderNum: req.query.ordernum ? parseInt(req.query.ordernum as string) : undefined,
+                fdate: req.query.fdate ? new Date(req.query.fdate as string) : undefined,
+                tdate: req.query.tdate ? new Date(req.query.tdate as string) : undefined,
+                status: req.query.status ? (OrderStatus)[req.query.status as string] : undefined
+            }
 
+            console.log('orders', magic);
+
+            let context = await expressBridge.getValidContext(req);
+            let result = "";
+            let r = await Order.getOrders(magic, context);
+            for (const o of r) {
+                result += `${o.date.toLocaleDateString("he-il")}|${o.status} \n`;
+            }
+            res.send(result);
+        }
+        else {
+            res.send("NOT ALLOWED");
+        }
     });
     app.use(express.static('dist/cafex-app'));
     app.use('/*', async (req, res) => {
@@ -95,3 +148,22 @@ async function startup() {
     app.listen(port);
 }
 startup();
+
+// Create	POST
+// Read	GET
+// Update	PUT
+// Delete	DELETE
+
+
+
+// for (const key in o) {
+//     if (Object.prototype.hasOwnProperty.call(o, key)) {
+//         const element = o[key];
+//         result+=element.toString()+"|";
+//     }
+// }
+
+
+// for await (const o of context.for(Order).iterate()) {
+//     result += o.date.value.toLocaleDateString("he-il") + "|" + o.time.value + "|" + o.status.value.id + "\n";
+// }

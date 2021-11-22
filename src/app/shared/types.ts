@@ -1,4 +1,5 @@
 import { ColumnSettings, DateColumn, DateTimeColumn, Filter, StringColumn } from "@remult/core";
+import { OrderStatus } from "../core/order/order";
 import { rootParams } from "../core/params/root-params/rootParams";
 import { addDays } from "./utils";
 
@@ -40,4 +41,13 @@ export class TimeColumn extends StringColumn {
 
 export interface paramOptions {
   date?: Date
+}
+
+export interface MagicGetOrders {
+  id: string,
+  magicId: string,
+  orderNum: number,
+  fdate: Date,
+  tdate: Date,
+  status: OrderStatus
 }
