@@ -1,6 +1,7 @@
 import { extend, openDialog } from "@remult/angular";
-import { ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, StringColumn } from "@remult/core";
+import { ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, ServerFunction, StringColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
+import { FILTER_IGNORE, MagicGetProducts, MagicGetProductsResponse } from "../../shared/types";
 import { validString } from "../../shared/utils";
 import { Roles } from "../../users/roles";
 import { UserProduct } from "../../users/userProduct/userProduct";
@@ -74,7 +75,7 @@ export class Product extends IdEntity {
     });
     count: number;
 
-    getKey(){
+    getKey() {
         // return
     }
 
@@ -93,6 +94,40 @@ export class Product extends IdEntity {
             allowApiCRUD: c => c.isSignedIn(),
             allowApiRead: c => c.isSignedIn()
         });
+    }
+
+    @ServerFunction({ allowed: true })
+    static async getProducts(req: MagicGetProducts, context?: Context) {
+        let r: MagicGetProductsResponse[] = [];
+        for await (const c of context.for(Product).iterate({
+            where: row => {
+                let result = FILTER_IGNORE;
+                if (req.id) {
+                    result = result.and(row.id.isEqualTo(req.id));
+                }
+                else {
+                    if (req.main) {
+                        result = result.and(row.cid.isEqualTo(req.main));
+                    }
+                    if (req.sub) {
+                        result = result.and(row.ciid.isEqualTo(req.sub));
+                    }
+                    if (req.sku) {
+                        result = result.and(row.sku.isEqualTo(req.sku));
+                    }
+                }
+                return result;
+            }
+        })) {
+            r.push({
+                id: c.id.value,
+                name: c.name.value,
+                main: c.cid.value,
+                sub: c.ciid.value,
+                sku: c.sku.value
+            });
+        }
+        return r;
     }
 };
 

@@ -51,3 +51,59 @@ export interface MagicGetOrders {
   tdate: Date,
   status: OrderStatus
 }
+export interface MagicGetProducts {
+  id: string,
+  main: string,
+  sub: string,
+  sku: string
+}
+export interface MagicGetCategories {
+  id: string
+}
+export interface MagicGetCategoriesResponse {
+  id: string,
+  name: string
+}
+export interface MagicGetCategoriesItems {
+  id: string,
+  categoryid: string
+}
+export interface MagicGetCategoriesItemsResponse {
+  id: string,
+  categoryid: string,
+  name: string
+}
+export interface MagicGetProductsResponse {
+  id: string,
+  name: string,
+  main: string,
+  sub: string,
+  sku: string
+}
+
+export interface MagicGetContainers {
+  id: string,
+  storeid: string,
+  agentid: string
+}
+export interface MagicGetContainersResponse {
+  id: string,
+  name: string,
+  storeid: string,
+  agentid: string
+}
+export interface MagicGetContainersItems {
+  id: string,
+  containerid: string,
+  productid: string
+}
+export interface MagicGetContainersItemsResponse {
+  id: string,
+  containerId: string,
+  productid: string,
+  quantity: number
+}
+export interface MagicGetStoresResponse {
+  id: string,
+  name: string
+}

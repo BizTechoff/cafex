@@ -1,5 +1,5 @@
 import { BoolColumn, checkForDuplicateValue, ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, ServerMethod, StringColumn } from "@remult/core";
-import { changeDate } from '../shared/types';
+import { changeDate, MagicGetStoresResponse } from '../shared/types';
 import { validString } from "../shared/utils";
 import { Roles } from './roles';
 import { UserProduct } from "./userProduct/userProduct";
@@ -122,6 +122,34 @@ export class Users extends IdEntity {
         this.count = 0;
         this.context.for(UserProduct).count(c => c.uid.isEqualTo(this.id)).then(result => { this.count = result; })
         return this.count;
+    }
+
+    @ServerMethod({ allowed: true })
+    static async getStores(context?: Context) {
+        let r: MagicGetStoresResponse[] = [];
+        for await (const c of context.for(Users).iterate({
+            where: row => row.store.isEqualTo(true)
+        })) {
+            r.push({
+                id: c.id.value,
+                name: c.name.value
+            });
+        }
+        return r;
+    }
+
+    @ServerMethod({ allowed: true })
+    static async getAgents(context?: Context) {
+        let r: MagicGetStoresResponse[] = [];
+        for await (const c of context.for(Users).iterate({
+            where: row => row.agent.isEqualTo(true)
+        })) {
+            r.push({
+                id: c.id.value,
+                name: c.name.value
+            });
+        }
+        return r;
     }
 }
 

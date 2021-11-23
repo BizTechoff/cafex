@@ -11,10 +11,14 @@ import * as jwt from 'express-jwt';
 import * as fs from 'fs';
 import { Pool } from 'pg';
 import '../app/app.module';
+import { Category } from '../app/core/category/category';
+import { CategoryItem } from '../app/core/category/categoryItem';
 import { Container } from '../app/core/container/container';
 import { ContainerItem } from '../app/core/container/containerItem';
 import { Order, OrderStatus } from '../app/core/order/order';
-import { MagicGetOrders, STARTING_ORDER_NUM } from '../app/shared/types';
+import { Product } from '../app/core/product/product';
+import { MagicGetCategories, MagicGetCategoriesItems, MagicGetContainers, MagicGetContainersItems, MagicGetOrders, MagicGetProducts, STARTING_ORDER_NUM } from '../app/shared/types';
+import { Users } from '../app/users/users';
 
 async function startup() {
     config(); //loads the configuration from the .env file
@@ -50,40 +54,47 @@ async function startup() {
         dataProvider
     });
     //http://localhost:4200/api-req/apikey
-    //app.get("/api-req", async (req, res) => { //can be app.get(....)
+ 
+    // PING
     app.get("/api-req/ping", async (req, res) => {
         res.send(`Hi from cafex server clock: ${new Date().toLocaleString()}`)
     });
-    app.post("/api-req/:key/containers", async (req, res) => {
+
+    // STORES
+    app.get("/api-req/:key/stores", async (req, res) => {
         let apiKey = req.params.key;
         if (apiKey === process.env.APIKEY) {
+
             let context = await expressBridge.getValidContext(req);
-            let con: Container = context.for(Container).create();
-            con.name.value = req.query.name as string;
-            con.sid.value = req.query.storeid as string;
-            con.aid.value = req.query.agentid as string;
-            await con.save();
-            res.send(con.id);
+            let result = "";
+            let r = await Users.getStores(context);
+            for (const c of r) {
+                result += `${c.id}|${c.name} \n`;
+            }
+            res.send(result);
         }
         else {
             res.send("NOT ALLOWED");
         }
     });
-    app.post("/api-req/:key/containersItems", async (req, res) => {
+    // AGENTS
+    app.get("/api-req/:key/agents", async (req, res) => {
         let apiKey = req.params.key;
         if (apiKey === process.env.APIKEY) {
+
             let context = await expressBridge.getValidContext(req);
-            let conItem: ContainerItem = context.for(ContainerItem).create();
-            conItem.conid.value = req.query.conid as string;
-            conItem.pid.value = req.query.pid as string;
-            conItem.quntity.value = parseInt(req.query.quntity as string);
-            await conItem.save();
-            res.send(conItem.id);
+            let result = "";
+            let r = await Users.getAgents(context);
+            for (const c of r) {
+                result += `${c.id}|${c.name} \n`;
+            }
+            res.send(result);
         }
         else {
             res.send("NOT ALLOWED");
         }
     });
+    // ORDERS
     app.get("/api-req/:key/orders", async (req, res) => {
         let apiKey = req.params.key;
         if (apiKey === process.env.APIKEY) {
@@ -96,7 +107,7 @@ async function startup() {
                 status: req.query.status ? (OrderStatus)[req.query.status as string] : undefined
             }
 
-            console.log('orders', magic);
+            console.debug('MagicGetOrders', magic);
 
             let context = await expressBridge.getValidContext(req);
             let result = "";
@@ -110,25 +121,94 @@ async function startup() {
             res.send("NOT ALLOWED");
         }
     });
+    // PRODUCTS
+    app.get("/api-req/:key/products", async (req, res) => {
+        let apiKey = req.params.key;
+        if (apiKey === process.env.APIKEY) {
+            let magic: MagicGetProducts = {
+                id: req.query.id ? req.query.id as string : undefined,
+                main: req.query.main ? req.query.main as string : undefined,
+                sub: req.query.sub ? req.query.sub as string : undefined,
+                sku: req.query.sku ? req.query.sku as string : undefined
+            }
+
+            console.debug('MagicGetProducts', magic);
+
+            let context = await expressBridge.getValidContext(req);
+            let result = "";
+            let r = await Product.getProducts(magic, context);
+            for (const o of r) {
+                result += `${o.id}|${o.name}|${o.main}|${o.sub}|${o.sku} \n`;
+            }
+            res.send(result);
+        }
+        else {
+            res.send("NOT ALLOWED");
+        }
+    });
+    // CATEGORIES
+    app.get("/api-req/:key/categories", async (req, res) => {
+        let apiKey = req.params.key;
+        if (apiKey === process.env.APIKEY) {
+            let magic: MagicGetCategories = {
+                id: req.query.id ? req.query.id as string : undefined
+            }
+
+            console.debug('MagicGetCategories', magic);
+
+            let context = await expressBridge.getValidContext(req);
+            let result = "";
+            let r = await Category.getCategories(magic, context);
+            for (const o of r) {
+                result += `${o.id}|${o.name} \n`;
+            }
+            res.send(result);
+        }
+        else {
+            res.send("NOT ALLOWED");
+        }
+    });
+    // CATEGORIES-ITEMS
+    app.get("/api-req/:key/categoriesItems", async (req, res) => {
+        let apiKey = req.params.key;
+        if (apiKey === process.env.APIKEY) {
+            let magic: MagicGetCategoriesItems = {
+                id: req.query.id ? req.query.id as string : undefined,
+                categoryid: req.query.categoryid ? req.query.categoryid as string : undefined
+            }
+
+            console.debug('MagicGetCategoriesItems', magic);
+
+            let context = await expressBridge.getValidContext(req);
+            let result = "";
+            let r = await CategoryItem.getCategoriesItems(magic, context);
+            for (const o of r) {
+                result += `${o.id}|${o.categoryid}|${o.name} \n`;
+            }
+            res.send(result);
+        }
+        else {
+            res.send("NOT ALLOWED");
+        }
+    });
+
+    // CONTAINERS
     app.get("/api-req/:key/containers", async (req, res) => {
         let apiKey = req.params.key;
         if (apiKey === process.env.APIKEY) {
-            let magic: MagicGetOrders = {
+            let magic: MagicGetContainers = {
                 id: req.query.id ? req.query.id as string : undefined,
-                magicId: req.query.magicid ? req.query.magicid as string : undefined,
-                orderNum: req.query.ordernum ? parseInt(req.query.ordernum as string) : undefined,
-                fdate: req.query.fdate ? new Date(req.query.fdate as string) : undefined,
-                tdate: req.query.tdate ? new Date(req.query.tdate as string) : undefined,
-                status: req.query.status ? (OrderStatus)[req.query.status as string] : undefined
+                storeid: req.query.storeid ? req.query.storeid as string : undefined,
+                agentid: req.query.agentid ? req.query.agentid as string : undefined
             }
 
-            console.log('orders', magic);
+            console.debug('MagicGetContainers', magic);
 
             let context = await expressBridge.getValidContext(req);
             let result = "";
-            let r = await Order.getOrders(magic, context);
-            for (const o of r) {
-                result += `${o.date.toLocaleDateString("he-il")}|${o.status} \n`;
+            let r = await Container.getContainers(magic, context);
+            for (const c of r) {
+                result += `${c.id}|${c.name}|${c.storeid}|${c.agentid} \n`;
             }
             res.send(result);
         }
@@ -136,6 +216,92 @@ async function startup() {
             res.send("NOT ALLOWED");
         }
     });
+    app.post("/api-req/:key/containers", async (req, res) => {
+        let apiKey = req.params.key;
+        if (apiKey === process.env.APIKEY) {
+
+            console.debug('containers.post.req.query', req.query);
+
+            let context = await expressBridge.getValidContext(req);
+            let con = context.for(Container).create();
+            if (req.query.id) {
+                con = await context.for(Container).findId(req.query.id);
+                if (!con) {
+                    if (req.query.create && req.query.create === 'true') {
+                        con = context.for(Container).create();
+                    }
+                    else {
+                        res.send(`Not found Container with id: ${req.query.id}`);
+                        return;
+                    }
+                }
+            }
+            con.name.value = req.query.name ? req.query.name as string : undefined;
+            con.sid.value = req.query.storeid ? req.query.storeid as string : undefined;
+            con.aid.value = req.query.agentid ? req.query.agentid as string : undefined;
+            await con.save();
+            res.send(con.id.value);
+        }
+        else {
+            res.send("NOT ALLOWED");
+        }
+    });
+
+    // CONTAINERS-ITEMS
+    app.get("/api-req/:key/containersItems", async (req, res) => {
+        let apiKey = req.params.key;
+        if (apiKey === process.env.APIKEY) {
+            let magic: MagicGetContainersItems = {
+                id: req.query.id ? req.query.id as string : undefined,
+                containerid: req.query.containerid ? req.query.containerid as string : undefined,
+                productid: req.query.productid ? req.query.productid as string : undefined
+            }
+
+            console.debug('MagicGetContainersItems', magic);
+
+            let context = await expressBridge.getValidContext(req);
+            let result = "";
+            let r = await ContainerItem.getContainersItems(magic, context);
+            for (const c of r) {
+                result += `${c.id}|${c.containerId}|${c.productid}|${c.quantity} \n`;
+            }
+            res.send(result);
+        }
+        else {
+            res.send("NOT ALLOWED");
+        }
+    });
+    app.post("/api-req/:key/containersItems", async (req, res) => {
+        let apiKey = req.params.key;
+        if (apiKey === process.env.APIKEY) {
+
+            console.debug('containersItems.post.req.query', req.query);
+
+            let context = await expressBridge.getValidContext(req);
+            let conItem = context.for(ContainerItem).create();
+            if (req.query.id) {
+                conItem = await context.for(ContainerItem).findId(req.query.id);
+                if (!conItem) {
+                    if (req.query.create && req.query.create === 'true') {
+                        conItem = context.for(ContainerItem).create();
+                    }
+                    else {
+                        res.send(`Not found ContainerItem with id: ${req.query.id}`);
+                        return;
+                    }
+                }
+            }
+            conItem.conid.value = req.query.containerid ? req.query.containerid as string : undefined;
+            conItem.pid.value = req.query.productid ? req.query.productid as string : undefined;
+            conItem.quantity.value = req.query.quntity ? parseInt(req.query.quntity as string) : undefined;
+            await conItem.save();
+            res.send(conItem.id.value);
+        }
+        else {
+            res.send("NOT ALLOWED");
+        }
+    });
+
     app.use(express.static('dist/cafex-app'));
     app.use('/*', async (req, res) => {
         try {

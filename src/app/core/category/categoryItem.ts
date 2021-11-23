@@ -1,7 +1,7 @@
 import { extend, openDialog } from "@remult/angular";
-import { checkForDuplicateValue, ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, StringColumn } from "@remult/core";
+import { checkForDuplicateValue, ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, ServerFunction, StringColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
-import { FILTER_IGNORE } from "../../shared/types";
+import { FILTER_IGNORE, MagicGetCategoriesItems, MagicGetCategoriesItemsResponse } from "../../shared/types";
 import { validString } from "../../shared/utils";
 import { Roles } from "../../users/roles";
 import { CategoryIdColumn } from "./category";
@@ -27,6 +27,30 @@ export class CategoryItem extends IdEntity {
                 }
             }
         });
+    }
+
+    @ServerFunction({ allowed: true })
+    static async getCategoriesItems(req: MagicGetCategoriesItems, context?: Context) {
+        let r: MagicGetCategoriesItemsResponse[] = [];
+        for await (const c of context.for(CategoryItem).iterate({
+            where: row => {
+                let result = FILTER_IGNORE;
+                if (req.id) {
+                    result = result.and(row.id.isEqualTo(req.id));
+                }
+                else if (req.categoryid) {
+                    result = result.and(row.cid.isEqualTo(req.categoryid));
+                }
+                return result;
+            }
+        })) {
+            r.push({
+                id: c.id.value,
+                categoryid: c.cid.value,
+                name: c.name.value
+            });
+        }
+        return r;
     }
 }
 
