@@ -81,17 +81,7 @@ export interface MagicGetProductsResponse {
   sku: string
 }
 
-export interface MagicGetContainers {
-  id: string,
-  storeid: string,
-  agentid: string
-}
-export interface MagicGetContainersResponse {
-  id: string,
-  name: string,
-  storeid: string,
-  agentid: string
-}
+
 export interface MagicGetContainersItems {
   id: string,
   containerid: string,

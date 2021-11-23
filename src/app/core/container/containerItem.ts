@@ -1,5 +1,5 @@
-import { checkForDuplicateValue, Context, DateTimeColumn, EntityClass, IdEntity, NumberColumn, ServerFunction, StringColumn } from "@remult/core";
-import { FILTER_IGNORE, MagicGetContainersItems, MagicGetContainersItemsResponse } from "../../shared/types";
+import { checkForDuplicateValue, Context, DateTimeColumn, EntityClass, IdEntity, NumberColumn, StringColumn } from "@remult/core";
+import { FILTER_IGNORE } from "../../shared/types";
 import { Roles } from "../../users/roles";
 import { UserId } from "../../users/users";
 import { ProductIdColumn } from "../product/product";
@@ -10,9 +10,9 @@ export class ContainerItem extends IdEntity {
     conid = new StringColumn({ caption: 'מחסן' });
     pid = new ProductIdColumn(this.context, { caption: "פריט" });
     quantity = new NumberColumn({ caption: "כמות" });
-    created = new DateTimeColumn({caption: 'נוצר'})
+    created = new DateTimeColumn({ caption: 'נוצר' })
     createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
- 
+
     constructor(private context: Context) {
         super({
             name: 'containersItems',
@@ -21,7 +21,7 @@ export class ContainerItem extends IdEntity {
             saving: async () => {
                 if (context.onServer) {
                     await checkForDuplicateValue(this, this.pid, this.context.for(ContainerItem));
-                    if(this.isNew()){
+                    if (this.isNew()) {
                         this.created.value = new Date();
                         this.createdBy.value = context.user.id;
                     }
@@ -30,9 +30,8 @@ export class ContainerItem extends IdEntity {
         });
     }
 
-    @ServerFunction({ allowed: true })
-    static async getContainersItems(req: MagicGetContainersItems, context?: Context) {
-        let r: MagicGetContainersItemsResponse[] = [];
+    static async get(req: { id?: string, containerId?: string, productId?: string }, context?: Context) {
+        let result = '';
         for await (const c of context.for(ContainerItem).iterate({
             where: row => {
                 let result = FILTER_IGNORE;
@@ -40,23 +39,35 @@ export class ContainerItem extends IdEntity {
                     result = result.and(row.id.isEqualTo(req.id));
                 }
                 else {
-                    if (req.containerid) {
-                        result = result.and(row.conid.isEqualTo(req.containerid));
+                    if (req.containerId) {
+                        result = result.and(row.conid.isEqualTo(req.containerId));
                     }
-                    if (req.productid) {
-                        result = result.and(row.pid.isEqualTo(req.productid));
+                    if (req.productId) {
+                        result = result.and(row.pid.isEqualTo(req.productId));
                     }
                 }
                 return result;
             }
         })) {
-            r.push({
-                id: c.id.value,
-                containerId: c.conid.value,
-                productid: c.pid.value,
-                quantity: c.quantity.value
-            });
+            result += `${c.id.value}|${c.conid.value}|${c.pid.value}|${c.quantity.value} \n`;
         }
-        return r;
+        return result;
+    }
+
+    static async post(req: { id?: string, containerid?: string, productid?: string, quantity?: number }, context?: Context) {
+        let result = '';
+        let item = context.for(ContainerItem).create();
+        if (req.id) {
+            item = await context.for(ContainerItem).findId(req.id);
+            if (!item) {
+                return 'Id Not Found';
+            }
+        } 
+        item.conid.value = req.containerid;
+        item.pid.value = req.productid;
+        item.quantity.value = req.quantity;
+        await item.save();
+        result = item.id.value;
+        return result;
     }
 }

@@ -1,5 +1,5 @@
-import { checkForDuplicateValue, Context, DateTimeColumn, EntityClass, IdEntity, ServerFunction, StringColumn } from "@remult/core";
-import { FILTER_IGNORE, MagicGetContainers, MagicGetContainersResponse } from "../../shared/types";
+import { checkForDuplicateValue, Context, DateTimeColumn, EntityClass, IdEntity, StringColumn } from "@remult/core";
+import { FILTER_IGNORE } from "../../shared/types";
 import { Roles } from "../../users/roles";
 import { UserId } from "../../users/users";
 
@@ -9,7 +9,7 @@ export class Container extends IdEntity {
     name = new StringColumn({ caption: 'שם' });
     sid = new UserId(this.context, Roles.store, { caption: "בית קפה" });
     aid = new UserId(this.context, Roles.agent, { caption: "סוכן" });
-    created = new DateTimeColumn({caption: 'נוצר'})
+    created = new DateTimeColumn({ caption: 'נוצר' })
     createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
 
     constructor(private context: Context) {
@@ -20,7 +20,7 @@ export class Container extends IdEntity {
             saving: async () => {
                 if (context.onServer) {
                     await checkForDuplicateValue(this, this.name, this.context.for(Container));
-                    if(this.isNew()){
+                    if (this.isNew()) {
                         this.created.value = new Date();
                         this.createdBy.value = context.user.id;
                     }
@@ -29,9 +29,10 @@ export class Container extends IdEntity {
         });
     }
 
-    @ServerFunction({ allowed: true })
-    static async getContainers(req: MagicGetContainers, context?: Context) {
-        let r: MagicGetContainersResponse[] = [];
+
+    static async get(req: { id?: string, storeid?: string, agentid?: string }, context?: Context) {
+        let result = "";
+
         for await (const c of context.for(Container).iterate({
             where: row => {
                 let result = FILTER_IGNORE;
@@ -49,13 +50,25 @@ export class Container extends IdEntity {
                 return result;
             }
         })) {
-            r.push({
-                id: c.id.value,
-                name: c.name.value,
-                storeid: c.sid.value,
-                agentid: c.aid.value
-            });
+            result += `${c.id.value}|${c.name.value}|${c.sid.value}|${c.aid.value} \n`;
         }
-        return r;
+        return result;
+    }
+
+    static async post(req: { id?: string, name?: string, storeid?: string, agentid?: string }, context?: Context) {
+        let result = '';
+        let con = context.for(Container).create();
+        if (req.id) {
+            con = await context.for(Container).findId(req.id);
+            if (!con) {
+                return 'Id Not Found';
+            }
+        }
+        con.name.value = req.name;
+        con.sid.value = req.storeid;
+        con.aid.value = req.agentid;
+        await con.save();
+        result = con.id.value;
+        return result;
     }
 }
