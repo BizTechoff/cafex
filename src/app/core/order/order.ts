@@ -9,6 +9,15 @@ import { OrderItem } from "./orderItem";
 
 @EntityClass
 export class Order extends IdEntity {
+    type = extend(new OrderTypeColumn()).dataControl(x => {
+        let v = [];
+        for (const t of ValueListTypeInfo.get(OrderType).getOptions()) {
+            if (!t.isNormal() && !t.isAll()) {
+                v.push(t);
+            }
+        }
+        x.valueList = v;
+    });
     uid = extend(new UserId(this.context, Roles.store, {
         caption: 'בית קפה',
         validate: () => {
@@ -66,6 +75,8 @@ export class Order extends IdEntity {
     createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
     modified = new DateTimeColumn({ caption: 'השתנה' });
     modifiedBy = new UserId(this.context, Roles.admin, { caption: 'השתנה ע"י' });
+    closed = new DateTimeColumn({ caption: 'נסגרה' });
+    closedBy = new UserId(this.context, Roles.admin, { caption: 'נסגרה ע"י' });
     count: number;
 
     getCount() {
@@ -100,6 +111,12 @@ export class Order extends IdEntity {
                     } else {
                         this.modified.value = addDays(TODAY, undefined, false);
                         this.modifiedBy.value = this.context.user.id;
+                        if (this.status.wasChanged()) {
+                            if (this.status.value.isClosed()) {
+                                this.closed.value = addDays(TODAY, undefined, false);
+                                this.closedBy.value = this.context.user.id;
+                            }
+                        }
                     }
                 }
             }
@@ -114,7 +131,7 @@ export class Order extends IdEntity {
                     ? row.id.isEqualTo(req.id)
                     : req.magicId
                         ? row.magicId.isEqualTo(req.magicId)
-                        : req.orderNum 
+                        : req.orderNum
                             ? row.orderNum.isEqualTo(req.orderNum)
                             : req.fdate
                                 ? row.date.isGreaterOrEqualTo(req.fdate)
@@ -167,6 +184,8 @@ export class OrderStatus {
     constructor(caption = '') { this.caption = caption; }
     id: string;
     caption: string;
+    isOpen() { return this === OrderStatus.open; }
+    isClosed() { return this === OrderStatus.closed; }
 }
 
 export class OrderStatusColumn extends ValueListColumn<OrderStatus> {
@@ -183,4 +202,32 @@ export class OrderStatusColumn extends ValueListColumn<OrderStatus> {
             //     : x.valueList = ValueListTypeInfo.get(OrderStatus).getOptions()
         });
     }
+}
+
+export class OrderType {
+    static normal = new OrderType('רגילה');
+    static fault = new OrderType('תקלה');
+    static maintenance = new OrderType('תחזוקה');
+    static all = new OrderType('הכל');
+    constructor(caption = '') { this.caption = caption; }
+    id: string;
+    caption: string;
+    isTechnical() {
+        return OrderType.technicalTypes.includes(this);
+    }
+    isAll() { return this === OrderType.all; }
+    isNormal() { return this === OrderType.normal; }
+    static technicalTypes = [OrderType.fault, OrderType.maintenance];
+}
+export class OrderTypeColumn extends ValueListColumn<OrderType> {
+    constructor(options?: ColumnSettings<OrderType>) {
+        super(OrderType, {
+            caption: 'סוג',
+            defaultValue: OrderType.normal,
+            ...options
+        });
+    }
+    isNormal() { return this.value.isNormal(); }
+    isTechnical() { return this.value.isTechnical(); }
+    isAll() { return this.value.isAll(); }
 }

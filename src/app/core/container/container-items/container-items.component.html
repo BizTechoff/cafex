@@ -1,0 +1,24 @@
+<div class="full-page">
+    <div class="header">
+        <div style="display: flex; flex-direction: row; justify-content: space-between; ">
+            <h4>מלאי פריטים ב{{ this.args.in.conName }} </h4>
+            <!-- <div style="width: 100%;">
+                <data-control [column]="store"></data-control>
+            </div> -->
+            <!-- <div style="min-width: 150px; padding-right: 5px; width: 100%;">
+                <data-control [column]="status"></data-control>
+            </div>
+            <div style="min-width: 150px; padding-right: 5px; width: 100%;">
+                <data-control [column]="type"></data-control>
+            </div> -->
+        </div>
+    </div>
+    <div class="grow-item">
+        <data-grid [settings]="this.containerItems"></data-grid>
+    </div>
+    <div class="footer">
+        <div>
+            <span>נמצאו: {{ this.containerItems.items.length }} פריטים</span>
+        </div>
+    </div>
+</div>

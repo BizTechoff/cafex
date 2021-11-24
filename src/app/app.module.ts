@@ -39,6 +39,8 @@ import { UserProductsComponent } from './users/userProduct/user-products/user-pr
 import { ProductUsersComponent } from './core/product/product-users/product-users.component';
 import { CategoryItemsComponent } from './core/category/category-items/category-items.component';
 import { StoreDetailsComponent } from './core/store/store-details/store-details.component';
+import { ContainersListComponent } from './core/container/containers-list/containers-list.component';
+import { ContainerItemsComponent } from './core/container/container-items/container-items.component';
  
  
 @NgModule({
@@ -63,7 +65,9 @@ import { StoreDetailsComponent } from './core/store/store-details/store-details.
     UserProductsComponent,
     ProductUsersComponent,
     CategoryItemsComponent,
-    StoreDetailsComponent
+    StoreDetailsComponent,
+    ContainersListComponent,
+    ContainerItemsComponent
   ],
   imports: [
     BrowserModule,
@@ -87,6 +91,7 @@ import { StoreDetailsComponent } from './core/store/store-details/store-details.
   providers: [DialogService, AdminGuard, TechnicianGuard, AgentGuard, StoreGuard],
   bootstrap: [AppComponent],
   entryComponents: [YesNoQuestionComponent, InputAreaComponent, GridDialogComponent, DynamicServerSideSearchDialogComponent,
-    OrderItemsComponent, UserProductsComponent, ProductUsersComponent, CategoryItemsComponent]
+    OrderItemsComponent, UserProductsComponent, ProductUsersComponent, CategoryItemsComponent,
+    ContainerItemsComponent]
 })
 export class AppModule { }

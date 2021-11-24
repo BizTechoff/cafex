@@ -23,7 +23,7 @@
       [mode]="dialogService.isScreenSmall()?'over':'side'">
       <div style="width:100%;text-align: center"><img src="../assets/crema.plus.logo.png"> </div>
       <h4 *ngIf="context.isSignedIn()">שלום {{context.user.name}}</h4>
-
+ 
       <mat-nav-list role="list">
         <ng-container *ngFor="let m of router.config">
           <mat-divider *ngIf="m.path === 'Stores'"></mat-divider>

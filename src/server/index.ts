@@ -14,7 +14,7 @@ import '../app/app.module';
 import { Container } from '../app/core/container/container';
 import { ContainerItem } from '../app/core/container/containerItem';
 import { STARTING_ORDER_NUM } from '../app/shared/types';
- 
+
 async function startup() {
     config(); //loads the configuration from the .env file
     let dataProvider: DataProvider;

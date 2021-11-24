@@ -1,4 +1,6 @@
-import { checkForDuplicateValue, Context, DateTimeColumn, EntityClass, IdEntity, StringColumn } from "@remult/core";
+import { extend, openDialog } from "@remult/angular";
+import { checkForDuplicateValue, ColumnSettings, Context, DateTimeColumn, EntityClass, IdEntity, LookupColumn, StringColumn } from "@remult/core";
+import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
 import { FILTER_IGNORE } from "../../shared/types";
 import { Roles } from "../../users/roles";
 import { UserId } from "../../users/users";
@@ -70,5 +72,27 @@ export class Container extends IdEntity {
         await con.save();
         result = con.id.value;
         return result;
+    }
+}
+
+export class ContainerIdColumn extends LookupColumn<Container> {
+    constructor(context: Context, settings?: ColumnSettings<string>) {
+        super(context.for(Container), {
+            displayValue: () => this.item.name.value
+            , ...settings
+        });
+        extend(this).dataControl(dcs => {
+            dcs.hideDataOnInput = true;
+            dcs.clickIcon = 'search';
+            dcs.getValue = () => this.displayValue;
+            dcs.click = async () => {
+                await openDialog(DynamicServerSideSearchDialogComponent,
+                    dlg => dlg.args(Container, {
+                        onClear: () => this.value = '',
+                        onSelect: cur => this.value = cur.id.value,
+                        searchColumn: cur => new StringColumn({ defaultValue: cur.name.value.toString() })
+                    }));
+            };
+        });
     }
 }

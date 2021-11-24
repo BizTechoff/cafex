@@ -2,17 +2,28 @@
     <div class="header">
         <div style="display: flex; flex-direction: column; justify-content: space-between; ">
             <div style="display: flex; flex-direction: row; justify-content: space-between; ">
-                <div style="width: 100%;">
+                <div *ngIf='!this.isStore()' style="width: 100%;">
                     <data-control [column]="store"></data-control>
                 </div>
-                <div style="min-width: 150px; padding-right: 5px;">
+                <div style="min-width: 150px; padding-right: 5px; width: 100%;">
                     <data-control [column]="status"></data-control>
                 </div>
+                <div style="min-width: 150px; padding-right: 5px; width: 100%;">
+                    <data-control [column]="type"></data-control>
+                </div>
             </div>
-            <div style="width: 100%; padding-top: 3.5px;">
-                <button style="width: 100%;" mat-raised-button color='primary' (click)="addOrder()">
+            <div style="display: flex; flex-direction: row; justify-content: space-between;">   
+               
+                <button *ngIf="!this.isTechnician()" style="width: 100%;" mat-raised-button color='primary' (click)="addOrder(OrderType.normal)">
                     <mat-icon>add</mat-icon>
-                    <mat-label style="padding-right: 10px;">{{ isTechnician() ? 'הוספת קריאת שירות חדשה' : 'הוספת הזמנה חדשה' }}</mat-label>
+                    <mat-label style="padding-right: 10px;">{{ 'הזמנה חדשה' }}
+                    </mat-label>
+                </button>
+                <span style="width: 10px;"></span>
+                 <button style="width: 100%;" mat-raised-button color='primary' (click)="addOrder(OrderType.maintenance)">
+                    <mat-icon>add</mat-icon>
+                    <mat-label style="padding-right: 10px;">{{ 'קריאת שירות חדשה'  }}
+                    </mat-label>
                 </button>
             </div>
         </div>

@@ -3,11 +3,12 @@ import { FILTER_IGNORE } from "../../shared/types";
 import { Roles } from "../../users/roles";
 import { UserId } from "../../users/users";
 import { ProductIdColumn } from "../product/product";
+import { ContainerIdColumn } from "./container";
 
 @EntityClass
 export class ContainerItem extends IdEntity {
-
-    conid = new StringColumn({ caption: 'מחסן' });
+ 
+    conid = new ContainerIdColumn(this.context, { caption: 'מחסן' });
     pid = new ProductIdColumn(this.context, { caption: "פריט" });
     quantity = new NumberColumn({ caption: "כמות" });
     created = new DateTimeColumn({ caption: 'נוצר' })

@@ -12,6 +12,7 @@ import { ProductsListComponent } from './core/product/products-list/products-lis
 import { CategoriesListComponent } from './core/category/categories-list/categories-list.component';
 import { CertificatesListComponent } from './core/certificate/certificates-list/certificates-list.component';
 import { AgentStoreCertificatesComponent } from './core/agent/agent-store-certificates/agent-store-certificates.component';
+import { ContainersListComponent } from './core/container/containers-list/containers-list.component';
 
 const routes: Routes = [
   { path: 'Home', component: HomeComponent, canActivate: [NotSignedInGuard], data: { name: 'ברוכים הבאים' } },
@@ -24,6 +25,7 @@ const routes: Routes = [
   { path: 's/orders', component: OrdersListComponent, canActivate: [StoreGuard], data: { name: 'הזמנות' } },
   { path: 't/orders', component: OrdersListComponent, canActivate: [TechnicianGuard], data: { name: 'הזמנות' } },
   { path: 'a/orders', component: OrdersListComponent, canActivate: [AgentGuard], data: { name: 'הזמנות' } },
+  { path: 'a/containers', component: ContainersListComponent, canActivate: [TechnicianGuard], data: { name: 'מחסנים' } },
   { path: 'a/certificates', component: AgentStoreCertificatesComponent, canActivate: [AgentGuard], data: { name: 'תעודות' } },
   { path: 'User Accounts', component: UsersComponent, canActivate: [AdminGuard], data: { name: 'משתמשים' } },
   { path: '', redirectTo: '/Home', pathMatch: 'full' },

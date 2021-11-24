@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { extend, GridSettings, openDialog } from '@remult/angular';
-import { Context, NumberColumn } from '@remult/core';
+import { Context, NumberColumn, ValueListTypeInfo } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { DynamicServerSideSearchDialogComponent } from '../../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
@@ -8,7 +8,7 @@ import { FILTER_IGNORE } from '../../../shared/types';
 import { addDays, addTime } from '../../../shared/utils';
 import { Roles } from '../../../users/roles';
 import { UserId, Users } from '../../../users/users';
-import { Order, OrderStatus, OrderStatusColumn } from '../order';
+import { Order, OrderStatus, OrderStatusColumn, OrderType, OrderTypeColumn } from '../order';
 import { OrderItemsComponent } from '../order-items/order-items.component';
 import { OrderItem } from '../orderItem';
 
@@ -19,8 +19,27 @@ import { OrderItem } from '../orderItem';
 })
 export class OrdersListComponent implements OnInit {
 
+  type = extend(new OrderTypeColumn(
+    {
+      caption: 'סינון לפי סוג',
+      defaultValue: OrderType.all,
+      valueChange: async () => {
+        await this.refresh();
+      }
+    })).dataControl(x => {
+      let v = [];
+      for (const t of ValueListTypeInfo.get(OrderType).getOptions()) {
+        if(t.isNormal()){
+          if(this.isTechnician()){
+            continue;
+          }
+        }
+        v.push(t);
+      }
+      x.valueList = v;
+    });
   status = new OrderStatusColumn(true, {
-    caption: 'סינון לפי סטטוס הזמנה',
+    caption: 'סינון לפי סטטוס',
     valueChange: async () => {
       await this.refresh();
     }
@@ -52,14 +71,36 @@ export class OrdersListComponent implements OnInit {
   count = new NumberColumn({ caption: 'מס.שורות' });
   orders = new GridSettings<Order>(this.context.for(Order),
     {
-      where: cur => (this.isAdmin()
-        ? this.store.value
-          ? cur.uid.isEqualTo(this.store.value)
-          : FILTER_IGNORE
-        : cur.uid.isEqualTo(this.store.value))
-        .and(this.status.value && this.status.isIn(OrderStatus.open, OrderStatus.closed)
-          ? cur.status.isEqualTo(this.status)
-          : FILTER_IGNORE),
+      where: row => {
+        let result = FILTER_IGNORE;
+        if (this.store.value) {
+          result = result.and(row.uid.isEqualTo(this.store.value));
+        }
+        if (this.status.value) {
+          result = result.and(row.status.isEqualTo(this.status.value));
+        } 
+        if (this.type.value) {
+          if(this.isTechnician()){
+            result = result.and(row.type.isIn(...OrderType.technicalTypes));
+          }
+          if (!this.type.isAll()) 
+            result = result.and(row.type.isEqualTo(this.type.value));
+        }
+
+        // (this.isAdmin()
+        //   ? this.store.value
+        //     ? row.uid.isEqualTo(this.store.value)
+        //     : FILTER_IGNORE
+        //   : row.uid.isEqualTo(this.store.value))
+        //   .and(this.status.value && this.status.isIn(OrderStatus.open, OrderStatus.closed)
+        //     ? row.status.isEqualTo(this.status)
+        //     : FILTER_IGNORE)
+        //   .and(this.type.value && this.type.isIn(OrderType.normal, OrderType.fault, OrderType.maintenance)
+        //     ? row.type.isEqualTo(this.type)
+        //     : FILTER_IGNORE)
+
+        return result;
+      },
       orderBy: cur => [cur.uid, { column: cur.orderNum, descending: true }],
       newRow: cur => {
         if (this.isStore()) {
@@ -76,21 +117,29 @@ export class OrdersListComponent implements OnInit {
       // allowDelete: false,
       numOfColumnsInGrid: 10,
       columnSettings: cur => [
-        this.isStore() ? undefined : { column: cur.uid, readOnly: o => !o.isNew(), width: '95' },
-        { column: cur.date, readOnly: o => !o.isNew(), width: '80' },
-        { column: cur.orderNum, readOnly: o => !o.isNew(), width: '80' },
-        { column: cur.worker, readOnly: o => !o.isNew(), width: '80' }, //this.isStore() ? undefined : { column: cur.worker, readOnly: o => !o.isNew(), width: '80' },
-        { column: cur.status, readOnly: o => true, width: '80' },
-        { column: this.count, readOnly: o => true, getValue: o => o.getCount(), hideDataOnInput: true, width: '100', allowClick: (o) => false },
-        { column: cur.remark, readOnly: o => true }
+        this.isStore() ? undefined : { column: cur.uid, readOnly: o => !o.isNew(), width: '95' },//, width: '95'
+        { column: cur.date, readOnly: o => !o.isNew(), width: '90' },//
+        { column: cur.orderNum, readOnly: o => !o.isNew(), width: '85' },//
+        { column: cur.type, readOnly: o => !o.isNew(), width: '80' },
+        { column: cur.worker, caption: 'שם ממלא', readOnly: o => !o.isNew(), width: '100' }, //, width: '80' //this.isStore() ? undefined : { column: cur.worker, readOnly: o => !o.isNew(), width: '80' },
+        { column: cur.status, readOnly: o => true, width: '80' },//, width: '80'
+        { column: this.count, readOnly: o => true, width: '100', getValue: o => o.getCount(), hideDataOnInput: true, allowClick: (o) => false },//, width: '100'
+        { column: cur.remark, readOnly: o => true }//, width: '100%'
+      ],
+      gridButtons: [
+        {
+          textInMenu: () => 'רענן',
+          icon: 'refresh',
+          click: async () => await this.refresh()
+        }
       ],
       rowButtons: [
         {
           textInMenu: 'הצג הזמנה',
           icon: 'shopping_bag',
           click: async (cur) => await this.showOrderItems(cur),
-          visible: cur => !cur.isNew(),
-          showInLine: true,
+          visible: cur => !cur.isNew() && (this.isStore() ? cur.type.isNormal() : true),
+          showInLine: true
         },
         {
           textInMenu: 'שכפל הזמנה',
@@ -118,7 +167,7 @@ export class OrdersListComponent implements OnInit {
     });
 
   constructor(private context: Context, private dialog: DialogService) { }
-
+  OrderType = OrderType;
   async ngOnInit() {
     await this.loadUserDefaults();
   }
@@ -178,20 +227,28 @@ export class OrdersListComponent implements OnInit {
     }
   }
 
-  async addOrder() {
+  async addOrder(type: OrderType) {
     let order = this.context.for(Order).create();
+    order.type.value = type;
     order.uid.value = this.isStore() ? this.context.user.id : this.store.value;
     order.date.value = addDays();
-    // console.log('order.date.value='+order.date.value);
+    let title = type.isTechnical() ? 'קריאת שירות חדשה' : 'הזמנה חדשה';
     await openDialog(InputAreaComponent,
       it => it.args = {
-        title: this.isTechnician() ? 'קריאת שירות חדשה' : 'הזמנה חדשה',
-        columnSettings: () => [
-          { column: order.uid, visible: () => this.store.value ? false : true, readOnly: () => this.isStore() },
-          order.date,
-          { column: order.worker, visible: () => this.isStore(), readOnly: () => !this.isStore() },
-          order.remark
-        ],
+        title: title,
+        columnSettings: () => {
+          let f = [];
+          if (!(order.type.value === OrderType.normal)) {
+            f.push(order.type);
+          }
+          f.push(
+            { column: order.uid, visible: () => this.store.value ? false : true, readOnly: () => this.isStore() },
+            order.date,
+            { column: order.worker, visible: () => this.isStore(), readOnly: () => !this.isStore() },
+            order.remark
+          );
+          return f;
+        },
         ok: async () => {
           await order.save();
           if (!this.store.value) {
@@ -240,17 +297,21 @@ export class OrdersListComponent implements OnInit {
         // itm.remark.value = oi.remark.value;
         await itm.save();
       }
+      await this.refresh();
       await this.showOrderItems(copy, true);
       await this.dialog.info(`הזמנה ${o.orderNum.value} שוכפלה`);
     }
   }
 
   async showOrderItems(o: Order, isNew = true) {
-    let changed = await openDialog(OrderItemsComponent,
-      it => it.args = { in: { oid: o.id.value, oNum: o.orderNum.value, autoNew: isNew } },
-      it => it && it.args.out ? it.args.out.changed : false);
-    if (changed) {
-      await this.refresh();
+    let hide = this.isStore() && !o.type.isNormal();
+    if (!hide) {
+      let changed = await openDialog(OrderItemsComponent,
+        it => it.args = { in: { oid: o.id.value, oNum: o.orderNum.value, autoNew: isNew } },
+        it => it && it.args.out ? it.args.out.changed : false);
+      if (changed) {
+        await this.refresh();
+      }
     }
   }
 
