@@ -1,5 +1,5 @@
 import { extend, openDialog } from "@remult/angular";
-import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, ServerFunction, StringColumn, ValueListColumn, ValueListTypeInfo } from "@remult/core";
+import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, ServerFunction, StringColumn, Validators, ValueListColumn, ValueListTypeInfo } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
 import { FILTER_IGNORE, MagicGetOrders, STARTING_ORDER_NUM, TimeColumn, TODAY } from "../../shared/types";
 import { addDays, addTime, validDate, validString } from "../../shared/utils";
@@ -70,6 +70,13 @@ export class Order extends IdEntity {
     time = new TimeColumn({ caption: 'שעה' });
     status = new OrderStatusColumn();
     remark = new StringColumn({ caption: 'הערה' });
+    // validate: {
+        //     let result =[] as ColumnValidator<string>[];
+        //     if(this.type.isTechnical()) {
+        //         result.push(Validators.required);
+        //     }
+        //     return result;
+        // }
     isImported = new BoolColumn({ caption: 'נטען?', defaultValue: false });
     created = new DateTimeColumn({ caption: 'נוצר' });
     createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
@@ -122,6 +129,11 @@ export class Order extends IdEntity {
             }
         });
     }
+
+    isTechnician() {
+      return this.context.isAllowed(Roles.technician);
+    }
+
     @ServerFunction({ allowed: true })
     static async getOrders(req: MagicGetOrders, context?: Context) {
         let r: theResult[] = [];
@@ -227,7 +239,7 @@ export class OrderTypeColumn extends ValueListColumn<OrderType> {
             ...options
         });
     }
-    isNormal() { return this.value.isNormal(); }
-    isTechnical() { return this.value.isTechnical(); }
-    isAll() { return this.value.isAll(); }
+    isNormal() { return this.value && this.value.isNormal(); }
+    isTechnical() { return this.value &&  this.value.isTechnical(); }
+    isAll() { return this.value &&  this.value.isAll(); }
 }

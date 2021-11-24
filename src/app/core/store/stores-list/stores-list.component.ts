@@ -99,7 +99,7 @@ export class StoresListComponent implements OnInit {
     }
     let changed = await openDialog(UserProductsComponent,
       it => it.args = { in: { uid: uid, name: name } },
-      it => it ? it.args.out.changed : false);
+      it => it && it.args.out ? it.args.out.changed : false);
     if (changed) {
       await this.refresh();
     }

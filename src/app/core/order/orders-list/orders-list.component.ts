@@ -29,8 +29,8 @@ export class OrdersListComponent implements OnInit {
     })).dataControl(x => {
       let v = [];
       for (const t of ValueListTypeInfo.get(OrderType).getOptions()) {
-        if(t.isNormal()){
-          if(this.isTechnician()){
+        if (t.isNormal()) {
+          if (this.isTechnician()) {
             continue;
           }
         }
@@ -78,12 +78,12 @@ export class OrdersListComponent implements OnInit {
         }
         if (this.status.value) {
           result = result.and(row.status.isEqualTo(this.status.value));
-        } 
+        }
         if (this.type.value) {
-          if(this.isTechnician()){
+          if (this.isTechnician()) {
             result = result.and(row.type.isIn(...OrderType.technicalTypes));
           }
-          if (!this.type.isAll()) 
+          if (!this.type.isAll())
             result = result.and(row.type.isEqualTo(this.type.value));
         }
 
@@ -119,7 +119,7 @@ export class OrdersListComponent implements OnInit {
       columnSettings: cur => [
         this.isStore() ? undefined : { column: cur.uid, readOnly: o => !o.isNew(), width: '95' },//, width: '95'
         { column: cur.date, readOnly: o => !o.isNew(), width: '90' },//
-        { column: cur.orderNum, readOnly: o => !o.isNew(), width: '85' },//
+        { column: cur.orderNum, readOnly: o => !o.isNew(), width: '85', caption: this.isTechnician() ? 'מס.קריאה' : 'מס.הזמנה' },//
         { column: cur.type, readOnly: o => !o.isNew(), width: '80' },
         { column: cur.worker, caption: 'שם ממלא', readOnly: o => !o.isNew(), width: '100' }, //, width: '80' //this.isStore() ? undefined : { column: cur.worker, readOnly: o => !o.isNew(), width: '80' },
         { column: cur.status, readOnly: o => true, width: '80' },//, width: '80'
@@ -307,7 +307,7 @@ export class OrdersListComponent implements OnInit {
     let hide = this.isStore() && !o.type.isNormal();
     if (!hide) {
       let changed = await openDialog(OrderItemsComponent,
-        it => it.args = { in: { oid: o.id.value, oNum: o.orderNum.value, autoNew: isNew } },
+        it => it.args = { in: { uid: o.uid.value, oid: o.id.value, oNum: o.orderNum.value, autoNew: isNew } },
         it => it && it.args.out ? it.args.out.changed : false);
       if (changed) {
         await this.refresh();

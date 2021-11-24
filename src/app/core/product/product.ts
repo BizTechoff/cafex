@@ -134,7 +134,7 @@ export class Product extends IdEntity {
 export class ProductIdColumn extends LookupColumn<Product> {
     constructor(context: Context, settings?: ColumnSettings<string>) {
         super(context.for(Product), {
-            caption: context.isAllowed(Roles.technician) ? 'פריט' : 'פריט',
+            caption: 'פריט',
             displayValue: () => this.item.name.value
             , ...settings
         });

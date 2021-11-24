@@ -23,7 +23,6 @@ import { GridDialogComponent } from './common/grid-dialog/grid-dialog.component'
 import { InputAreaComponent } from './common/input-area/input-area.component';
 import { YesNoQuestionComponent } from './common/yes-no-question/yes-no-question.component';
 import { OrdersListComponent } from './core/order/orders-list/orders-list.component';
-import { RootParamsComponent } from './core/params/root-params/root-params.component';
 import { ProductsListComponent } from './core/product/products-list/products-list.component';
 import { StoresListComponent } from './core/store/stores-list/stores-list.component';
 import { HomeComponent } from './home/home.component';
@@ -54,7 +53,6 @@ import { ContainerItemsComponent } from './core/container/container-items/contai
     StoresListComponent,
     ProductsListComponent,
     OrdersListComponent,
-    RootParamsComponent,
     DynamicServerSideSearchDialogComponent,
     CategoriesListComponent,
     CategoryCrudComponent,

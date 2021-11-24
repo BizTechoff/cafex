@@ -25,7 +25,7 @@ const routes: Routes = [
   { path: 's/orders', component: OrdersListComponent, canActivate: [StoreGuard], data: { name: 'הזמנות' } },
   { path: 't/orders', component: OrdersListComponent, canActivate: [TechnicianGuard], data: { name: 'הזמנות' } },
   { path: 'a/orders', component: OrdersListComponent, canActivate: [AgentGuard], data: { name: 'הזמנות' } },
-  { path: 'a/containers', component: ContainersListComponent, canActivate: [TechnicianGuard], data: { name: 'מחסנים' } },
+  { path: 't/containers', component: ContainersListComponent, canActivate: [TechnicianGuard], data: { name: 'מחסנים' } },
   { path: 'a/certificates', component: AgentStoreCertificatesComponent, canActivate: [AgentGuard], data: { name: 'תעודות' } },
   { path: 'User Accounts', component: UsersComponent, canActivate: [AdminGuard], data: { name: 'משתמשים' } },
   { path: '', redirectTo: '/Home', pathMatch: 'full' },

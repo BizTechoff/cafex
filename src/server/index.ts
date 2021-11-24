@@ -70,21 +70,23 @@ async function startup() {
         }
     }
 
+    register('get', "time", async (req, context) => {
+        return new Date().toLocaleString('he-IL');
+    });
+
     register('post', "containers", async (req, context) => {
         return await Container.post({
             id: req.query.id as string,
             name: req.query.name as string,
-            storeid: req.query.storeid as string,
-            agentid: req.query.agentid as string
+            uid: req.query.userid as string
         }, context);
-    });
-
+    }); 
+ 
     register('get', "containers", async (req, context) => {
         return await Container.get({
             id: req.query.id as string,
-            storeid: req.query.storeid as string,
-            agentid: req.query.agentid as string
-        }, context);
+            uid: req.query.userid as string
+        }, context); 
     });
 
     register('post', "containersitems", async (req, context) => {
@@ -95,7 +97,7 @@ async function startup() {
             quantity: parseInt(req.query.quantity as string)
         }, context);
     });
-
+ 
     register('get', "containersitems", async (req, context) => {
         return await ContainerItem.get({
             id: req.query.id as string,

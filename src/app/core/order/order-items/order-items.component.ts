@@ -18,9 +18,10 @@ import { OrderItem } from '../orderItem';
 })
 export class OrderItemsComponent implements OnInit {
 
-  args: { in: { oid: string, oNum: number, autoNew: boolean }, out?: { changed: boolean } } = { in: { oid: '', oNum: 0, autoNew: false }, out: { changed: false } };
+  args: { in: { uid: string, oid: string, oNum: number, autoNew: boolean }, out?: { changed: boolean } } = { in: { uid: '', oid: '', oNum: 0, autoNew: false }, out: { changed: false } };
   readonly = true;
   orderNum = 0;
+  containerStatus = '';
 
   orderItems = new GridSettings<OrderItem>(this.context.for(OrderItem),
     {
@@ -37,13 +38,13 @@ export class OrderItemsComponent implements OnInit {
         {
           textInMenu: 'פרטי שורה',
           icon: 'edit',
-          visible: () => !this.readonly,
+          visible: () => !this.readonly && this.isContaierExists(),
           click: async (cur) => await this.addOrderItem(cur)
         },
         {
           textInMenu: 'מחק שורה',
           icon: 'delete',
-          visible: () => !this.readonly,
+          visible: () => !this.readonly && this.isContaierExists(),
           click: async (cur) => await this.deleteOrderItem(cur)
         }
       ]
@@ -53,6 +54,11 @@ export class OrderItemsComponent implements OnInit {
 
   async ngOnInit() {
     this.args.out = { changed: false };
+
+    if (this.args.in.uid && this.args.in.uid.length > 0) {
+      await this.containerExistsWithProducts(
+        this.args.in.uid);
+    }
     if (this.args.in.oid && this.args.in.oid.length > 0) {
       let o = await this.context.for(Order).findId(this.args.in.oid);
       if (o) {
@@ -62,7 +68,7 @@ export class OrderItemsComponent implements OnInit {
 
         console.log('this.readonly=' + this.readonly);
         console.log('this.args.in.autoNew=' + this.args.in.autoNew);
-        if (!this.readonly && this.args.in.autoNew) {
+        if (!this.readonly && this.args.in.autoNew && this.isContaierExists()) {
           let count = await this.context.for(OrderItem).count(cur => cur.oid.isEqualTo(o.id));
           if (count === 0) {
             let changed = await this.addOrderItem();
@@ -79,6 +85,10 @@ export class OrderItemsComponent implements OnInit {
     return this.context.isAllowed(Roles.technician);
   }
 
+  isContaierExists(){
+    return !(this.containerStatus && this.containerStatus.length > 0);
+  }
+
   async refresh() {
     await this.orderItems.reloadData();
   }
@@ -87,14 +97,38 @@ export class OrderItemsComponent implements OnInit {
     this.dialogRef.close();
   }
 
+  async containerExistsWithProducts(uid: string) {
+    let result = false;
+    let con = await this.context.for(Container).findFirst({
+      where: row => row.uid.isEqualTo(uid)
+    });
+    if (!con) {
+      this.containerStatus = 'לא נמצא מחסן של החנות הזו שמשוייכת לך, לא ניתן להוסיף פריטים';
+    }
+    else {
+      let items = await this.context.for(ContainerItem).findFirst({
+        where: row => row.conid.isEqualTo(con.id)
+      });
+      if (!items) {
+        this.containerStatus = 'לא נמצאו פריטים במחסן זה, לא ניתן להוסיף פריטים';
+      }
+      else {
+        result = true;
+      }
+    }
+    return result;
+  }
+
   async addOrderItem(itm?: OrderItem) {
+    let result = false;
     let title = this.isTechnician() ? `עדכון פריט לקריאת שירות  ${this.orderNum}` : `עדכון פריט להזמנה  ${this.orderNum}`;
     if (!itm) {
       itm = this.context.for(OrderItem).create();
       itm.oid.value = this.args.in.oid;
       title = this.isTechnician() ? `הוספת פריט לקריאת שירות  ${this.orderNum}` : `הוספת פריט להזמנה  ${this.orderNum}`;
     }
-    let ok = await openDialog(InputAreaComponent,
+  
+    result = await openDialog(InputAreaComponent,
       it => it.args = {
         title: title,
         columnSettings: () => [itm.pid, itm.quntity, itm.remark],
@@ -109,7 +143,7 @@ export class OrderItemsComponent implements OnInit {
         }
       },
       it => it ? it.ok : false);
-    return ok;
+    return result;
   }
 
   async updateContainer(itm: OrderItem, validate = false) {
@@ -118,8 +152,7 @@ export class OrderItemsComponent implements OnInit {
       let container = await this.context.for(Container).findFirst({
         where: row => {
           let result = FILTER_IGNORE;
-          result = result.and(row.sid.isEqualTo(order.uid));
-          result = result.and(row.aid.isEqualTo(this.context.user.id));
+          result = result.and(row.uid.isEqualTo(order.uid));
           return result;
         }
       });

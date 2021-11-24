@@ -35,7 +35,7 @@ export class OrderItem extends IdEntity {
                         uid = o.uid.value;//the store-user-id of order (agent & admin input order-items in specific store)
                     }
                 }
-            }
+            } 
             await openDialog(DynamicServerSideSearchDialogComponent,
                 it => it.args(UserProduct, {
                     onClear: () => this.pid.value = '',

@@ -19,7 +19,7 @@
                     <mat-label style="padding-right: 10px;">{{ 'הזמנה חדשה' }}
                     </mat-label>
                 </button>
-                <span style="width: 10px;"></span>
+                <span *ngIf="!this.isTechnician()" style="width: 10px;"></span>
                  <button style="width: 100%;" mat-raised-button color='primary' (click)="addOrder(OrderType.maintenance)">
                     <mat-icon>add</mat-icon>
                     <mat-label style="padding-right: 10px;">{{ 'קריאת שירות חדשה'  }}

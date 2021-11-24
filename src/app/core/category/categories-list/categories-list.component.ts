@@ -77,7 +77,7 @@ export class CategoriesListComponent implements OnInit {
   async showCategoryItems(c: Category) {
     let changed = await openDialog(CategoryItemsComponent,
       it => it.args = { in: { cid: c.id.value, name: c.name.value } },
-      it => it ? it.args.out.changed : false);
+      it => it && it.args.out ? it.args.out.changed : false);
     if (changed) {
       await this.refresh();
     }

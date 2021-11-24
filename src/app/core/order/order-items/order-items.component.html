@@ -12,8 +12,12 @@
                     <h3>פרטי הזמנה {{ this.args.in.oNum }}</h3>
                 </div>
             </div>
+            <div *ngIf='!this.isContaierExists()'>
+                <span style="color: red;"> {{ this.containerStatus }} </span>
+            </div>
             <div *ngIf="!this.readonly" style="width: 100%; padding-top: 3.5px;">
-                <button style="width: 100%;" mat-raised-button color='primary' (click)="addOrderItem()">
+                <button *ngIf='this.isContaierExists()' style="width: 100%;"
+                    mat-raised-button color='primary' (click)="addOrderItem()">
                     <mat-icon>add</mat-icon>
                     <mat-label style="padding-right: 10px;">{{ isTechnician() ? 'הוספת פריט חדש' : 'הוספת פריט חדש' }}
                     </mat-label>

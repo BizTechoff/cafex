@@ -4,7 +4,7 @@ import { Roles } from "../../users/roles";
 import { UserId } from "../../users/users";
 import { ProductIdColumn } from "../product/product";
 import { ContainerIdColumn } from "./container";
-
+ 
 @EntityClass
 export class ContainerItem extends IdEntity {
  
@@ -57,13 +57,16 @@ export class ContainerItem extends IdEntity {
 
     static async post(req: { id?: string, containerid?: string, productid?: string, quantity?: number }, context?: Context) {
         let result = '';
-        let item = context.for(ContainerItem).create();
+        let item : ContainerItem = undefined;
         if (req.id) {
             item = await context.for(ContainerItem).findId(req.id);
             if (!item) {
                 return 'Id Not Found';
             }
-        } 
+        }
+        else{
+            item = context.for(ContainerItem).create();
+        }
         item.conid.value = req.containerid;
         item.pid.value = req.productid;
         item.quantity.value = req.quantity;

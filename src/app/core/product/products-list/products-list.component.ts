@@ -114,7 +114,7 @@ export class ProductsListComponent implements OnInit {
 
     let changed = await openDialog(ProductUsersComponent,
       it => it.args = { in: { pid: pid, name: name } },
-      it => it ? it.args.out.changed : false);
+      it => it && it.args.out ? it.args.out.changed : false);
     if (changed) {
       await this.refresh();
     }

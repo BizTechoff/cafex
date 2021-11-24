@@ -27,9 +27,7 @@ export class ContainerItemsComponent implements OnInit {
       columnSettings: row => {
         let result = [];
         result.push(row.pid,
-          row.quantity,
-          row.createdBy,
-          row.created);
+          row.quantity);
         return result;
       },
       gridButtons: [
