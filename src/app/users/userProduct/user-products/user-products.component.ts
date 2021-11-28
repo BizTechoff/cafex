@@ -17,7 +17,7 @@ export class UserProductsComponent implements OnInit {
 
   args: { in: { uid: string, name: string }, out?: { changed: boolean } } = { in: { uid: '', name: '' } };
   readonly = false;
-
+ 
   products = new GridSettings(this.context.for(UserProduct), {
     where: row => {
       let result = FILTER_IGNORE;
