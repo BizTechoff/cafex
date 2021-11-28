@@ -8,7 +8,7 @@ import { FILTER_IGNORE } from '../../../shared/types';
 import { Roles } from '../../../users/roles';
 import { Container } from '../../container/container';
 import { ContainerItem } from '../../container/containerItem';
-import { Order, OrderStatus } from '../order';
+import { Order, OrderStatus, OrderType } from '../order';
 import { OrderItem } from '../orderItem';
 
 @Component({
@@ -18,7 +18,7 @@ import { OrderItem } from '../orderItem';
 })
 export class OrderItemsComponent implements OnInit {
 
-  args: { in: { uid: string, oid: string, oNum: number, autoNew: boolean }, out?: { changed: boolean } } = { in: { uid: '', oid: '', oNum: 0, autoNew: false }, out: { changed: false } };
+  args: { in: { uid: string, oid: string, oType: OrderType, oNum: number, autoNew: boolean }, out?: { changed: boolean } } = { in: { uid: '', oid: '', oType: OrderType.normal, oNum: 0, autoNew: false }, out: { changed: false } };
   readonly = true;
   orderNum = 0;
   containerStatus = '';
@@ -85,12 +85,16 @@ export class OrderItemsComponent implements OnInit {
     return this.context.isAllowed(Roles.technician);
   }
 
-  isContaierExists(){
+  isContaierExists() {
     return !(this.containerStatus && this.containerStatus.length > 0);
   }
 
   async refresh() {
     await this.orderItems.reloadData();
+  }
+
+  getTitle() {
+    return this.args.in.oType.isTechnical() ? 'פרטי קריאה' : 'פרטי הזמנה';
   }
 
   close() {
@@ -127,7 +131,7 @@ export class OrderItemsComponent implements OnInit {
       itm.oid.value = this.args.in.oid;
       title = this.isTechnician() ? `הוספת פריט לקריאת שירות  ${this.orderNum}` : `הוספת פריט להזמנה  ${this.orderNum}`;
     }
-  
+
     result = await openDialog(InputAreaComponent,
       it => it.args = {
         title: title,

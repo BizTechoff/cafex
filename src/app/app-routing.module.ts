@@ -3,7 +3,7 @@ import { NgModule, ErrorHandler } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { UsersComponent } from './users/users.component';
-import { AdminGuard, StoreGuard, AgentGuard, TechnicianGuard } from './users/roles';
+import { AdminGuard, StoreGuard, AgentGuard, TechnicianGuard, TechnicianOrAdminGuard } from './users/roles';
 import { ShowDialogOnErrorErrorHandler } from './common/dialog';
 import { JwtModule } from '@auth0/angular-jwt';
 import { StoresListComponent } from './core/store/stores-list/stores-list.component';
@@ -25,7 +25,7 @@ const routes: Routes = [
   { path: 's/orders', component: OrdersListComponent, canActivate: [StoreGuard], data: { name: 'הזמנות' } },
   { path: 't/orders', component: OrdersListComponent, canActivate: [TechnicianGuard], data: { name: 'הזמנות' } },
   { path: 'a/orders', component: OrdersListComponent, canActivate: [AgentGuard], data: { name: 'הזמנות' } },
-  { path: 't/containers', component: ContainersListComponent, canActivate: [TechnicianGuard], data: { name: 'מחסנים' } },
+  { path: 't/containers', component: ContainersListComponent, canActivate: [TechnicianOrAdminGuard], data: { name: 'מחסנים' } },
   { path: 'a/certificates', component: AgentStoreCertificatesComponent, canActivate: [AgentGuard], data: { name: 'תעודות' } },
   { path: 'User Accounts', component: UsersComponent, canActivate: [AdminGuard], data: { name: 'משתמשים' } },
   { path: '', redirectTo: '/Home', pathMatch: 'full' },

@@ -40,3 +40,11 @@ export class StoreGuard extends SignedInGuard {
         return Roles.store;
     }
 }
+
+@Injectable()
+export class TechnicianOrAdminGuard extends SignedInGuard {
+
+    isAllowed() {
+        return [Roles.technician, Roles.admin];
+    }
+}

@@ -53,7 +53,7 @@ export class ContainersListComponent implements OnInit {
             // .or(row.uid.isEqualTo(this.context.user.id));
         }
         else{
-          result= result.and(row.id.isEqualTo('-1'));
+          // result= result.and(row.id.isEqualTo('-1'));
         }
 
         // let userFilter = row.uid.item.store.isEqualTo(true);//or store
@@ -68,7 +68,7 @@ export class ContainersListComponent implements OnInit {
       allowCRUD: false,
       numOfColumnsInGrid: 10,
       columnSettings: cur => [
-        { column: cur.uid, caption: this.isTechnician() ? 'בית קפה' : 'בית קפה\\טכנאי' },
+        { column: cur.uid, caption: this.isTechnician() ? 'בית קפה\\טכנאי' : 'בית קפה\\טכנאי' },
         cur.name,
         cur.createdBy,
         cur.created
@@ -82,8 +82,10 @@ export class ContainersListComponent implements OnInit {
       ],
       rowButtons: [
         {
+          icon: 'inventory',
+          showInLine: true,
           textInMenu: 'הצג פריטים',
-          visible: () => !this.readonly,
+          visible: (cur) => !this.readonly && (!cur.uid.isTechnical()),// || cur.uid.value === this.context.user.id),
           click: async (cur) => await this.showContainerItems(cur)
         }//,
         // {
@@ -108,7 +110,7 @@ export class ContainersListComponent implements OnInit {
     return this.context.isAllowed(Roles.agent);
   }
   isTechnician() {
-    return this.context.isAllowed(Roles.technician);
+    return this.context.isAllowed(Roles.technician) as boolean;
   }
 
   async saveUserDefaults() {

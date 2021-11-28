@@ -135,7 +135,7 @@ export class OrdersListComponent implements OnInit {
       ],
       rowButtons: [
         {
-          textInMenu: 'הצג הזמנה',
+          textInMenu: 'הצג פריטים',// row => row.type.isTechnical()? 'הצג קריאה' : 'הצג הזמנה',
           icon: 'shopping_bag',
           click: async (cur) => await this.showOrderItems(cur),
           visible: cur => !cur.isNew() && (this.isStore() ? cur.type.isNormal() : true),
@@ -238,11 +238,13 @@ export class OrdersListComponent implements OnInit {
         title: title,
         columnSettings: () => {
           let f = [];
+          f.push(
+            { column: order.uid, visible: () => this.store.value ? false : true, readOnly: () => this.isStore() },
+          );
           if (!(order.type.value === OrderType.normal)) {
             f.push(order.type);
           }
           f.push(
-            { column: order.uid, visible: () => this.store.value ? false : true, readOnly: () => this.isStore() },
             order.date,
             { column: order.worker, visible: () => this.isStore(), readOnly: () => !this.isStore() },
             order.remark
@@ -307,7 +309,7 @@ export class OrdersListComponent implements OnInit {
     let hide = this.isStore() && !o.type.isNormal();
     if (!hide) {
       let changed = await openDialog(OrderItemsComponent,
-        it => it.args = { in: { uid: o.uid.value, oid: o.id.value, oNum: o.orderNum.value, autoNew: isNew } },
+        it => it.args = { in: { uid: o.uid.value, oid: o.id.value, oType: o.type.value, oNum: o.orderNum.value, autoNew: isNew } },
         it => it && it.args.out ? it.args.out.changed : false);
       if (changed) {
         await this.refresh();

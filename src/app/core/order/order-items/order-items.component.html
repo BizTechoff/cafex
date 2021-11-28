@@ -9,7 +9,7 @@
                 </div>
 
                 <div style="display: flex; justify-content: center;">
-                    <h3>פרטי הזמנה {{ this.args.in.oNum }}</h3>
+                    <h3> {{ this.getTitle() }}</h3>
                 </div>
             </div>
             <div *ngIf='!this.isContaierExists()'>

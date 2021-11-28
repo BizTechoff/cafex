@@ -44,20 +44,25 @@ export class Container extends IdEntity {
     static async get(req: { id?: string, uid?: string }, context?: Context) {
         let result = "";
 
+        console.log('Container.get');
         for await (const c of context.for(Container).iterate({
             where: row => {
                 let result = FILTER_IGNORE;
+                console.log(1);
                 if (req.id) {
+                    console.log(2);
                     result = result.and(row.id.isEqualTo(req.id));
                 }
                 else {
                     if (req.uid) {
+                        console.log(3);
                         result = result.and(row.uid.isEqualTo(req.uid));
                     }
                     // if (req.agentid) {
                     //     result = result.and(row.tid.isEqualTo(req.agentid));
                     // }
                 }
+                console.log(4);
                 return result;
             }
         })) {

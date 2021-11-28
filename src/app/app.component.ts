@@ -59,11 +59,11 @@ export class AppComponent implements OnInit {
           name: u.name.value
         };
         if (u.admin.value) {
-          result.roles.push(Roles.admin);
+          result.roles.push(Roles.admin);//, Roles.technician);
         }
         if (u.technician.value) {
           result.roles.push(Roles.technician);
-        }
+        } 
         if (u.agent.value) {
           result.roles.push(Roles.agent);
         }

@@ -157,6 +157,8 @@ export class Users extends IdEntity {
 
 export class UserId extends LookupColumn<Users> {
 
+
+    isTechnical() { return this.item.technician.value; }
     constructor(context: Context, role: string, settings?: ColumnSettings<string>) {
         super(context.for(Users), {
             caption: 'משתמש',

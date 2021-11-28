@@ -26,7 +26,7 @@ import { OrdersListComponent } from './core/order/orders-list/orders-list.compon
 import { ProductsListComponent } from './core/product/products-list/products-list.component';
 import { StoresListComponent } from './core/store/stores-list/stores-list.component';
 import { HomeComponent } from './home/home.component';
-import { AdminGuard, AgentGuard, StoreGuard, TechnicianGuard } from './users/roles';
+import { AdminGuard, AgentGuard, StoreGuard, TechnicianGuard, TechnicianOrAdminGuard } from './users/roles';
 import { UsersComponent } from './users/users.component';
 import { CategoriesListComponent } from './core/category/categories-list/categories-list.component';
 import { CategoryCrudComponent } from './core/category/category-crud/category-crud.component';
@@ -86,7 +86,7 @@ import { ContainerItemsComponent } from './core/container/container-items/contai
     RemultModule,
     BrowserAnimationsModule
   ],
-  providers: [DialogService, AdminGuard, TechnicianGuard, AgentGuard, StoreGuard],
+  providers: [DialogService, AdminGuard, TechnicianGuard, AgentGuard, StoreGuard, TechnicianOrAdminGuard],
   bootstrap: [AppComponent],
   entryComponents: [YesNoQuestionComponent, InputAreaComponent, GridDialogComponent, DynamicServerSideSearchDialogComponent,
     OrderItemsComponent, UserProductsComponent, ProductUsersComponent, CategoryItemsComponent,
