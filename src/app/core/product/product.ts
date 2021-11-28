@@ -1,20 +1,54 @@
 import { extend, openDialog } from "@remult/angular";
-import { ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, ServerFunction, StringColumn } from "@remult/core";
+import { BoolColumn, ColumnSettings, Context, EntityClass, IdEntity, LookupColumn, ServerFunction, StringColumn, ValueListColumn, ValueListTypeInfo } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
 import { FILTER_IGNORE, MagicGetProducts, MagicGetProductsResponse } from "../../shared/types";
 import { validString } from "../../shared/utils";
-import { Roles } from "../../users/roles";
 import { UserProduct } from "../../users/userProduct/userProduct";
 import { Category, CategoryIdColumn } from "../category/category";
 import { CategoryItem, CategoryItemIdColumn } from "../category/categoryItem";
 
 
 export class ProductType {
-    static general = new ProductType();
-    static select = new ProductType();
-    constructor() { }
-    id: number;
+    static public = new ProductType('כללי');
+    static private = new ProductType('משוייך');
+    constructor(caption = '') { this.caption = caption; }
+    id: string;
+    caption: string;
+    isPrivate() { return this === ProductType.private; }
+    isPublic() { return this === ProductType.public; }
 }
+export class ProductTypeColumn extends ValueListColumn<ProductType> {
+    constructor(options?: ColumnSettings<ProductType>) {
+        super(ProductType, {
+            caption: 'סוג',
+            defaultValue: ProductType.private,
+            ...options
+        });
+    }
+    isPrivate() { return this.value && this.value.isPrivate(); }
+    isPublic() { return this.value && this.value.isPublic(); }
+}
+// export class ProductStatus {
+//     static public = new ProductStatus('פעיל');
+//     static private = new ProductStatus('לא פעיל');
+//     constructor(caption = '') { this.caption = caption; }
+//     id: string;
+//     caption: string;
+//     isPrivate() { return this === ProductStatus.private; }
+//     isPublic() { return this === ProductStatus.public; }
+// }
+// export class ProductStatusColumn extends ValueListColumn<ProductStatus> {
+//     constructor(options?: ColumnSettings<ProductStatus>) {
+//         super(ProductStatus, {
+//             caption: 'סוג',
+//             defaultValue: ProductStatus.private,
+//             ...options
+//         });
+//     }
+//     isPrivate() { return this.value && this.value.isPrivate(); }
+//     isPublic() { return this.value && this.value.isPublic(); }
+// }
+
 
 @EntityClass
 export class Product extends IdEntity {
@@ -73,6 +107,15 @@ export class Product extends IdEntity {
             validString(this.name, { notNull: true, minLength: 3 });
         }
     });
+    type = extend(new ProductTypeColumn()).dataControl(x => {
+        let v = [] as ProductType[];
+        for (const t of ValueListTypeInfo.get(ProductType).getOptions()) {
+                v.push(t);
+        }
+        // v.sort((a,b) => a.caption.localeCompare(b.caption));
+        x.valueList = v;
+    });
+    active = new BoolColumn({ caption: 'פעיל', defaultValue: true });
     count: number;
 
     getKey() {

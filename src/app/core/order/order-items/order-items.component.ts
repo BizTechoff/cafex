@@ -21,7 +21,8 @@ export class OrderItemsComponent implements OnInit {
   args: { in: { uid: string, oid: string, oType: OrderType, oNum: number, autoNew: boolean }, out?: { changed: boolean } } = { in: { uid: '', oid: '', oType: OrderType.normal, oNum: 0, autoNew: false }, out: { changed: false } };
   readonly = true;
   orderNum = 0;
-  containerStatus = '';
+  containerError = '';
+  order: Order;
 
   orderItems = new GridSettings<OrderItem>(this.context.for(OrderItem),
     {
@@ -60,16 +61,16 @@ export class OrderItemsComponent implements OnInit {
         this.args.in.uid);
     }
     if (this.args.in.oid && this.args.in.oid.length > 0) {
-      let o = await this.context.for(Order).findId(this.args.in.oid);
-      if (o) {
-        this.readonly = o.status.value === OrderStatus.closed;
+      this.order = await this.context.for(Order).findId(this.args.in.oid);
+      if (this.order) {
+        this.readonly = this.order.status.value === OrderStatus.closed;
         // console.log('this.readonly='+this.readonly);
-        this.orderNum = o.orderNum.value;
+        this.orderNum = this.order.orderNum.value;
 
         // console.log('this.readonly=' + this.readonly);
         // console.log('this.args.in.autoNew=' + this.args.in.autoNew);
         if (!this.readonly && this.args.in.autoNew && this.isContaierExists()) {
-          let count = await this.context.for(OrderItem).count(cur => cur.oid.isEqualTo(o.id));
+          let count = await this.context.for(OrderItem).count(cur => cur.oid.isEqualTo(this.order.id));
           if (count === 0) {
             let changed = await this.addOrderItem();
             if (changed) {
@@ -83,10 +84,6 @@ export class OrderItemsComponent implements OnInit {
 
   isTechnician() {
     return this.context.isAllowed(Roles.technician);
-  }
-
-  isContaierExists() {
-    return !(this.containerStatus && this.containerStatus.length > 0);
   }
 
   async refresh() {
@@ -105,25 +102,66 @@ export class OrderItemsComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  async containerExistsWithProducts(uid: string) {
+  isContaierExists() {
+    return !(this.containerError && this.containerError.length > 0)!;
+  }
+
+  async containerExistsWithProducts(uid: string /*order-uid*/) {
     let result = false;
-    let con = await this.context.for(Container).findFirst({
-      where: row => row.uid.isEqualTo(uid)
-    });
-    if (!con) {
-      this.containerStatus = 'לא נמצא מחסן, לא ניתן להוסיף פריטים';
+    let con: Container;
+    let items: ContainerItem[];
+    // 1. Check at store container
+    if (uid) {
+      console.log(1, uid);
+
+      con = await this.context.for(Container).findFirst({
+        where: row => row.uid.isEqualTo(uid)
+      });
+      if (con) {
+        console.log(2);
+
+        items = await this.context.for(ContainerItem).find({
+          where: row => row.conid.isEqualTo(con.id)
+        });
+      }
+    }
+    if (items && items.length > 0) {
+      console.log(3);
+
+      result = true;
     }
     else {
-      let items = await this.context.for(ContainerItem).findFirst({
-        where: row => row.conid.isEqualTo(con.id)
+      console.log(4, this.context.user.id);
+
+      // 2. Check at user(technical) container
+      con = await this.context.for(Container).findFirst({
+        where: row => row.uid.isEqualTo(this.context.user.id)
       });
-      if (!items) {
-        this.containerStatus = 'לא נמצאו פריטים במחסן, לא ניתן להוסיף פריטים';
+      if (con) {
+        console.log(6);
+
+        items = await this.context.for(ContainerItem).find({
+          where: row => row.conid.isEqualTo(con.id)
+        });
+        if (items && items.length > 0) {
+          console.log(7);
+
+          result = true;
+        }
+        else {
+          console.log(8);
+
+          this.containerError = 'לא נמצאו פריטים במחסן, לא ניתן להוסיף פריטים';
+        }
       }
       else {
-        result = true;
+        console.log(9);
+
+        this.containerError = 'לא נמצא מחסן, לא ניתן להוסיף פריטים';
       }
     }
+    console.log(10);
+
     return result;
   }
 
@@ -135,6 +173,14 @@ export class OrderItemsComponent implements OnInit {
       itm.oid.value = this.args.in.oid;
       title = this.isTechnician() ? `הוספת פריט לקריאת שירות  ${this.orderNum}` : `הוספת פריט להזמנה  ${this.orderNum}`;
     }
+
+    // if (this.isTechnician()) {// the items are only technical-items
+    //   let storeTechnialItems = [] as string[];
+    //   let userTechnialItems = [] as string[];
+    //   let all = storeTechnialItems U userTechnialItems;
+    //   let productsToSelectFrom = get from product where id isIn(all);
+    // }
+
 
     result = await openDialog(InputAreaComponent,
       it => it.args = {

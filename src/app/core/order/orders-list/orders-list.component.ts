@@ -52,7 +52,7 @@ export class OrdersListComponent implements OnInit {
     }
   });
   store = extend(new UserId(this.context, Roles.store, {
-    caption: this.isStore() ? 'בית קפה' : 'בחירת בית קפה',
+    caption: this.isStore() ? 'בית קפה' : 'בית קפה',
     valueChange: async () => {
       if (!this.loading) {
         await this.saveUserDefaults();
@@ -190,12 +190,19 @@ export class OrdersListComponent implements OnInit {
 
   loading = false;
   async loadUserDefaults() {
+    if (this.isStore()) {
+      this.loading = true;
+      this.store.value = this.context.user.id;
+      this.loading = false;
+    }
     let defs = localStorage.getItem('user-defaults');
     if (defs) {
       this.storage = JSON.parse(defs);
       if (this.storage) {
         this.loading = true;
-        this.store.value = this.storage.store;
+        if (!this.isStore()) {
+          this.store.value = this.storage.store;
+        }
         this.status.value = OrderStatus.fromString(this.storage.status);
         this.type.value = OrderType.fromString(this.storage.type);
         this.loading = false;
@@ -251,9 +258,11 @@ export class OrdersListComponent implements OnInit {
         title: title,
         columnSettings: () => {
           let f = [];
-          f.push(
-            { column: order.uid, visible: () => this.store.value ? false : true, readOnly: () => this.isStore() },
-          );
+          if (!this.isStore()) {
+            f.push(
+              { column: order.uid, visible: () => this.store.value ? false : true, readOnly: () => this.isStore() },
+            );
+          }
           if (!(order.type.value === OrderType.normal)) {
             f.push(order.type);
           }

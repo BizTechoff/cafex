@@ -4,7 +4,7 @@
             <div style="width: 100%;">
                 <data-control [column]="store"></data-control>
             </div>
-            <button *ngIf="this.isTechnician() && !this.isAdmin()" mat-raised-button style="margin: 5px 5px 14px 0px ;" color='primary' (click)="showMyContainer()">
+            <button *ngIf="this.isTechnician() && !this.isAdmin()" mat-raised-button style="min-width: 100px; height: fit-content; margin-top: 3.5px; margin-right: 5px;" color='primary' (click)="showMyContainer()">
                 <!-- <mat-icon>add</mat-icon> -->
                 <mat-label>{{ 'הצג מחסן שלי' }}                </mat-label>
             </button> 

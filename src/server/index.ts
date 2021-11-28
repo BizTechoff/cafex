@@ -49,7 +49,7 @@ async function startup() {
     let expressBridge = initExpress(app, {
         dataProvider
     });
-
+ 
     let apiUser: Users;
 
     async function register(action: string, path: string, doWork: (req: express.Request, context: Context) => Promise<string>) {

@@ -101,6 +101,13 @@ export class Order extends IdEntity {
             allowApiCRUD: c => c.isSignedIn(),
             allowApiRead: c => c.isSignedIn(),
             defaultOrderBy: () => [this.uid, this.date, this.type],
+            apiDataFilter: () => {
+                let result = FILTER_IGNORE;
+                if (this.isStore()) {
+                    result = result.and(this.uid.isEqualTo(this.context.user.id));
+                }
+                return result;
+            },
             saving: async () => {
                 if (context.onServer) {
                     if (this.date.wasChanged()) {
@@ -130,6 +137,11 @@ export class Order extends IdEntity {
                 }
             }
         });
+    }
+
+    isStore() {
+        return this.context.user.roles.length == 1 && this.context.user.roles.includes(Roles.store);
+        // return this.context.isAllowed(Roles.store);
     }
 
     isTechnician() {

@@ -27,15 +27,13 @@ export class Container extends IdEntity {
             name: 'containers',
             allowApiCRUD: true,
             allowApiRead: c => c.isSignedIn(),
-            // apiDataFilter: () => {
-            //     let result = FILTER_IGNORE;
-            //     if (!this.isManager()) {
-            //         this.uid.waitLoad();
-            //         result = result.and(this.uid.item.store.isEqualTo(true)
-            //             .or(this.uid.isEqualTo(this.context.user.id)));
-            //     } 
-            //     return result;
-            // },
+            apiDataFilter: () => {
+                let result = FILTER_IGNORE;
+                if (this.isStore()) {
+                    result = result.and(this.uid.isEqualTo(this.context.user.id));
+                }
+                return result;
+            },
             saving: async () => {
                 if (context.onServer) {
                     await checkForDuplicateValue(this, this.name, this.context.for(Container));
@@ -46,6 +44,10 @@ export class Container extends IdEntity {
                 }
             }
         });
+    }
+
+    isStore() {
+        return this.context.user.roles.length == 1 && this.context.user.roles.includes(Roles.store);
     }
 
     isManager() { return this.context.isAllowed(Roles.admin); }

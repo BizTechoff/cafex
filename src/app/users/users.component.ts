@@ -34,16 +34,12 @@ export class UsersComponent implements OnInit {
     where: cur => this.search.value ? cur.name.contains(this.search) : FILTER_IGNORE,
     allowCRUD: false,
     numOfColumnsInGrid: 10,
-    // get: { 
-    //   orderBy: h => [h.name],
-    //   limit: 100
-    // },
-    columnSettings: users => [
-      { column: users.name, width: '80' },
-      { column: users.admin, width: '70', hideDataOnInput: true },
-      { column: users.technician, width: '75', hideDataOnInput: true },
-      { column: users.agent, width: '65', hideDataOnInput: true },
-      { column: users.store, width: '95', hideDataOnInput: true }
+    columnSettings: row => [
+      { column: row.name, width: '85' },
+      { column: row.admin, width: '70',readOnly: true, hideDataOnInput: false },
+      { column: row.technician, width: '75', hideDataOnInput: false },
+      { column: row.agent, width: '65', hideDataOnInput: true },
+      { column: row.store, width: '95', hideDataOnInput: true }
     ],
     gridButtons: [
       {

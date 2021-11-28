@@ -4,6 +4,7 @@ import { GridSettings, openDialog } from '@remult/angular';
 import { Context } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
+import { FILTER_IGNORE } from '../../../shared/types';
 import { Users } from '../../users';
 import { UserProduct } from '../userProduct';
 
@@ -18,10 +19,10 @@ export class UserProductsComponent implements OnInit {
   readonly = false;
 
   products = new GridSettings(this.context.for(UserProduct), {
-    where: cur => {
-      // console.log('cur.uid=');
-      // console.log('cur.uid=' + cur.uid && cur.uid.value && cur.uid.value.length > 0 ? cur.uid.value : 'NULL ');
-      return cur.uid.isEqualTo(this.args.in.uid);
+    where: row => {
+      let result = FILTER_IGNORE;
+      result = result.and(row.uid.isEqualTo(this.args.in.uid));
+      return result;
     },
     newRow: cur => cur.uid.value = this.args.in.uid,
     allowCRUD: false,

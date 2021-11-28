@@ -37,7 +37,16 @@ export class ProductsListComponent implements OnInit {
         cur.ciid,
         cur.sku,
         cur.name,
-        { column: this.count, readOnly: o => true, getValue: c => c.getCount(), hideDataOnInput: true, width: '85', allowClick: (c) => false }
+        { column: this.count, readOnly: o => true, getValue: c => c.getCount(), hideDataOnInput: true, width: '85', allowClick: (c) => false },
+        cur.type,
+        cur.active
+      ],
+      gridButtons: [
+        {
+          textInMenu: () => 'רענן',
+          icon: 'refresh',
+          click: async () => await this.refresh()
+        }
       ],
       rowButtons: [
         {
@@ -80,7 +89,8 @@ export class ProductsListComponent implements OnInit {
           p.cid,
           p.ciid,
           p.sku,
-          p.name
+          p.name,
+          p.type
         ],
         ok: async () => {
           await p.save();
