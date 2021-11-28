@@ -14,6 +14,7 @@ import '../app/app.module';
 import { Container } from '../app/core/container/container';
 import { ContainerItem } from '../app/core/container/containerItem';
 import { STARTING_ORDER_NUM } from '../app/shared/types';
+import { Users } from '../app/users/users';
 
 async function startup() {
     config(); //loads the configuration from the .env file
@@ -49,19 +50,37 @@ async function startup() {
         dataProvider
     });
 
+    let apiUser: Users;
+
     async function register(action: string, path: string, doWork: (req: express.Request, context: Context) => Promise<string>) {
         let f = async (req, res) => {
-            let apiKey = req.query.key;
+            let apiKey = req.query.key as string;
             if (apiKey === process.env.APIKEY) {
                 let context = await expressBridge.getValidContext(req);
-                context.setUser({ id: "API", name: "API", roles: [] });
-                let result = await doWork(req, context);
-                res.send(result);
+                // context.clearAllCache();
+                if (!apiUser) {
+                    apiUser = await context.for(Users).findOrCreate({ where: row => row.name.isEqualTo('api') });
+                    if (apiUser.isNew()) {
+                        apiUser.admin.value = true;
+                        await apiUser.save();
+                    }  
+                }
+                // console.log('apiUser.admin.value',apiUser.admin.value);
+                
+                if (!apiUser.admin.value!) {
+                    res.send('User API disabled.');
+                }
+                else {
+                    context.setUser({ id: apiUser.id.value, name: apiUser.name.value, roles: [] });
+                    let result = await doWork(req, context);
+                    res.send(result);
+                }
             }
             else {
                 res.send("NOT ALLOWED");
             };
         };
+
         if (action === 'post') {
             app.post('/api-req/' + path, f);
         }
@@ -80,13 +99,13 @@ async function startup() {
             name: req.query.name as string,
             uid: req.query.userid as string
         }, context);
-    }); 
- 
+    });
+
     register('get', "containers", async (req, context) => {
         return await Container.get({
             id: req.query.id as string,
             uid: req.query.userid as string
-        }, context); 
+        }, context);
     });
 
     register('post', "containersitems", async (req, context) => {
@@ -97,7 +116,7 @@ async function startup() {
             quantity: parseInt(req.query.quantity as string)
         }, context);
     });
- 
+
     register('get', "containersitems", async (req, context) => {
         return await ContainerItem.get({
             id: req.query.id as string,
@@ -295,7 +314,7 @@ startup();
     //     })
     // }
 
-    
+
 
     // CONTAINERS
 

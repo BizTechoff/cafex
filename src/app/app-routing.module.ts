@@ -23,7 +23,7 @@ const routes: Routes = [
   { path: 'Categories', component: CategoriesListComponent, canActivate: [AdminGuard], data: { name: 'קטגוריות לפריטים' } },
   // { path: 's/orders', component: StoreOrdersComponent, canActivate: [StoreGuard], data: { name: 'הזמנות' } },
   { path: 's/orders', component: OrdersListComponent, canActivate: [StoreGuard], data: { name: 'הזמנות' } },
-  { path: 't/orders', component: OrdersListComponent, canActivate: [TechnicianGuard], data: { name: 'הזמנות' } },
+  { path: 't/orders', component: OrdersListComponent, canActivate: [TechnicianGuard], data: { name: 'קריאות שירות' } },
   { path: 'a/orders', component: OrdersListComponent, canActivate: [AgentGuard], data: { name: 'הזמנות' } },
   { path: 't/containers', component: ContainersListComponent, canActivate: [TechnicianOrAdminGuard], data: { name: 'מחסנים' } },
   { path: 'a/certificates', component: AgentStoreCertificatesComponent, canActivate: [AgentGuard], data: { name: 'תעודות' } },

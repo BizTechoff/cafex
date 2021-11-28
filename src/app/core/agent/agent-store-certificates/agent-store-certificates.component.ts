@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { extend, GridSettings, openDialog } from '@remult/angular';
-import { Context, ValueListTypeInfo } from '@remult/core';
+import { Context } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { DynamicServerSideSearchDialogComponent } from '../../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component';
 import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
@@ -10,9 +10,6 @@ import { Roles } from '../../../users/roles';
 import { UserId, Users } from '../../../users/users';
 import { CeritificateItem } from '../../certificate/ceritificateItem';
 import { Ceritificate } from '../../certificate/certificate';
-import { Order } from '../../order/order';
-import { OrderItem } from '../../order/orderItem';
-import { Product } from '../../product/product';
 
 @Component({
   selector: 'app-agent-store-certificates',
@@ -37,52 +34,52 @@ export class AgentStoreCertificatesComponent implements OnInit {
         );
       };
     });
-    certificates = new GridSettings(this.context.for(Ceritificate),
-      {
-        orderBy: cur => [cur.uid, { column: cur.docNum, descending: true }],
-        newRow: cur => {
-          cur.date.value = addDays();
+  certificates = new GridSettings(this.context.for(Ceritificate),
+    {
+      orderBy: cur => [cur.uid, { column: cur.docNum, descending: true }],
+      newRow: cur => {
+        cur.date.value = addDays();
+      },
+      allowCRUD: this.context.isAllowed(Roles.admin) || this.context.isAllowed(Roles.agent),
+      allowDelete: false,
+      numOfColumnsInGrid: 10,
+      columnSettings: cur => [
+        cur.uid,
+        cur.type,
+        cur.docNum,
+        cur.date,
+        cur.neto,
+        cur.discountPcnt,
+        cur.discount,
+        cur.priceAfterDiscount,
+        cur.vat,
+        cur.priceInvoice,
+        cur.payed,
+        cur.transfered,
+        cur.closeSent,
+        cur.canceled
+      ],
+      rowButtons: [
+        {
+          textInMenu: 'הצג שורות',
+          icon: 'shopping_bag',
+          click: async (cur) => await this.showCertificateItems(cur),
+          visible: cur => !cur.isNew(),
+          showInLine: true,
         },
-        allowCRUD: this.context.isAllowed(Roles.admin) || this.context.isAllowed(Roles.agent),
-        allowDelete: false,
-        numOfColumnsInGrid: 10,
-        columnSettings: cur => [
-          cur.uid,
-          cur.type,
-          cur.docNum,
-          cur.date,
-          cur.neto,
-          cur.discountPcnt,
-          cur.discount,
-          cur.priceAfterDiscount,
-          cur.vat,
-          cur.priceInvoice,
-          cur.payed,
-          cur.transfered,
-          cur.closeSent,
-          cur.canceled
-        ],
-        rowButtons: [
-          {
-            textInMenu: 'הצג שורות',
-            icon: 'shopping_bag',
-            click: async (cur) => await this.showCertificateItems(cur),
-            visible: cur => !cur.isNew(),
-            showInLine: true,
-          },
-          {
-            textInMenu: 'מחק תעודה',
-            icon: 'delete',
-            click: async (cur) => await this.deleteCertificate(cur.id.value),
-            visible: cur => !cur.isNew()
-          }
-        ],
-      });
+        {
+          textInMenu: 'מחק תעודה',
+          icon: 'delete',
+          click: async (cur) => await this.deleteCertificate(cur.id.value),
+          visible: cur => !cur.isNew()
+        }
+      ],
+    });
   constructor(private context: Context, private dialog: DialogService) { }
 
   async ngOnInit() {
     let u = await this.context.for(Users).findId(this.context.user.id);
-    if (u.defaultStore.value) {
+    if (u && u.defaultStore) {
       this.store.value = u.defaultStore.value;
     }
   }
@@ -90,7 +87,9 @@ export class AgentStoreCertificatesComponent implements OnInit {
   async refresh(changed = false) {
     if (changed) {
       let u = await this.context.for(Users).findId(this.context.user.id);
-      u.defaultStore.value = this.store.value;
+      if (u && u.defaultStore) {
+        u.defaultStore.value = this.store.value;
+      }
       await u.save();
     }
     await this.certificates.reloadData();
@@ -113,7 +112,7 @@ export class AgentStoreCertificatesComponent implements OnInit {
     }
   }
 
-  async addCertificate(){
+  async addCertificate() {
     if (this.store.item.id.value) {
       let cert = this.context.for(Ceritificate).create();
       cert.uid.value = this.store.item.id.value;

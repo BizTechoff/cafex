@@ -66,8 +66,8 @@ export class OrderItemsComponent implements OnInit {
         // console.log('this.readonly='+this.readonly);
         this.orderNum = o.orderNum.value;
 
-        console.log('this.readonly=' + this.readonly);
-        console.log('this.args.in.autoNew=' + this.args.in.autoNew);
+        // console.log('this.readonly=' + this.readonly);
+        // console.log('this.args.in.autoNew=' + this.args.in.autoNew);
         if (!this.readonly && this.args.in.autoNew && this.isContaierExists()) {
           let count = await this.context.for(OrderItem).count(cur => cur.oid.isEqualTo(o.id));
           if (count === 0) {
@@ -94,7 +94,11 @@ export class OrderItemsComponent implements OnInit {
   }
 
   getTitle() {
-    return this.args.in.oType.isTechnical() ? 'פרטי קריאה' : 'פרטי הזמנה';
+    let result = 'פרטי הזמנה';
+    if (this.args.in.oType && this.args.in.oType.isTechnical()) {
+      result = 'פרטי קריאה';
+    }
+    return result;
   }
 
   close() {
@@ -107,14 +111,14 @@ export class OrderItemsComponent implements OnInit {
       where: row => row.uid.isEqualTo(uid)
     });
     if (!con) {
-      this.containerStatus = 'לא נמצא מחסן של החנות הזו שמשוייכת לך, לא ניתן להוסיף פריטים';
+      this.containerStatus = 'לא נמצא מחסן, לא ניתן להוסיף פריטים';
     }
     else {
       let items = await this.context.for(ContainerItem).findFirst({
         where: row => row.conid.isEqualTo(con.id)
       });
       if (!items) {
-        this.containerStatus = 'לא נמצאו פריטים במחסן זה, לא ניתן להוסיף פריטים';
+        this.containerStatus = 'לא נמצאו פריטים במחסן, לא ניתן להוסיף פריטים';
       }
       else {
         result = true;

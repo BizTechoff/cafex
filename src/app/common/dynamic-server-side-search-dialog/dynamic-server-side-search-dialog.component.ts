@@ -60,7 +60,7 @@ export class DynamicServerSideSearchDialogComponent implements OnInit {
     this.loaded = true;
   }
   async loadProducts() {
-    console.log(this._args.where);
+    // console.log(this._args.where);
     this.items = await this.entityContext.find({
 
       where: [this._args.where, p =>

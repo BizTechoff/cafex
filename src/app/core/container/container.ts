@@ -4,6 +4,7 @@ import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-ser
 import { FILTER_IGNORE } from "../../shared/types";
 import { Roles } from "../../users/roles";
 import { UserId } from "../../users/users";
+import { ContainerItem } from "./containerItem";
 
 @EntityClass
 export class Container extends IdEntity {
@@ -12,7 +13,15 @@ export class Container extends IdEntity {
     uid = new UserId(this.context, Roles.store, { caption: "בית קפה" });
     created = new DateTimeColumn({ caption: 'נוצר' })
     createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
+    count: number;
 
+    getCount() {
+        if (this.count !== undefined)
+            return this.count;
+        this.count = 0;
+        this.context.for(ContainerItem).count(c => c.conid.isEqualTo(this.id)).then(result => { this.count = result; })
+        return this.count;
+    }
     constructor(private context: Context) {
         super({
             name: 'containers',
@@ -43,26 +52,15 @@ export class Container extends IdEntity {
 
     static async get(req: { id?: string, uid?: string }, context?: Context) {
         let result = "";
-
-        console.log('Container.get');
         for await (const c of context.for(Container).iterate({
             where: row => {
                 let result = FILTER_IGNORE;
-                console.log(1);
                 if (req.id) {
-                    console.log(2);
                     result = result.and(row.id.isEqualTo(req.id));
+                } 
+                else if (req.uid) {
+                    result = result.and(row.uid.isEqualTo(req.uid));
                 }
-                else {
-                    if (req.uid) {
-                        console.log(3);
-                        result = result.and(row.uid.isEqualTo(req.uid));
-                    }
-                    // if (req.agentid) {
-                    //     result = result.and(row.tid.isEqualTo(req.agentid));
-                    // }
-                }
-                console.log(4);
                 return result;
             }
         })) {

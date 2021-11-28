@@ -19,11 +19,15 @@ import { OrderItem } from '../orderItem';
 })
 export class OrdersListComponent implements OnInit {
 
+  storage = { store: '', status: '', type: '' };
   type = extend(new OrderTypeColumn(
     {
-      caption: 'סינון לפי סוג',
+      caption: 'סינון סוג',
       defaultValue: OrderType.all,
       valueChange: async () => {
+        if (!this.loading) {
+          await this.saveUserDefaults();
+        }
         await this.refresh();
       }
     })).dataControl(x => {
@@ -39,21 +43,26 @@ export class OrdersListComponent implements OnInit {
       x.valueList = v;
     });
   status = new OrderStatusColumn(true, {
-    caption: 'סינון לפי סטטוס',
+    caption: 'סינון סטטוס',
     valueChange: async () => {
+      if (!this.loading) {
+        await this.saveUserDefaults();
+      }
       await this.refresh();
     }
   });
   store = extend(new UserId(this.context, Roles.store, {
     caption: this.isStore() ? 'בית קפה' : 'בחירת בית קפה',
     valueChange: async () => {
-      await this.saveUserDefaults();
+      if (!this.loading) {
+        await this.saveUserDefaults();
+      }
       await this.refresh();
     }
   }))
     .dataControl(it => {
-      it.cssClass = 'cfx-font-bold',
-        it.hideDataOnInput = true;
+      // it.cssClass = 'cfx-font-bold';
+      it.hideDataOnInput = true;
       it.clickIcon = 'search';
       it.getValue = () => this.store.item.name;
       it.readOnly = () => this.isStore();
@@ -69,139 +78,143 @@ export class OrdersListComponent implements OnInit {
       };
     });
   count = new NumberColumn({ caption: 'מס.שורות' });
-  orders = new GridSettings<Order>(this.context.for(Order),
-    {
-      where: row => {
-        let result = FILTER_IGNORE;
-        if (this.store.value) {
-          result = result.and(row.uid.isEqualTo(this.store.value));
-        }
-        if (this.status.value) {
-          result = result.and(row.status.isEqualTo(this.status.value));
-        }
-        if (this.type.value) {
-          if (this.isTechnician()) {
-            result = result.and(row.type.isIn(...OrderType.technicalTypes));
-          }
-          if (!this.type.isAll())
-            result = result.and(row.type.isEqualTo(this.type.value));
-        }
 
-        // (this.isAdmin()
-        //   ? this.store.value
-        //     ? row.uid.isEqualTo(this.store.value)
-        //     : FILTER_IGNORE
-        //   : row.uid.isEqualTo(this.store.value))
-        //   .and(this.status.value && this.status.isIn(OrderStatus.open, OrderStatus.closed)
-        //     ? row.status.isEqualTo(this.status)
-        //     : FILTER_IGNORE)
-        //   .and(this.type.value && this.type.isIn(OrderType.normal, OrderType.fault, OrderType.maintenance)
-        //     ? row.type.isEqualTo(this.type)
-        //     : FILTER_IGNORE)
-
-        return result;
-      },
-      orderBy: cur => [cur.uid, { column: cur.orderNum, descending: true }],
-      newRow: cur => {
-        if (this.isStore()) {
-          cur.uid.value = this.context.user.id;
-        }
-        else if (this.store.value) {
-          cur.uid.value = this.store.value;
-        }
-        cur.date.value = addDays();
-        cur.time.value = addTime();
-        cur.status.value = OrderStatus.open;
-      },
-      allowCRUD: false,// this.context.isAllowed(Roles.admin),
-      // allowDelete: false,
-      numOfColumnsInGrid: 10,
-      columnSettings: cur => [
-        this.isStore() ? undefined : { column: cur.uid, readOnly: o => !o.isNew(), width: '95' },//, width: '95'
-        { column: cur.date, readOnly: o => !o.isNew(), width: '90' },//
-        { column: cur.orderNum, readOnly: o => !o.isNew(), width: '85', caption: this.isTechnician() ? 'מס.קריאה' : 'מס.הזמנה' },//
-        { column: cur.type, readOnly: o => !o.isNew(), width: '80' },
-        { column: cur.worker, caption: 'שם ממלא', readOnly: o => !o.isNew(), width: '100' }, //, width: '80' //this.isStore() ? undefined : { column: cur.worker, readOnly: o => !o.isNew(), width: '80' },
-        { column: cur.status, readOnly: o => true, width: '80' },//, width: '80'
-        { column: this.count, readOnly: o => true, width: '100', getValue: o => o.getCount(), hideDataOnInput: true, allowClick: (o) => false },//, width: '100'
-        { column: cur.remark, readOnly: o => true }//, width: '100%'
-      ],
-      gridButtons: [
-        {
-          textInMenu: () => 'רענן',
-          icon: 'refresh',
-          click: async () => await this.refresh()
-        }
-      ],
-      rowButtons: [
-        {
-          textInMenu: 'הצג פריטים',// row => row.type.isTechnical()? 'הצג קריאה' : 'הצג הזמנה',
-          icon: 'shopping_bag',
-          click: async (cur) => await this.showOrderItems(cur),
-          visible: cur => !cur.isNew() && (this.isStore() ? cur.type.isNormal() : true),
-          showInLine: true
-        },
-        {
-          textInMenu: 'שכפל הזמנה',
-          icon: 'content_copy',
-          click: async (cur) => await this.copyOrder(cur),
-          visible: cur => !cur.isNew() && (this.isAgent() || this.isStore())
-        },
-        {
-          textInMenu: '__________________________',
-          visible: cur => !cur.isNew() && cur.status.value === OrderStatus.open
-        },
-        {
-          textInMenu: 'סגור הזמנה',
-          icon: 'check_circle_outline',
-          click: async (cur) => await this.closeOrder(cur),
-          visible: cur => !cur.isNew() && cur.status.value === OrderStatus.open
-        },
-        {
-          textInMenu: 'מחק הזמנה',
-          icon: 'delete',
-          click: async (cur) => await this.deleteOrder(cur),
-          visible: cur => !cur.isNew() && cur.status.value === OrderStatus.open
-        }
-      ],
-    });
-
+  orders: GridSettings<Order>;
   constructor(private context: Context, private dialog: DialogService) { }
   OrderType = OrderType;
   async ngOnInit() {
     await this.loadUserDefaults();
+    await this.initGrid();
   }
 
-  async loadUserDefaults() {
-    if (this.isStore()) {
-      this.store.value = this.context.user.id;
-    }
-    else {
-      let u = await this.context.for(Users).findId(this.context.user.id);
-      if (u) {
-        if (u.defaultStore.value) {
-          let exists = await this.context.for(Users).findId(u.defaultStore.value);
-          if (exists) {
-            if (exists.store.value) {
-              this.store.value = u.defaultStore.value;
-            }
+  async initGrid() {
+    this.orders = new GridSettings<Order>(this.context.for(Order),
+      {
+        where: row => {
+          let result = FILTER_IGNORE;
+          if (this.store.value) {
+            result = result.and(row.uid.isEqualTo(this.store.value));
           }
-        }
+          if (this.status.value) {
+            result = result.and(row.status.isEqualTo(this.status.value));
+          }
+          if (this.type.value) {
+            if (this.isTechnician()) {
+              result = result.and(row.type.isIn(...OrderType.technicalTypes));
+            }
+            if (!this.type.isAll())
+              result = result.and(row.type.isEqualTo(this.type.value));
+          }
+
+          // (this.isAdmin()
+          //   ? this.store.value
+          //     ? row.uid.isEqualTo(this.store.value)
+          //     : FILTER_IGNORE
+          //   : row.uid.isEqualTo(this.store.value))
+          //   .and(this.status.value && this.status.isIn(OrderStatus.open, OrderStatus.closed)
+          //     ? row.status.isEqualTo(this.status)
+          //     : FILTER_IGNORE)
+          //   .and(this.type.value && this.type.isIn(OrderType.normal, OrderType.fault, OrderType.maintenance)
+          //     ? row.type.isEqualTo(this.type)
+          //     : FILTER_IGNORE)
+
+          return result;
+        },
+        // orderBy: cur => [cur.uid.item.name, { column: cur.orderNum, descending: true }],
+        newRow: cur => {
+          if (this.isStore()) {
+            cur.uid.value = this.context.user.id;
+          }
+          else if (this.store.value) {
+            cur.uid.value = this.store.value;
+          }
+          cur.date.value = addDays();
+          cur.time.value = addTime();
+          cur.status.value = OrderStatus.open;
+        },
+        allowCRUD: false,// this.context.isAllowed(Roles.admin),
+        // allowDelete: false,
+        numOfColumnsInGrid: 10,
+        columnSettings: cur => [
+          this.isStore() ? undefined : { column: cur.uid, readOnly: o => !o.isNew(), width: '95' },//, width: '95'
+          { column: cur.date, readOnly: o => !o.isNew(), width: '90' },//
+          { column: cur.orderNum, readOnly: o => !o.isNew(), width: '85', caption: this.isTechnician() ? 'מס.קריאה' : 'מס.הזמנה' },//
+          { column: cur.type, readOnly: o => !o.isNew(), width: '80' },
+          { column: cur.worker, caption: 'שם ממלא', readOnly: o => !o.isNew(), width: '100' }, //, width: '80' //this.isStore() ? undefined : { column: cur.worker, readOnly: o => !o.isNew(), width: '80' },
+          { column: cur.status, readOnly: o => true, width: '80' },//, width: '80'
+          { column: this.count, readOnly: o => true, width: '100', getValue: o => o.getCount(), hideDataOnInput: true, allowClick: (o) => false },//, width: '100'
+          { column: cur.remark, readOnly: o => true },//, width: '100%'
+          { column: cur.createdBy, readOnly: o => true }
+        ],
+        gridButtons: [
+          {
+            textInMenu: () => 'רענן',
+            icon: 'refresh',
+            click: async () => await this.refresh()
+          }
+        ],
+        rowButtons: [
+          {
+            textInMenu: 'הצג פריטים',// row => row.type.isTechnical()? 'הצג קריאה' : 'הצג הזמנה',
+            icon: 'shopping_bag',
+            click: async (cur) => await this.showOrderItems(cur),
+            visible: cur => !cur.isNew() && (this.isStore() ? cur.type.isNormal() : true),
+            showInLine: true
+          },
+          {
+            textInMenu: 'שכפל הזמנה',
+            icon: 'content_copy',
+            click: async (cur) => await this.copyOrder(cur),
+            visible: cur => !cur.isNew() && (this.isAgent() || this.isStore())
+          },
+          {
+            textInMenu: '__________________________',
+            visible: cur => !cur.isNew() && cur.status.value === OrderStatus.open
+          },
+          {
+            textInMenu: 'סגור הזמנה',
+            icon: 'check_circle_outline',
+            click: async (cur) => await this.closeOrder(cur),
+            visible: cur => !cur.isNew() && cur.status.value === OrderStatus.open
+          },
+          {
+            textInMenu: 'מחק הזמנה',
+            icon: 'delete',
+            click: async (cur) => await this.deleteOrder(cur),
+            visible: cur => !cur.isNew() && cur.status.value === OrderStatus.open
+          }
+        ],
+      });
+  }
+
+
+  loading = false;
+  async loadUserDefaults() {
+    let defs = localStorage.getItem('user-defaults');
+    if (defs) {
+      this.storage = JSON.parse(defs);
+      if (this.storage) {
+        this.loading = true;
+        this.store.value = this.storage.store;
+        this.status.value = OrderStatus.fromString(this.storage.status);
+        this.type.value = OrderType.fromString(this.storage.type);
+        this.loading = false;
+        // this.storage.status = this.status.value.caption;
+        // this.storage.type = this.type.value.caption;
       }
     }
   }
   async saveUserDefaults() {
-    if (!this.isStore()) {
-      if (this.store.value) {
-        let u = await this.context.for(Users).findId(this.context.user.id);
-        u.defaultStore.value = this.store.value;
-        await u.save();
-      }
-    }
+    this.storage.store = this.store.value;
+    this.storage.status = this.status.value.id;
+    this.storage.type = this.type.value.id;
+    localStorage.setItem('user-defaults', JSON.stringify(this.storage));
   }
 
   async refresh() {
-    await this.orders.reloadData();
+    if (this.orders) {
+      await this.orders.reloadData();
+    }
   }
 
   isStore() {

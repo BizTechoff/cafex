@@ -105,7 +105,7 @@ export class UsersComponent implements OnInit {
         columnSettings: () => [add.name],
         ok: async () => {
           let pass = await UsersComponent.getDefaultPasswword();
-          console.log('pass='+pass);
+          // console.log('pass='+pass);
           await add.create(pass);
           this.args.out.changed = true;
         }

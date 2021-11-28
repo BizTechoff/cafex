@@ -1,5 +1,5 @@
 import { extend, openDialog } from "@remult/angular";
-import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, ServerFunction, StringColumn, Validators, ValueListColumn, ValueListTypeInfo } from "@remult/core";
+import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, ServerFunction, StringColumn, ValueListColumn, ValueListTypeInfo } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
 import { FILTER_IGNORE, MagicGetOrders, STARTING_ORDER_NUM, TimeColumn, TODAY } from "../../shared/types";
 import { addDays, addTime, validDate, validString } from "../../shared/utils";
@@ -10,12 +10,13 @@ import { OrderItem } from "./orderItem";
 @EntityClass
 export class Order extends IdEntity {
     type = extend(new OrderTypeColumn()).dataControl(x => {
-        let v = [];
+        let v = [] as OrderType[];
         for (const t of ValueListTypeInfo.get(OrderType).getOptions()) {
             if (!t.isNormal() && !t.isAll()) {
                 v.push(t);
             }
         }
+        // v.sort((a,b) => a.caption.localeCompare(b.caption));
         x.valueList = v;
     });
     uid = extend(new UserId(this.context, Roles.store, {
@@ -71,12 +72,12 @@ export class Order extends IdEntity {
     status = new OrderStatusColumn();
     remark = new StringColumn({ caption: 'הערה' });
     // validate: {
-        //     let result =[] as ColumnValidator<string>[];
-        //     if(this.type.isTechnical()) {
-        //         result.push(Validators.required);
-        //     }
-        //     return result;
-        // }
+    //     let result =[] as ColumnValidator<string>[];
+    //     if(this.type.isTechnical()) {
+    //         result.push(Validators.required);
+    //     }
+    //     return result;
+    // }
     isImported = new BoolColumn({ caption: 'נטען?', defaultValue: false });
     created = new DateTimeColumn({ caption: 'נוצר' });
     createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
@@ -99,6 +100,7 @@ export class Order extends IdEntity {
             name: 'orders',
             allowApiCRUD: c => c.isSignedIn(),
             allowApiRead: c => c.isSignedIn(),
+            defaultOrderBy: () => [this.uid, this.date, this.type],
             saving: async () => {
                 if (context.onServer) {
                     if (this.date.wasChanged()) {
@@ -131,7 +133,7 @@ export class Order extends IdEntity {
     }
 
     isTechnician() {
-      return this.context.isAllowed(Roles.technician);
+        return this.context.isAllowed(Roles.technician);
     }
 
     @ServerFunction({ allowed: true })
@@ -198,6 +200,12 @@ export class OrderStatus {
     caption: string;
     isOpen() { return this === OrderStatus.open; }
     isClosed() { return this === OrderStatus.closed; }
+    static fromString(id: string) {
+        if (id === OrderStatus.closed.id) {
+            return OrderStatus.closed;
+        }
+        return OrderStatus.open;
+    }
 }
 
 export class OrderStatusColumn extends ValueListColumn<OrderStatus> {
@@ -218,8 +226,8 @@ export class OrderStatusColumn extends ValueListColumn<OrderStatus> {
 
 export class OrderType {
     static normal = new OrderType('רגילה');
-    static fault = new OrderType('תקלה');
     static maintenance = new OrderType('תחזוקה');
+    static fault = new OrderType('תקלה');
     static all = new OrderType('הכל');
     constructor(caption = '') { this.caption = caption; }
     id: string;
@@ -230,6 +238,18 @@ export class OrderType {
     isAll() { return this === OrderType.all; }
     isNormal() { return this === OrderType.normal; }
     static technicalTypes = [OrderType.fault, OrderType.maintenance];
+    static fromString(id: string) {
+        if (id === OrderType.normal.id) {
+            return OrderType.normal;
+        }
+        if (id === OrderType.maintenance.id) {
+            return OrderType.maintenance;
+        }
+        if (id === OrderType.fault.id) {
+            return OrderType.fault;
+        }
+        return OrderType.all;
+    }
 }
 export class OrderTypeColumn extends ValueListColumn<OrderType> {
     constructor(options?: ColumnSettings<OrderType>) {
@@ -240,6 +260,6 @@ export class OrderTypeColumn extends ValueListColumn<OrderType> {
         });
     }
     isNormal() { return this.value && this.value.isNormal(); }
-    isTechnical() { return this.value &&  this.value.isTechnical(); }
-    isAll() { return this.value &&  this.value.isAll(); }
+    isTechnical() { return this.value && this.value.isTechnical(); }
+    isAll() { return this.value && this.value.isAll(); }
 }

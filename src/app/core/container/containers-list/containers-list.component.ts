@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { extend, GridSettings, openDialog } from '@remult/angular';
-import { Context } from '@remult/core';
+import { Context, NumberColumn } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { DynamicServerSideSearchDialogComponent } from '../../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component';
 import { FILTER_IGNORE } from '../../../shared/types';
@@ -15,14 +15,17 @@ import { ContainerItemsComponent } from '../container-items/container-items.comp
   styleUrls: ['./containers-list.component.scss']
 })
 export class ContainersListComponent implements OnInit {
+  storage = { store: '', status: '', type: '' };
   readonly = false;
   // showMyContainer =new BoolColumn({caption:'הצג את המחסן שלי', valueChange: async() => await this.refresh()});
   store = extend(new UserId(this.context, Roles.store, {
     caption: 'בחירת בית קפה',
     valueChange: async () => {
-      await this.saveUserDefaults();
+      if (!this.loading) {
+        await this.saveUserDefaults();
+      }
       await this.refresh();
-      if (this.containers.items.length == 1) {
+      if (this.store.value && this.containers && this.containers.items && this.containers.items.length == 1) {
         await this.showContainerItems(this.containers.items[0]);
       }
     }
@@ -44,60 +47,87 @@ export class ContainersListComponent implements OnInit {
         );
       };
     });
-  containers = new GridSettings<Container>(this.context.for(Container),
-    {
-      where: row => {
-        let result = FILTER_IGNORE;
-        if (this.store.value) {
-          result = result.and(row.uid.isEqualTo(this.store));
-            // .or(row.uid.isEqualTo(this.context.user.id));
-        }
-        else{
-          // result= result.and(row.id.isEqualTo('-1'));
-        }
 
-        // let userFilter = row.uid.item.store.isEqualTo(true);//or store
-        // if (this.isTechnician()) {
-        //   // userFilter = userFilter.or(row.uid.isEqualTo(this.context.user.id));//or current technical user
-        // }
-        // result = result.and(userFilter);
-        return result;
-      },
-      orderBy: row => [row.name],
-      // newRow: cur => cur.cid.value = this.args.in.cid,
-      allowCRUD: false,
-      numOfColumnsInGrid: 10,
-      columnSettings: cur => [
-        { column: cur.uid, caption: this.isTechnician() ? 'בית קפה\\טכנאי' : 'בית קפה\\טכנאי' },
-        cur.name,
-        cur.createdBy,
-        cur.created
-      ],
-      gridButtons: [
-        {
-          textInMenu: () => 'רענן',
-          icon: 'refresh',
-          click: async () => await this.refresh()
-        }
-      ],
-      rowButtons: [
-        {
-          icon: 'inventory',
-          showInLine: true,
-          textInMenu: 'הצג פריטים',
-          visible: (cur) => !this.readonly && (!cur.uid.isTechnical()),// || cur.uid.value === this.context.user.id),
-          click: async (cur) => await this.showContainerItems(cur)
-        }//,
-        // {
-        //   textInMenu: 'מחק שורה',
-        //   visible: () => !this.readonly,
-        //   click: async (cur) => await this.deleteContainer(cur)
-        // }
-      ]
-    });
+    count = new NumberColumn({ caption: 'מס.פריטים' });
+  containers: GridSettings<Container>;
+
   constructor(private context: Context, private dialog: DialogService) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+    await this.loadUserDefaults();
+    await this.initGrid();
+  }
+
+  async initGrid() {
+    this.containers = new GridSettings<Container>(this.context.for(Container),
+      {
+        where: row => {
+          let result = FILTER_IGNORE;
+          if (this.store.value) {
+            result = result.and(row.uid.isEqualTo(this.store));
+            // .or(row.uid.isEqualTo(this.context.user.id));
+          }
+          else {
+            // result= result.and(row.id.isEqualTo('-1'));
+          }
+
+          // let userFilter = row.uid.item.store.isEqualTo(true);//or store
+          // if (this.isTechnician()) {
+          //   // userFilter = userFilter.or(row.uid.isEqualTo(this.context.user.id));//or current technical user
+          // }
+          // result = result.and(userFilter);
+          return result;
+        },
+        orderBy: row => [row.name],
+        // newRow: cur => cur.cid.value = this.args.in.cid,
+        allowCRUD: false,
+        numOfColumnsInGrid: 10,
+        columnSettings: cur => [
+          { column: cur.uid, caption: this.isTechnician() ? 'בית קפה\\טכנאי' : 'בית קפה\\טכנאי' },
+          cur.name,
+          { column: this.count, readOnly: o => true, width: '100', getValue: c => c.getCount(), hideDataOnInput: true, allowClick: (o) => false },//, width: '100
+          cur.createdBy,
+          cur.created
+        ], 
+        gridButtons: [
+          {
+            textInMenu: () => 'רענן',
+            icon: 'refresh',
+            click: async () => await this.refresh()
+          }
+        ],
+        rowButtons: [
+          {
+            icon: 'inventory',
+            showInLine: true,
+            textInMenu: 'הצג פריטים',
+            visible: (cur) => !this.readonly && (!cur.uid.isTechnical()),// || cur.uid.value === this.context.user.id),
+            click: async (cur) => await this.showContainerItems(cur)
+          }//,
+          // {
+          //   textInMenu: 'מחק שורה',
+          //   visible: () => !this.readonly,
+          //   click: async (cur) => await this.deleteContainer(cur)
+          // }
+        ]
+      });
+  }
+ 
+  loading = false;
+  async loadUserDefaults() {
+    let defs = localStorage.getItem('user-defaults');
+    if (defs) {
+      this.storage = JSON.parse(defs);
+      if (this.storage) {
+        this.loading = true;
+        this.store.value = this.storage.store;
+        this.loading = false;
+      }
+    }
+  }
+  async saveUserDefaults() {
+    this.storage.store = this.store.value;
+    localStorage.setItem('user-defaults', JSON.stringify(this.storage));
   }
 
   isStore() {
@@ -113,18 +143,10 @@ export class ContainersListComponent implements OnInit {
     return this.context.isAllowed(Roles.technician) as boolean;
   }
 
-  async saveUserDefaults() {
-    if (!this.isStore()) {
-      if (this.store.value) {
-        let u = await this.context.for(Users).findId(this.context.user.id);
-        u.defaultStore.value = this.store.value;
-        await u.save();
-      }
-    }
-  }
-
   async refresh() {
-    await this.containers.reloadData();
+    if (this.containers) {
+      await this.containers.reloadData();
+    }
   }
 
   async showMyContainer() {

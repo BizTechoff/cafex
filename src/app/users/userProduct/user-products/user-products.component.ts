@@ -19,8 +19,8 @@ export class UserProductsComponent implements OnInit {
 
   products = new GridSettings(this.context.for(UserProduct), {
     where: cur => {
-      console.log('cur.uid=');
-      console.log('cur.uid=' + cur.uid && cur.uid.value && cur.uid.value.length > 0 ? cur.uid.value : 'NULL ');
+      // console.log('cur.uid=');
+      // console.log('cur.uid=' + cur.uid && cur.uid.value && cur.uid.value.length > 0 ? cur.uid.value : 'NULL ');
       return cur.uid.isEqualTo(this.args.in.uid);
     },
     newRow: cur => cur.uid.value = this.args.in.uid,

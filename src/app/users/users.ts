@@ -58,12 +58,12 @@ export class Users extends IdEntity {
             }
         }
     });
-
+ 
     defaultStore = new UserId(this.context, Roles.store, { caption: "חנות בר.מחדל" });
     branch = new StringColumn({ caption: "סניף" });
 
     constructor(private context: Context) {
-
+ 
         super({
             caption: `בית קפה/טכנאי`,
             name: "Users",
@@ -104,7 +104,7 @@ export class Users extends IdEntity {
         if (!this.isNew()) {
             throw "פעולה לא חוקית";
         }
-        console.log(password);
+        // console.log(password);
         await this.password.hashAndSet(password);
         await this.save();
     }
