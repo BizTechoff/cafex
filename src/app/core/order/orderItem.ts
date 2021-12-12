@@ -31,7 +31,7 @@ export class OrderItem extends IdEntity {
             if (this.oid.item && !this.oid.item.sid.value) {
                 await this.oid.item.reload();
             }
-            if (this.isTechnical()) {
+            if (this.oid.item.type.isTechnical()) {
                 pids.push(...await this.getAllProductIdsFromContainer(this.oid.item.sid.value));
                 pids.push(...await this.getAllProductIdsFromContainer(this.context.user.id));
             }

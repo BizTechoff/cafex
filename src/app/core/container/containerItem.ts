@@ -4,7 +4,7 @@ import { Roles } from "../../users/roles";
 import { UserId } from "../../users/users";
 import { ProductIdColumn } from "../product/product";
 import { ContainerIdColumn } from "./container";
- 
+   
 @EntityClass
 export class ContainerItem extends IdEntity {
  
@@ -13,7 +13,7 @@ export class ContainerItem extends IdEntity {
     quantity = new NumberColumn({ caption: "כמות" });
     created = new DateTimeColumn({ caption: 'נוצר' })
     createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
-
+  
     constructor(private context: Context) {
         super({
             name: 'containersItems',

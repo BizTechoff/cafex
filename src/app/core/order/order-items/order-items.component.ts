@@ -36,13 +36,17 @@ export class OrderItemsComponent implements OnInit {
     this.args.out = { changed: false };
     this.initGrid();
     await this.refresh();
+    console.log(1);
 
     if (this.isTechnician()) {
+      console.log(2);
       await this.checkContainerIfExistsWithProducts();
+      console.log(3);
     }
 
     if (!this.readonly && this.args.in.autoNew && this.isContaierExists()) {
-      let count = await this.context.for(OrderItem).count(cur => cur.oid.isEqualTo(this.order.id));
+      console.log(4);
+      let count = await this.context.for(OrderItem).count(cur => cur.oid.isEqualTo(this.args.in.oid));
       if (count === 0) {
         let changed = await this.addOrderItem();
         if (changed) {
@@ -50,6 +54,7 @@ export class OrderItemsComponent implements OnInit {
         }
       }
     }
+    console.log(5);
   }
 
   async initGrid() {
@@ -145,16 +150,20 @@ export class OrderItemsComponent implements OnInit {
         where: row => row.conid.isEqualTo(this.containerStore.id)
       });
       if (!items || items.length == 0) {
-        items = await this.context.for(ContainerItem).find({
-          where: row => row.conid.isEqualTo(this.containerTech.id)
-        });
-        this.containerError = 'לא נמצאו פריטים במחסן של בית הקפה ולא בשלך';
-        return false;
+        if (this.containerTech) {
+          items = await this.context.for(ContainerItem).find({
+            where: row => row.conid.isEqualTo(this.containerTech.id)
+          });
+          if (!items || items.length == 0) {
+            this.containerError = 'לא נמצאו פריטים במחסן של בית הקפה ולא בשלך';
+            return false;
+          }
+        }
       }
     }
     else if (this.containerTech) {
       let items = await this.context.for(ContainerItem).find({
-        where: row => row.conid.isEqualTo(this.containerStore.id)
+        where: row => row.conid.isEqualTo(this.containerTech.id)
       });
       if (!items || items.length == 0) {
         this.containerError = 'לא נמצא מחסן בבית הקפה ובשלך לא נמצאו פריטים';
@@ -166,11 +175,11 @@ export class OrderItemsComponent implements OnInit {
 
   async addOrderItem(itm?: OrderItem) {
     let result = false;
-    let title = this.isTechnician() ? `עדכון פריט לקריאת שירות  ${this.orderNum}` : `עדכון פריט להזמנה  ${this.orderNum}`;
+    let title = this.order.type.isTechnical() ? `עדכון פריט לקריאת שירות  ${this.orderNum}` : `עדכון פריט להזמנה  ${this.orderNum}`;
     if (!itm) {
       itm = this.context.for(OrderItem).create();
       itm.oid.value = this.args.in.oid;
-      title = this.isTechnician() ? `הוספת פריט לקריאת שירות  ${this.orderNum}` : `הוספת פריט להזמנה  ${this.orderNum}`;
+      title = this.order.type.isTechnical() ? `הוספת פריט לקריאת שירות  ${this.orderNum}` : `הוספת פריט להזמנה  ${this.orderNum}`;
     }
     result = await openDialog(InputAreaComponent,
       it => it.args = {
@@ -281,7 +290,7 @@ export class OrderItemsComponent implements OnInit {
         }
         item.quantity.value += oi.quntity.value;
         await item.save();
-        this.selectedContainetItem = item; 
+        this.selectedContainetItem = item;
       }
       await this.dialog.info(`פריט נמחק`);
     }
