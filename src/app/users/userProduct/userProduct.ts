@@ -1,7 +1,7 @@
 import { extend, openDialog } from "@remult/angular";
 import { ColumnSettings, Context, EntityClass, IdEntity, LookupColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
-import { Product, ProductIdColumn } from "../../core/product/product";
+import { Product, ProductIdColumn, ProductType } from "../../core/product/product";
 import { FILTER_IGNORE } from "../../shared/types";
 import { validString } from "../../shared/utils";
 import { Roles } from "../roles";
@@ -39,35 +39,13 @@ export class UserProduct extends IdEntity {
         dcs.clickIcon = 'search';
         dcs.getValue = () => this.pid.displayValue;
         dcs.click = async () => {
-            let prodIds = [];
-            if (this.context.isAllowed(Roles.admin)) {
-                let techIds = [];
-                for await (const usr of this.context.for(Users).iterate({
-                    where: cur => cur.technician.isEqualTo(true)
-                })) {
-                    techIds.push(usr.id.value);
-                }
-                for await (const up of this.context.for(UserProduct).iterate({
-                    where: cur => cur.uid.isIn(...techIds)
-                })) {
-                    prodIds.push(up.pid.value);
-                }
-            }
             await openDialog(DynamicServerSideSearchDialogComponent,
-                dlg => this.context.isAllowed(Roles.admin)
-                    ? dlg.args(Product, {
-                        onClear: () => this.pid.value = '',
-                        onSelect: cur => this.pid.value = cur.id.value,
-                        searchColumn: cur => cur.name,
-                        where: cur => cur.id.isNotIn(...prodIds)
-                    })
-                    : dlg.args(UserProduct, {
-                        onClear: () => this.pid.value = '',
-                        onSelect: cur => this.pid.value = cur.pid.value,
-                        searchColumn: cur => cur.pid.item.name,//??
-                        where: (cur) => cur.uid.isEqualTo(this.uid)
-                    })
-            );
+                dlg => dlg.args(Product, {
+                    onClear: () => this.pid.value = '',
+                    onSelect: cur => this.pid.value = cur.id.value,
+                    searchColumn: cur => cur.name,
+                    where: cur => this.uid.isTechnical() ? cur.type.isEqualTo(ProductType.technical) : cur.type.isEqualTo(ProductType.regular)
+                }));
         };
     });
     constructor(private context: Context) {

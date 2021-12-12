@@ -9,6 +9,10 @@ import { OrderItem } from "./orderItem";
 
 @EntityClass
 export class Order extends IdEntity {
+    
+    magicId = new StringColumn({ allowApiUpdate: false });
+    orderNum = new NumberColumn({ allowApiUpdate: false, dbReadOnly: true, caption: 'מס.הזמנה' });
+
     type = extend(new OrderTypeColumn()).dataControl(x => {
         let v = [] as OrderType[];
         for (const t of ValueListTypeInfo.get(OrderType).getOptions()) {
@@ -19,29 +23,27 @@ export class Order extends IdEntity {
         // v.sort((a,b) => a.caption.localeCompare(b.caption));
         x.valueList = v;
     });
-    uid = extend(new UserId(this.context, Roles.store, {
+    sid = extend(new UserId(this.context, Roles.store, {
         caption: 'בית קפה',
         validate: () => {
-            validString(this.uid, { notNull: true, minLength: 3 });
+            validString(this.sid, { notNull: true, minLength: 3 });
         }
     })).dataControl(dcs => {
         dcs.hideDataOnInput = true;
         dcs.clickIcon = 'search';
-        dcs.getValue = () => this.uid.displayValue;
+        dcs.getValue = () => this.sid.displayValue;
         dcs.click = async () => {
             await openDialog(DynamicServerSideSearchDialogComponent,
                 dlg => dlg.args(Users, {
-                    onClear: () => this.uid.value = '',
-                    onSelect: cur => this.uid.value = cur.id.value,
+                    onClear: () => this.sid.value = '',
+                    onSelect: cur => this.sid.value = cur.id.value,
                     searchColumn: cur => cur.name,
                     where: (cur) => cur.store.isEqualTo(true)
                 })
             );
         };
     });
-    magicId = new StringColumn({ allowApiUpdate: false });
-    orderNum = new NumberColumn({ allowApiUpdate: false, dbReadOnly: true, caption: 'מס.הזמנה' });
-
+    status = new OrderStatusColumn();
     date = new DateColumn({
         caption: 'תאריך',
         defaultValue: addDays(TODAY, undefined, true),
@@ -50,35 +52,21 @@ export class Order extends IdEntity {
             if (this.isNew()) {
                 validDate(this.date, { greaterThenToday: true });
             }
-            // if (!validDate(this.date, { notNull: true, minYear: 2000 })) {
-            //     throw this.date.defs.caption + ': ' + this.date.validationError;
-            // }
-            // if (this.isNew()) {
-            //     if (!validDate(this.date, { greaterThenToday: true })) {
-            //         throw this.date.defs.caption + ': ' + this.date.validationError;
-            //     }
-            // }
         }
     });
+    time = new TimeColumn({ caption: 'שעה' });
     worker = new StringColumn({
         caption: 'שם עובד ממלא',
         validate: () => {
             if (this.context.isAllowed(Roles.store)) {
                 validString(this.worker, { notNull: true, minLength: 3 });
             }
+            else{
+                // this.worker.value = this.context.user.name;
+            }
         }
     });
-    time = new TimeColumn({ caption: 'שעה' });
-    status = new OrderStatusColumn();
     remark = new StringColumn({ caption: 'הערה' });
-    // validate: {
-    //     let result =[] as ColumnValidator<string>[];
-    //     if(this.type.isTechnical()) {
-    //         result.push(Validators.required);
-    //     }
-    //     return result;
-    // }
-    isImported = new BoolColumn({ caption: 'נטען?', defaultValue: false });
     created = new DateTimeColumn({ caption: 'נוצר' });
     createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
     modified = new DateTimeColumn({ caption: 'השתנה' });
@@ -100,11 +88,11 @@ export class Order extends IdEntity {
             name: 'orders',
             allowApiCRUD: c => c.isSignedIn(),
             allowApiRead: c => c.isSignedIn(),
-            defaultOrderBy: () => [this.uid, this.date, this.type],
+            defaultOrderBy: () => [this.sid, this.date, this.type],
             apiDataFilter: () => {
                 let result = FILTER_IGNORE;
                 if (this.isStore()) {
-                    result = result.and(this.uid.isEqualTo(this.context.user.id));
+                    result = result.and(this.sid.isEqualTo(this.context.user.id));
                 }
                 return result;
             },
@@ -185,6 +173,9 @@ interface theResult {
 export class OrderIdColumn extends LookupColumn<Order> {
     constructor(context: Context, settings?: ColumnSettings<string>) {
         super(context.for(Order), {
+            // valueChange: () => {if(this.exists()){
+            //     this.item.reload();
+            // }},
             displayValue: () => this.item.orderNum.value.toString()
             , ...settings
         });

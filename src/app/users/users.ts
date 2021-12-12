@@ -158,13 +158,14 @@ export class Users extends IdEntity {
 export class UserId extends LookupColumn<Users> {
 
 
+    isAdmin() { return this.item.admin.value; }
     isTechnical() { return this.item.technician.value; }
     constructor(context: Context, role: string, settings?: ColumnSettings<string>) {
         super(context.for(Users), {
             caption: 'משתמש',
             displayValue: () => this.item.name.value
             , ...settings
-        });
+        }); 
         // extend(this).dataControl(ctrl => {
         //     ctrl.getValue = () => this.displayValue;
         //     ctrl.hideDataOnInput = true;

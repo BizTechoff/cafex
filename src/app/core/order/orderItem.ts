@@ -1,12 +1,14 @@
 import { extend, openDialog } from "@remult/angular";
 import { Context, DateTimeColumn, EntityClass, IdEntity, NumberColumn, StringColumn } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
-import { FILTER_IGNORE, TODAY } from "../../shared/types";
+import { TODAY } from "../../shared/types";
 import { addDays, validNumber, validString } from "../../shared/utils";
 import { Roles } from "../../users/roles";
-import { UserProduct, UserProductIdColumn } from "../../users/userProduct/userProduct";
+import { UserProduct } from "../../users/userProduct/userProduct";
 import { UserId } from "../../users/users";
-import { ProductIdColumn } from "../product/product";
+import { Container } from "../container/container";
+import { ContainerItem } from "../container/containerItem";
+import { Product, ProductIdColumn } from "../product/product";
 import { Order, OrderIdColumn } from "./order";
 
 @EntityClass
@@ -25,35 +27,28 @@ export class OrderItem extends IdEntity {
         it.clickIcon = 'search';
         it.getValue = () => this.pid.displayValue;
         it.click = async () => {
-            let isAdminOrAgent = this.context.user.roles.includes(Roles.admin) || this.context.user.roles.includes(Roles.agent);
-
-            let uid = this.context.user.id;//store||technician
-            if (isAdminOrAgent) {
-                if (this.oid.value) {
-                    let o = await this.context.for(Order).findId(this.oid.value);
-                    if (o) {
-                        uid = o.uid.value;//the store-user-id of order (agent & admin input order-items in specific store)
-                    }
-                }
-            } 
+            let pids = [] as string[];
+            if (this.oid.item && !this.oid.item.sid.value) {
+                await this.oid.item.reload();
+            }
+            if (this.isTechnical()) {
+                pids.push(...await this.getAllProductIdsFromContainer(this.oid.item.sid.value));
+                pids.push(...await this.getAllProductIdsFromContainer(this.context.user.id));
+            }
+            else if (this.oid.item.sid.value) {
+                pids.push(...await this.getAllProductIdsFromStore(this.oid.item.sid.value));
+            }
             await openDialog(DynamicServerSideSearchDialogComponent,
-                it => it.args(UserProduct, {
+                it => it.args(Product, {
                     onClear: () => this.pid.value = '',
-                    onSelect: cur => this.pid.value = cur.pid.value,
-                    searchColumn: cur => cur.pid.item.name,
-                    where: cur => uid ? cur.uid.isEqualTo(uid) : FILTER_IGNORE
+                    onSelect: row => this.pid.value = row.id.value,
+                    searchColumn: row => row.name,
+                    where: row => row.id.isIn(...pids)
                 })
             );
         };
     });
-    // pid = new ProductIdColumn(this.context, {
-    //     caption: 'פריט',
-    //     validate: () => {
-    //         if (!validString(this.pid, { notNull: true, minLength: 2 })) {
-    //             throw this.pid.defs.caption + ': ' + this.pid.validationError;
-    //         }
-    //     }
-    // }); 
+
     quntity = new NumberColumn({
         caption: 'כמות',
         validate: () => {
@@ -84,8 +79,83 @@ export class OrderItem extends IdEntity {
                         this.modifiedBy.value = this.context.user.id;
                     }
                 }
-            }
+            }//,
+            // saved: async () => {
+            //     console.log(`OrderItem.saved { originalValue: ${this.quntity.originalValue}, value: ${this.quntity.value}, wasChanged() => ${this.quntity.wasChanged()}, pid: { waschanged() => ${this.pid.wasChanged()}, id: ${this.pid.value}} } } `);
+            //     if (context.onServer) {
+            //         let o = await this.context.for(Order).findId(this.oid.value);
+            //         if (o) {
+            //             if (o.type.isTechnical()) {
+            //                 if (this.pid.wasChanged() || this.quntity.wasChanged()) {
+            //                     let itm = await this.getContItemFromContainer(o.sid.value);
+            //                     if (itm) {
+            //                         itm.quantity.value = (itm.quantity.value - (this.quntity.originalValue ? this.quntity.originalValue : 0)) + this.quntity.value;
+            //                         await itm.save();
+            //                     }
+            //                 }
+            //             } 
+            //         }
+            //     }
+            // },
+            // deleted: async () => {
+            //     console.log(`OrderItem.deleted { originalValue: ${this.quntity.originalValue}, value: ${this.quntity.value}, wasChanged() => ${this.quntity.wasChanged()}, pid: { waschanged() => ${this.pid.wasChanged()}, id: ${this.pid.value}} } } `);
+            //     if (context.onServer) {
+            //         let o = await this.context.for(Order).findId(this.oid.value);
+            //         if (o) {
+            //             if (o.type.isTechnical()) {
+            //                 let itm = await this.getContItemFromContainer(o.sid.value);
+            //                 if (itm) {
+            //                     itm.quantity.value = itm.quantity.value + this.quntity.originalValue;
+            //                     await itm.save();
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
         });
+    }
+
+    isTechnical() { return this.context.isAllowed(Roles.technician); }
+
+    async getAllProductIdsFromContainer(uid: string) {
+        let result: string[] = [] as string[];
+        let con = await this.context.for(Container).findFirst({
+            where: row => row.uid.isEqualTo(uid)
+        })
+        if (con) {
+            for await (const itm of this.context.for(ContainerItem).iterate({
+                where: row => row.conid.isEqualTo(con.id)
+            })) {
+                result.push(itm.pid.value);
+            }
+        }
+        return result;
+    }
+
+    async getAllProductIdsFromStore(uid: string) {
+        let result: string[] = [] as string[];
+        for await (const up of this.context.for(UserProduct).iterate({
+            where: row => row.uid.isEqualTo(uid)
+        })) {
+            result.push(up.pid.value);
+        }
+        return result;
+    }
+
+    async getContItemFromContainer(uid: string) {
+        let result: ContainerItem;
+        // store | technical | agent | admin => uid
+        let con = await this.context.for(Container).findFirst({ where: row => row.uid.isEqualTo(uid) });
+        if (con) {
+            result = await this.context.for(ContainerItem).findFirst({ where: row => row.conid.isEqualTo(con.id).and(row.pid.isEqualTo(this.pid)) });
+        }
+        else {
+            con = await this.context.for(Container).findFirst({ where: row => row.uid.isEqualTo(this.context.user.id) });
+            if (con) {
+                result = await this.context.for(ContainerItem).findFirst({ where: row => row.conid.isEqualTo(con.id).and(row.pid.isEqualTo(this.pid)) });
+            }
+        }
+        return result;
     }
 };
 

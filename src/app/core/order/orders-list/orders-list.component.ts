@@ -93,7 +93,7 @@ export class OrdersListComponent implements OnInit {
         where: row => {
           let result = FILTER_IGNORE;
           if (this.store.value) {
-            result = result.and(row.uid.isEqualTo(this.store.value));
+            result = result.and(row.sid.isEqualTo(this.store.value));
           }
           if (this.status.value) {
             result = result.and(row.status.isEqualTo(this.status.value));
@@ -123,10 +123,10 @@ export class OrdersListComponent implements OnInit {
         // orderBy: cur => [cur.uid.item.name, { column: cur.orderNum, descending: true }],
         newRow: cur => {
           if (this.isStore()) {
-            cur.uid.value = this.context.user.id;
+            cur.sid.value = this.context.user.id;
           }
           else if (this.store.value) {
-            cur.uid.value = this.store.value;
+            cur.sid.value = this.store.value;
           }
           cur.date.value = addDays();
           cur.time.value = addTime();
@@ -136,7 +136,7 @@ export class OrdersListComponent implements OnInit {
         // allowDelete: false,
         numOfColumnsInGrid: 10,
         columnSettings: cur => [
-          this.isStore() ? undefined : { column: cur.uid, readOnly: o => !o.isNew(), width: '95' },//, width: '95'
+          this.isStore() ? undefined : { column: cur.sid, readOnly: o => !o.isNew(), width: '95' },//, width: '95'
           { column: cur.date, readOnly: o => !o.isNew(), width: '90' },//
           { column: cur.orderNum, readOnly: o => !o.isNew(), width: '85', caption: this.isTechnician() ? 'מס.קריאה' : 'מס.הזמנה' },//
           { column: cur.type, readOnly: o => !o.isNew(), width: '80' },
@@ -250,7 +250,7 @@ export class OrdersListComponent implements OnInit {
   async addOrder(type: OrderType) {
     let order = this.context.for(Order).create();
     order.type.value = type;
-    order.uid.value = this.isStore() ? this.context.user.id : this.store.value;
+    order.sid.value = this.isStore() ? this.context.user.id : this.store.value;
     order.date.value = addDays();
     let title = type.isTechnical() ? 'קריאת שירות חדשה' : 'הזמנה חדשה';
     await openDialog(InputAreaComponent,
@@ -260,7 +260,7 @@ export class OrdersListComponent implements OnInit {
           let f = [];
           if (!this.isStore()) {
             f.push(
-              { column: order.uid, visible: () => this.store.value ? false : true, readOnly: () => this.isStore() },
+              { column: order.sid, visible: () => this.store.value ? false : true, readOnly: () => this.isStore() },
             );
           }
           if (!(order.type.value === OrderType.normal)) {
@@ -276,7 +276,7 @@ export class OrdersListComponent implements OnInit {
         ok: async () => {
           await order.save();
           if (!this.store.value) {
-            this.store.value = order.uid.value;
+            this.store.value = order.sid.value;
           }
           await this.refresh();
           await this.showOrderItems(order, true);
@@ -303,7 +303,7 @@ export class OrdersListComponent implements OnInit {
     let yes = await this.dialog.yesNoQuestion(`האם לשכפל את הזמנה ${o.orderNum.value}`);
     if (yes) {
       let copy = this.context.for(Order).create();
-      copy.uid.value = o.uid.value;
+      copy.sid.value = o.sid.value;
       copy.date.value = addDays();
       copy.time.value = addTime();
       copy.remark.value = o.remark.value;
@@ -331,7 +331,7 @@ export class OrdersListComponent implements OnInit {
     let hide = this.isStore() && !o.type.isNormal();
     if (!hide) {
       let changed = await openDialog(OrderItemsComponent,
-        it => it.args = { in: { uid: o.uid.value, oid: o.id.value, oType: o.type.value, oNum: o.orderNum.value, autoNew: isNew } },
+        it => it.args = { in: { sid: o.sid.value, oid: o.id.value, oType: o.type.value, oNum: o.orderNum.value, autoNew: isNew } },
         it => it && it.args.out ? it.args.out.changed : false);
       if (changed) {
         await this.refresh();

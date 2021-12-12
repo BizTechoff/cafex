@@ -2,9 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { BusyService, extend, GridSettings, openDialog } from '@remult/angular';
 import { Context, ServerFunction, StringColumn } from '@remult/core';
 import { DialogService } from '../common/dialog';
+import { GridDialogComponent } from '../common/grid-dialog/grid-dialog.component';
 import { InputAreaComponent } from '../common/input-area/input-area.component';
+import { ProductSharing } from '../core/product/product';
 import { FILTER_IGNORE } from '../shared/types';
 import { Roles } from './roles';
+import { UserProduct } from './userProduct/userProduct';
 import { Users } from './users';
 
 
@@ -36,7 +39,7 @@ export class UsersComponent implements OnInit {
     numOfColumnsInGrid: 10,
     columnSettings: row => [
       { column: row.name, width: '85' },
-      { column: row.admin, width: '70',readOnly: true, hideDataOnInput: false },
+      { column: row.admin, width: '70', readOnly: true, hideDataOnInput: false },
       { column: row.technician, width: '75', hideDataOnInput: false },
       { column: row.agent, width: '65', hideDataOnInput: true },
       { column: row.store, width: '95', hideDataOnInput: true }
@@ -49,6 +52,18 @@ export class UsersComponent implements OnInit {
       }
     ],
     rowButtons: [{
+      cssClass: 'under-line',
+      visible: row => row.store.value || row.technician.value,
+      name: 'פריטים משוייכים',
+      icon: 'shopping_bag',
+      click: async (row) => await this.showProducts(row)
+    }
+      // ,{
+      //   visible: row => row.store.value || row.technician.value,
+      //   name: '_________________',
+      //   icon: 'minimize'
+      // } 
+      , {
       name: 'איפוס סיסמא',
       icon: 'password',
       click: async () => {
@@ -70,6 +85,31 @@ export class UsersComponent implements OnInit {
     }
     ]
   });
+
+  async showProducts(u: Users) {
+    /*
+    select  * 
+    from    usersproducts
+    where 	uid = '9bd98773-51a8-4846-b56f-3bac02de7193'
+              OR
+            pid in (select id from products where share = 'public' and type = 'regular');
+    */
+    await openDialog(GridDialogComponent, gd => gd.args = {
+      title: `פריטים המשוייכים ל: ${u.name.value}`,
+      settings: new GridSettings(this.context.for(UserProduct), {
+        where: row => row.uid.isEqualTo(u.id),
+        // row.pid.item.active.isEqualTo(true)
+        //   .and(row.uid.isEqualTo(u.id)
+        //     .or(row.pid.item.share.isEqualTo(ProductSharing.public))),
+        allowCRUD: false,
+        numOfColumnsInGrid: 1,
+        columnSettings: row => [
+          { column: row.pid, width: '250' }
+        ],
+      }),
+      ok: () => { }
+    })
+  }
 
   @ServerFunction({ allowed: Roles.admin })
   static async getDefaultPasswword() {

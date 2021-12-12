@@ -101,8 +101,8 @@ export class ContainersListComponent implements OnInit {
             icon: 'inventory',
             showInLine: true,
             textInMenu: 'הצג פריטים',
-            visible: (cur) => !this.readonly && (!cur.uid.isTechnical()),// || cur.uid.value === this.context.user.id),
-            click: async (cur) => await this.showContainerItems(cur)
+            visible: (row) => !this.readonly && (!row.uid.isTechnical() || row.uid.isAdmin()),// || cur.uid.value === this.context.user.id),
+            click: async (row) => await this.showContainerItems(row)
           }//,
           // {
           //   textInMenu: 'מחק שורה',

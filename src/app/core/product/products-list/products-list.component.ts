@@ -33,12 +33,13 @@ export class ProductsListComponent implements OnInit {
       allowDelete: false,
       numOfColumnsInGrid: 10,
       columnSettings: cur => [
+        cur.type,
         cur.cid,
         cur.ciid,
         cur.sku,
         cur.name,
         { column: this.count, readOnly: o => true, getValue: c => c.getCount(), hideDataOnInput: true, width: '85', allowClick: (c) => false },
-        cur.type,
+        cur.share,
         cur.active
       ],
       gridButtons: [
@@ -86,11 +87,13 @@ export class ProductsListComponent implements OnInit {
       it => it.args = {
         title: p.isNew() ? `פריט חדש` : `עריכת פריט: ${p.name.value}`,
         columnSettings: () => [
+          p.active,
+          p.type,
           p.cid,
           p.ciid,
           p.sku,
           p.name,
-          p.type
+          p.share
         ],
         ok: async () => {
           await p.save();

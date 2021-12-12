@@ -22,7 +22,7 @@ export class StoresListComponent implements OnInit {
   });
   count = new NumberColumn({ caption: 'פריטים' });
   stores = new GridSettings<Users>(this.context.for(Users), {
-    where: cur => cur.store.isEqualTo(true)
+    where: cur => cur.store.isEqualTo(true)//only stores
       .and(this.search.value && this.search.value.length > 0
         ? cur.name.contains(this.search.value) : FILTER_IGNORE),
     orderBy: cur => cur.name,

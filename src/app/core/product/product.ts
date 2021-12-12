@@ -8,26 +8,49 @@ import { Category, CategoryIdColumn } from "../category/category";
 import { CategoryItem, CategoryItemIdColumn } from "../category/categoryItem";
 
 
-export class ProductType {
-    static public = new ProductType('כללי');
-    static private = new ProductType('משוייך');
+export class ProductSharing {
+    static public = new ProductSharing('כללי');
+    static private = new ProductSharing('משוייך');
     constructor(caption = '') { this.caption = caption; }
     id: string;
     caption: string;
-    isPrivate() { return this === ProductType.private; }
-    isPublic() { return this === ProductType.public; }
+    isPrivate() { return this === ProductSharing.private; }
+    isPublic() { return this === ProductSharing.public; }
 }
-export class ProductTypeColumn extends ValueListColumn<ProductType> {
-    constructor(options?: ColumnSettings<ProductType>) {
-        super(ProductType, {
-            caption: 'סוג',
-            defaultValue: ProductType.private,
+export class ProductSharingColumn extends ValueListColumn<ProductSharing> {
+    constructor(options?: ColumnSettings<ProductSharing>) {
+        super(ProductSharing, {
+            caption: 'שיתוף',
+            defaultValue: ProductSharing.private,
             ...options
         });
     }
     isPrivate() { return this.value && this.value.isPrivate(); }
     isPublic() { return this.value && this.value.isPublic(); }
 }
+
+
+export class ProductType {
+    static regular = new ProductType('רגיל');
+    static technical = new ProductType('תחזוקה');
+    constructor(caption = '') { this.caption = caption; }
+    id: string;
+    caption: string;
+    isRegular() { return this === ProductType.regular; }
+    isTechnical() { return this === ProductType.technical; }
+}
+export class ProductTypeColumn extends ValueListColumn<ProductType> {
+    constructor(options?: ColumnSettings<ProductType>) {
+        super(ProductType, {
+            caption: 'סוג',
+            defaultValue: ProductType.regular,
+            ...options
+        });
+    }
+    isRegular() { return this.value && this.value.isRegular(); }
+    isTechnical() { return this.value && this.value.isTechnical(); }
+}
+
 // export class ProductStatus {
 //     static public = new ProductStatus('פעיל');
 //     static private = new ProductStatus('לא פעיל');
@@ -52,6 +75,14 @@ export class ProductTypeColumn extends ValueListColumn<ProductType> {
 
 @EntityClass
 export class Product extends IdEntity {
+    type = extend(new ProductTypeColumn()).dataControl(x => {
+        let v = [] as ProductType[];
+        for (const t of ValueListTypeInfo.get(ProductType).getOptions()) {
+                v.push(t);
+        }
+        // v.sort((a,b) => a.caption.localeCompare(b.caption));
+        x.valueList = v;
+    });
     cid = extend(new CategoryIdColumn(this.context, {
         caption: 'קבוצה ראשית',
         validate: () => {
@@ -107,9 +138,9 @@ export class Product extends IdEntity {
             validString(this.name, { notNull: true, minLength: 3 });
         }
     });
-    type = extend(new ProductTypeColumn()).dataControl(x => {
-        let v = [] as ProductType[];
-        for (const t of ValueListTypeInfo.get(ProductType).getOptions()) {
+    share = extend(new ProductSharingColumn()).dataControl(x => {
+        let v = [] as ProductSharing[];
+        for (const t of ValueListTypeInfo.get(ProductSharing).getOptions()) {
                 v.push(t);
         }
         // v.sort((a,b) => a.caption.localeCompare(b.caption));
