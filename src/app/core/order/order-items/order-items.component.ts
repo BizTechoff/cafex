@@ -24,11 +24,12 @@ export class OrderItemsComponent implements OnInit {
   args: { in: { sid: string/*store*/, oid: string, oType: OrderType, oNum: number, autoNew: boolean }, out?: { changed: boolean } } = { in: { sid: '', oid: '', oType: OrderType.normal, oNum: 0, autoNew: false }, out: { changed: false } };
   readonly = true;
   orderNum = 0;
-  containerError = '';
+  containerError = null!;
   order: Order;
 
   orderItems: GridSettings<OrderItem>;
 
+  loaded = false;
   containerStore: Container;
   containerTech: Container;
   selectedContainetItem: ContainerItem;
@@ -48,6 +49,10 @@ export class OrderItemsComponent implements OnInit {
       await this.checkContainerIfExistsWithProducts();
       // console.log(3);
     }
+    else{
+      this.containerError = '';
+    }
+    this.loaded = true;
 
     // if (!this.readonly && this.args.in.autoNew && this.isContaierExists()) {
     //   // console.log(4);
@@ -175,6 +180,7 @@ export class OrderItemsComponent implements OnInit {
         return false;
       }
     }
+    this.containerError = '';
     return true;
   }
 

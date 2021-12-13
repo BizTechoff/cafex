@@ -12,10 +12,10 @@
                     <h3> {{ this.getTitle() }}</h3>
                 </div>
             </div>
-            <div *ngIf='!this.isContaierExists()'>
+            <div *ngIf='this.loaded && !this.isContaierExists()'>
                 <span style="color: red;"> {{ this.containerError }} </span>
             </div>
-            <div *ngIf="!this.readonly && this.isContaierExists()" style="width: 100%; padding-top: 3.5px;">
+            <div *ngIf="!this.readonly && this.loaded && this.isContaierExists()" style="width: 100%; padding-top: 3.5px;">
                 <div *ngIf='this.args.in.oType.isTechnical()'
                     style="display: flex; flex-direction: column; justify-content: center; ">
                     <label *ngIf="this.isTechnician()" style="text-align: center;"> {{ 'משיכת פריט חדש' }} </label>
