@@ -112,3 +112,19 @@ export class ContainerIdColumn extends LookupColumn<Container> {
         });
     }
 }
+
+export class ContainerOwner {
+    static store = new ContainerOwner('בית הקפה');
+    static yours = new ContainerOwner('שלך');
+    constructor(caption = '') { this.caption = caption; }
+    id: string;
+    caption: string;
+    isStore() { return this === ContainerOwner.store; }
+    isYours() { return this === ContainerOwner.yours; }
+    static fromString(id: string) {
+        if (id === ContainerOwner.store.id) {
+            return ContainerOwner.store;
+        }
+        return ContainerOwner.yours;
+    }
+}

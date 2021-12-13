@@ -3,11 +3,14 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { GridSettings, openDialog } from '@remult/angular';
 import { Context } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
+import { DynamicServerSideSearchDialogComponent } from '../../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
 import { FILTER_IGNORE } from '../../../shared/types';
 import { Roles } from '../../../users/roles';
-import { Container } from '../../container/container';
+import { UserProduct } from '../../../users/userProduct/userProduct';
+import { Container, ContainerOwner } from '../../container/container';
 import { ContainerItem } from '../../container/containerItem';
+import { Product } from '../../product/product';
 import { Order, OrderType } from '../order';
 import { OrderItem } from '../orderItem';
 
@@ -29,32 +32,34 @@ export class OrderItemsComponent implements OnInit {
   containerStore: Container;
   containerTech: Container;
   selectedContainetItem: ContainerItem;
-
+  containerOwner = ContainerOwner.store;
   constructor(private context: Context, private dialog: DialogService, private dialogRef: MatDialogRef<any>) { }
+
+  ContainerOwner = ContainerOwner;
 
   async ngOnInit() {
     this.args.out = { changed: false };
     this.initGrid();
     await this.refresh();
-    console.log(1);
+    // console.log(1);
 
     if (this.isTechnician()) {
-      console.log(2);
+      // console.log(2);
       await this.checkContainerIfExistsWithProducts();
-      console.log(3);
+      // console.log(3);
     }
 
-    if (!this.readonly && this.args.in.autoNew && this.isContaierExists()) {
-      console.log(4);
-      let count = await this.context.for(OrderItem).count(cur => cur.oid.isEqualTo(this.args.in.oid));
-      if (count === 0) {
-        let changed = await this.addOrderItem();
-        if (changed) {
-          await this.refresh();
-        }
-      }
-    }
-    console.log(5);
+    // if (!this.readonly && this.args.in.autoNew && this.isContaierExists()) {
+    //   // console.log(4);
+    //   let count = await this.context.for(OrderItem).count(cur => cur.oid.isEqualTo(this.args.in.oid));
+    //   if (count === 0) {
+    //     let changed = await this.addOrderItem();
+    //     if (changed) {
+    //       await this.refresh();
+    //     }
+    //   }
+    // }
+    // console.log(5);
   }
 
   async initGrid() {
@@ -173,7 +178,7 @@ export class OrderItemsComponent implements OnInit {
     return true;
   }
 
-  async addOrderItem(itm?: OrderItem) {
+  async addOrderItem(itm?: OrderItem, owner?: ContainerOwner) {
     let result = false;
     let title = this.order.type.isTechnical() ? `עדכון פריט לקריאת שירות  ${this.orderNum}` : `עדכון פריט להזמנה  ${this.orderNum}`;
     if (!itm) {
@@ -184,7 +189,37 @@ export class OrderItemsComponent implements OnInit {
     result = await openDialog(InputAreaComponent,
       it => it.args = {
         title: title,
-        columnSettings: () => [itm.pid, itm.quntity, itm.remark],
+        columnSettings: () => [
+          {
+            column: itm.pid,
+            click: async () => {
+              let pids = [] as string[];
+              if (!this.order.sid.item) {
+                await this.order.sid.item.reload();
+              }
+              if (this.order.type.isTechnical()) {
+                if (owner.isStore()) {
+                  pids.push(...await this.getAllProductIdsFromContainer(this.order.sid.value));
+                }
+                else if (owner.isYours()) {
+                  pids.push(...await this.getAllProductIdsFromContainer(this.context.user.id));
+                }
+              }
+              else if (this.order.sid.value) {
+                pids.push(...await this.getAllProductIdsFromStore(this.order.sid.value));
+              }
+              await openDialog(DynamicServerSideSearchDialogComponent,
+                it => it.args(Product, {
+                  onClear: () => itm.pid.value = '',
+                  onSelect: row => itm.pid.value = row.id.value,
+                  searchColumn: row => row.name,
+                  where: row => row.id.isIn(...pids)
+                })
+              );
+            }
+          },
+          itm.quntity,
+          itm.remark],
         validate: async () => {
           if (this.order.type.isTechnical()) {
             await this.validateContainer(itm);
@@ -207,6 +242,31 @@ export class OrderItemsComponent implements OnInit {
         }
       },
       it => it ? it.ok : false);
+    return result;
+  }
+
+  async getAllProductIdsFromContainer(uid: string) {
+    let result: string[] = [] as string[];
+    let con = await this.context.for(Container).findFirst({
+      where: row => row.uid.isEqualTo(uid)
+    })
+    if (con) {
+      for await (const itm of this.context.for(ContainerItem).iterate({
+        where: row => row.conid.isEqualTo(con.id)
+      })) {
+        result.push(itm.pid.value);
+      }
+    }
+    return result;
+  }
+
+  async getAllProductIdsFromStore(uid: string) {
+    let result: string[] = [] as string[];
+    for await (const up of this.context.for(UserProduct).iterate({
+      where: row => row.uid.isEqualTo(uid)
+    })) {
+      result.push(up.pid.value);
+    }
     return result;
   }
 

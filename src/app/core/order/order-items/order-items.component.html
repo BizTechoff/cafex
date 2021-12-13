@@ -15,9 +15,28 @@
             <div *ngIf='!this.isContaierExists()'>
                 <span style="color: red;"> {{ this.containerError }} </span>
             </div>
-            <div *ngIf="!this.readonly" style="width: 100%; padding-top: 3.5px;">
-                <button *ngIf='this.isContaierExists()' style="width: 100%;"
-                    mat-raised-button color='primary' (click)="addOrderItem()">
+            <div *ngIf="!this.readonly && this.isContaierExists()" style="width: 100%; padding-top: 3.5px;">
+                <div *ngIf='this.args.in.oType.isTechnical()'
+                    style="display: flex; flex-direction: column; justify-content: center; ">
+                    <label *ngIf="this.isTechnician()" style="text-align: center;"> {{ 'משיכת פריט חדש' }} </label>
+                    <div style="display: flex; flex-direction: row; justify-content: space-between; ">
+                        <button style="width: 100%;" mat-raised-button color='primary'
+                            (click)="addOrderItem(null!, ContainerOwner.store)">
+                            <mat-icon>reply</mat-icon>
+                            <mat-label style="padding-right: 10px;">{{ (this.isTechnician()?'':'משיכת פריט ') + 'ממחסן הלקוח' }}
+                            </mat-label>
+                        </button>
+                        <span *ngIf="this.isTechnician()" style="width: 10px;"></span>
+                        <button *ngIf="this.isTechnician()" style="width: 100%;" mat-raised-button color='primary'
+                            (click)="addOrderItem(null!, ContainerOwner.yours)">
+                            <mat-icon>reply</mat-icon>
+                            <mat-label style="padding-right: 10px;">{{ 'מהמחסן שלי' }}
+                            </mat-label>
+                        </button>
+                    </div>
+                </div>
+                <button *ngIf='this.args.in.oType.isNormal()' style="width: 100%;" mat-raised-button color='primary'
+                    (click)="addOrderItem()">
                     <mat-icon>add</mat-icon>
                     <mat-label style="padding-right: 10px;">{{ isTechnician() ? 'הוספת פריט חדש' : 'הוספת פריט חדש' }}
                     </mat-label>

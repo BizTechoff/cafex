@@ -334,7 +334,12 @@ export class OrdersListComponent implements OnInit {
         it => it.args = { in: { sid: o.sid.value, oid: o.id.value, oType: o.type.value, oNum: o.orderNum.value, autoNew: isNew } },
         it => it && it.args.out ? it.args.out.changed : false);
       if (changed) {
-        await this.refresh();
+        if (this.type.value === OrderType.all) {
+          await this.refresh();
+        }
+        else {
+          this.type.value = OrderType.all;//trigger refresh
+        }
       }
     }
   }

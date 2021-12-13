@@ -9,7 +9,7 @@ import { UserId } from "../../users/users";
 import { Container } from "../container/container";
 import { ContainerItem } from "../container/containerItem";
 import { Product, ProductIdColumn } from "../product/product";
-import { Order, OrderIdColumn } from "./order";
+import { OrderIdColumn } from "./order";
 
 @EntityClass
 export class OrderItem extends IdEntity {
@@ -30,12 +30,16 @@ export class OrderItem extends IdEntity {
             let pids = [] as string[];
             if (this.oid.item && !this.oid.item.sid.value) {
                 console.log('reloaded');
-                
+
                 await this.oid.item.reload();
             }
             if (this.oid.item.type.isTechnical()) {
+                console.log('pids', pids, 'this.oid.item.sid.value', this.oid.item.sid.value);
                 pids.push(...await this.getAllProductIdsFromContainer(this.oid.item.sid.value));
+                console.log('pids', pids, 'this.oid.item.sid.value', this.oid.item.sid.value);
+                console.log('pids', pids, 'this.context.user.id', this.context.user.id);
                 pids.push(...await this.getAllProductIdsFromContainer(this.context.user.id));
+                console.log('pids', pids, 'this.context.user.id', this.context.user.id);
             }
             else if (this.oid.item.sid.value) {
                 pids.push(...await this.getAllProductIdsFromStore(this.oid.item.sid.value));

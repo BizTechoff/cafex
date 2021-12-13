@@ -1,4 +1,3 @@
-import { formatDate } from "@angular/common";
 import { DateColumn, NumberColumn, StringColumn } from "@remult/core";
 import { TODAY } from "./types";
 
@@ -141,10 +140,12 @@ export function validString(col: StringColumn, options: { notNull?: boolean, min
             result = false;
         }
     }
-    if (options.minLength && options.minLength > 0) {
-        if (!(col.value && col.value.length >= options.minLength)) {
-            col.validationError = ` מינימום ${options.minLength} תוים`;
-            result = false;
+    if (result) {
+        if (options.minLength && options.minLength > 0) {
+            if (!(col.value && col.value.length >= options.minLength)) {
+                col.validationError = ` מינימום ${options.minLength} תוים`;
+                result = false;
+            }
         }
     }
     return result;
