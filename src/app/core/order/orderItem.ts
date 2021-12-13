@@ -29,6 +29,8 @@ export class OrderItem extends IdEntity {
         it.click = async () => {
             let pids = [] as string[];
             if (this.oid.item && !this.oid.item.sid.value) {
+                console.log('reloaded');
+                
                 await this.oid.item.reload();
             }
             if (this.oid.item.type.isTechnical()) {

@@ -17,7 +17,7 @@ export class UserProductsComponent implements OnInit {
 
   args: { in: { uid: string, name: string }, out?: { changed: boolean } } = { in: { uid: '', name: '' } };
   readonly = false;
- 
+
   products = new GridSettings(this.context.for(UserProduct), {
     where: row => {
       let result = FILTER_IGNORE;
@@ -30,11 +30,26 @@ export class UserProductsComponent implements OnInit {
     columnSettings: cur => [
       { column: cur.pid, width: '250' }
     ],
+    gridButtons: [
+      {
+        textInMenu: () => 'רענן',
+        icon: 'refresh',
+        click: async () => await this.refresh()
+      }
+    ],
     rowButtons: [
       {
-        textInMenu: 'מחק שורה',
+        textInMenu: 'עריכת פריט',
+        icon: 'edit',
+        showInLine: true,
         visible: () => !this.readonly,
-        click: async (cur) => await this.deleteUserProduct(cur)
+        click: async (row) => await this.addUserProduct(row.id.value)
+      },
+      {
+        textInMenu: 'מחק שורה',
+        icon: 'delete',
+        visible: () => !this.readonly,
+        click: async (row) => await this.deleteUserProduct(row)
       }
     ]
   });
@@ -60,12 +75,19 @@ export class UserProductsComponent implements OnInit {
     await this.products.reloadData();
   }
 
-  async addUserProduct() {
-    let add = this.context.for(UserProduct).create();
-    add.uid.value = this.args.in.uid;
+  async addUserProduct(upid?: string) {
+    let add: UserProduct;
+    if (upid && upid.length > 0) {
+      add = await this.context.for(UserProduct).findId(upid);
+      add.uid.value = this.args.in.uid;
+    }
+    else {
+      add = this.context.for(UserProduct).create();
+      add.uid.value = this.args.in.uid;
+    }
     let changed = await openDialog(InputAreaComponent,
       it => it.args = {
-        title: 'בחר פריט לשיוך',
+        title: upid ? 'עריכת פריט שיוך' : 'הוספת פריט לשיוך',
         columnSettings: () => [{ column: add.pid, width: '' }],
         ok: async () => {
           await add.save();
