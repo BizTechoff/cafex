@@ -18,7 +18,7 @@ import { Ceritificate } from '../../certificate/certificate';
 })
 export class AgentStoreCertificatesComponent implements OnInit {
 
-  store = extend(new UserId(this.context, Roles.store, { caption: 'בחר בית קפה', valueChange: async () => { await this.refresh(true); } }))
+  store = extend(new UserId(this.context, Roles.store, { caption: 'בית קפה', valueChange: async () => { await this.refresh(true); } }))
     .dataControl(dcs => {
       dcs.hideDataOnInput = true;
       dcs.clickIcon = 'search';

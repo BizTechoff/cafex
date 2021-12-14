@@ -1,18 +1,12 @@
 <div class="full-page">
-    <div class="header" style="padding: 2px;">
-        <table style="width: 100%;">
-            <tr>
-                <td>
-                    <data-control [column]="store"></data-control>
-                </td>
-                <td style="width: 10px;padding-bottom: 10px;">
-                    <!-- *ngIf='store.item' -->
-                    <button title="הוספת תעודה חדשה" mat-mini-fab *ngIf='this.store.item.id.value' (click)="addCertificate()">
-                        <mat-icon>add</mat-icon>
-                    </button>
-                </td>
-            </tr>
-        </table>
+    <div class="header">
+        <div style="display: flex; flex-direction: column;">
+            <data-control [column]="store"></data-control>
+            <button style="width: 100%;" mat-raised-button color='primary' (click)="addCertificate()">
+                <mat-icon>add</mat-icon>
+                <mat-label>הוספת תעודה חדשה</mat-label>
+            </button>
+        </div>
     </div>
     <div class="grow-item">
         <data-grid [settings]='certificates'></data-grid>
