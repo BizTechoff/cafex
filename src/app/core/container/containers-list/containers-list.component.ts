@@ -18,7 +18,7 @@ export class ContainersListComponent implements OnInit {
   storage = { store: '', status: '', type: '' };
   readonly = false;
   // showMyContainer =new BoolColumn({caption:'הצג את המחסן שלי', valueChange: async() => await this.refresh()});
-  store = extend(new UserId(this.context, Roles.store, {
+  store = extend(new UserId(this.context, {
     caption: 'בחירת בית קפה',
     valueChange: async () => {
       if (!this.loading) {
@@ -101,7 +101,7 @@ export class ContainersListComponent implements OnInit {
             icon: 'inventory',
             showInLine: true,
             textInMenu: 'הצג פריטים',
-            visible: (row) => !this.readonly && (!row.uid.isTechnical() || row.uid.isAdmin()),// || cur.uid.value === this.context.user.id),
+            visible: (row) => !this.readonly,// && (!row.uid.isTechnical() || row.uid.isAdmin()),// || cur.uid.value === this.context.user.id),
             click: async (row) => await this.showContainerItems(row)
           }//,
           // {

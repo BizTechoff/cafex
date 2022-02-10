@@ -1,5 +1,5 @@
 import { extend, openDialog } from "@remult/angular";
-import { BoolColumn, ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, ServerFunction, StringColumn, ValueListColumn, ValueListTypeInfo } from "@remult/core";
+import { ColumnSettings, Context, DateColumn, DateTimeColumn, EntityClass, IdEntity, LookupColumn, NumberColumn, ServerFunction, StringColumn, ValueListColumn, ValueListTypeInfo } from "@remult/core";
 import { DynamicServerSideSearchDialogComponent } from "../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component";
 import { FILTER_IGNORE, MagicGetOrders, STARTING_ORDER_NUM, TimeColumn, TODAY } from "../../shared/types";
 import { addDays, addTime, validDate, validString } from "../../shared/utils";
@@ -9,7 +9,7 @@ import { OrderItem } from "./orderItem";
 
 @EntityClass
 export class Order extends IdEntity {
-    
+
     magicId = new StringColumn({ allowApiUpdate: false });
     orderNum = new NumberColumn({ allowApiUpdate: false, dbReadOnly: true, caption: 'מס.הזמנה' });
 
@@ -23,7 +23,7 @@ export class Order extends IdEntity {
         // v.sort((a,b) => a.caption.localeCompare(b.caption));
         x.valueList = v;
     });
-    sid = extend(new UserId(this.context, Roles.store, {
+    sid = extend(new UserId(this.context, {
         caption: 'בית קפה',
         validate: () => {
             validString(this.sid, { notNull: true, minLength: 3 });
@@ -43,7 +43,9 @@ export class Order extends IdEntity {
             );
         };
     });
-    status = new OrderStatusColumn();
+    status = new OrderStatusColumn({
+        // displayValue: this.isTechnician()? OrderStatus.approved : OrderStatus.open
+    });
     date = new DateColumn({
         caption: 'תאריך',
         defaultValue: addDays(TODAY, undefined, true),
@@ -61,18 +63,45 @@ export class Order extends IdEntity {
             if (this.context.isAllowed(Roles.store)) {
                 validString(this.worker, { notNull: true, minLength: 3 });
             }
-            else{
+            else {
                 // this.worker.value = this.context.user.name;
             }
         }
     });
     remark = new StringColumn({ caption: 'הערה' });
+    technical = extend(new UserId(this.context, { caption: 'טכנאי מטפל' }))
+        .dataControl(dcs => {
+            dcs.hideDataOnInput = true;
+            dcs.clickIcon = 'search';
+            dcs.getValue = () => this.technical.displayValue;
+            dcs.click = async () => {
+                await openDialog(DynamicServerSideSearchDialogComponent,
+                    dlg => dlg.args(Users, {
+                        onClear: () => this.technical.value = '',
+                        onSelect: cur => this.technical.value = cur.id.value,
+                        searchColumn: cur => cur.name,
+                        where: (cur) => cur.technician.isEqualTo(true)
+                    })
+                );
+            };
+        });
+    technicalDate = new DateColumn({
+        caption: 'תאריך טיפול',
+        defaultValue: addDays(TODAY, undefined, true),
+        validate: () => {
+            validDate(this.date, { notNull: true, minYear: 2000 });
+            if (this.isNew()) {
+                validDate(this.date, { greaterThenToday: true });
+            }
+        }
+    });
+    technicalTime = new TimeColumn({ caption: 'שעת טיפול', defaultValue: '10:00' });
     created = new DateTimeColumn({ caption: 'נוצר' });
-    createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
+    createdBy = new UserId(this.context, { caption: 'נוצר ע"י' });
     modified = new DateTimeColumn({ caption: 'השתנה' });
-    modifiedBy = new UserId(this.context, Roles.admin, { caption: 'השתנה ע"י' });
+    modifiedBy = new UserId(this.context, { caption: 'עודכן ע"י' });
     closed = new DateTimeColumn({ caption: 'נסגרה' });
-    closedBy = new UserId(this.context, Roles.admin, { caption: 'נסגרה ע"י' });
+    closedBy = new UserId(this.context, { caption: 'נסגרה ע"י' });
     count: number;
 
     getCount() {
@@ -197,32 +226,34 @@ export class OrderIdColumn extends LookupColumn<Order> {
 
 export class OrderStatus {
     static open = new OrderStatus('פתוחה');
+    static approved = new OrderStatus('אושרה');
     static closed = new OrderStatus('סופקה');
     constructor(caption = '') { this.caption = caption; }
     id: string;
     caption: string;
     isOpen() { return this === OrderStatus.open; }
+    isApproved() { return this === OrderStatus.approved; }
     isClosed() { return this === OrderStatus.closed; }
     static fromString(id: string) {
         if (id === OrderStatus.closed.id) {
             return OrderStatus.closed;
+        }
+        if (id === OrderStatus.approved.id) {
+            return OrderStatus.approved;
         }
         return OrderStatus.open;
     }
 }
 
 export class OrderStatusColumn extends ValueListColumn<OrderStatus> {
-    constructor(all = false, options?: ColumnSettings<OrderStatus>) {
+    constructor(options?: ColumnSettings<OrderStatus>) {
         super(OrderStatus, {
             caption: 'סטטוס',
-            defaultValue: OrderStatus.open,// all ? { caption: 'הכל', id: 'all' } : OrderStatus.open,
+            defaultValue: OrderStatus.open,
             ...options
         });
         extend(this).dataControl(x => {
             x.valueList = ValueListTypeInfo.get(OrderStatus).getOptions()
-            // all
-            //     ? x.valueList = [{ caption: 'הכל', id: 'all' }, ...this.getOptions()]
-            //     : x.valueList = ValueListTypeInfo.get(OrderStatus).getOptions()
         });
     }
 }

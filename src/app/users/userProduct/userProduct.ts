@@ -9,7 +9,7 @@ import { UserId, Users } from "../users";
 
 @EntityClass
 export class UserProduct extends IdEntity {
-    uid = extend(new UserId(this.context, Roles.store, {
+    uid = extend(new UserId(this.context, {
         validate: () => {
             validString(this.uid, { notNull: true, minLength: 3 });
         }

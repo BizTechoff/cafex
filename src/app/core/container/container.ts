@@ -10,9 +10,9 @@ import { ContainerItem } from "./containerItem";
 export class Container extends IdEntity {
 
     name = new StringColumn({ caption: 'שם' });
-    uid = new UserId(this.context, Roles.store, { caption: "בית קפה" });
+    uid = new UserId(this.context, { caption: "בית קפה" });
     created = new DateTimeColumn({ caption: 'נוצר' })
-    createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
+    createdBy = new UserId(this.context, { caption: 'נוצר ע"י' });
     count: number;
 
     getCount() {

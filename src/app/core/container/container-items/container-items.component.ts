@@ -20,6 +20,7 @@ export class ContainerItemsComponent implements OnInit {
       where: row => {
         let result = FILTER_IGNORE;
         result = result.and(row.conid.isEqualTo(this.args.in.conId))
+        // if(this.i)
         return result;
       },
       allowCRUD: false,

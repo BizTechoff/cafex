@@ -58,12 +58,13 @@ export class Users extends IdEntity {
             }
         }
     });
- 
-    defaultStore = new UserId(this.context, Roles.store, { caption: "חנות בר.מחדל" });
+
+    defaultStore = new UserId(this.context, { caption: "חנות אחרונה שנבחרה" });
     branch = new StringColumn({ caption: "סניף" });
+    address = new StringColumn({ caption: "כתובת" });
 
     constructor(private context: Context) {
- 
+
         super({
             caption: `בית קפה/טכנאי`,
             name: "Users",
@@ -99,6 +100,13 @@ export class Users extends IdEntity {
             // }
         });
     }
+
+    hasDefaultStore() {
+        return this.defaultStore && this.defaultStore.value && this.defaultStore.value.trim().length > 0
+            ? true
+            : false
+    }
+
     @ServerMethod({ allowed: true })
     async create(password: string) {
         if (!this.isNew()) {
@@ -160,31 +168,12 @@ export class UserId extends LookupColumn<Users> {
 
     isAdmin() { return this.item.admin.value; }
     isTechnical() { return this.item.technician.value; }
-    constructor(context: Context, role: string, settings?: ColumnSettings<string>) {
+    constructor(context: Context, settings?: ColumnSettings<string>) {
         super(context.for(Users), {
             caption: 'משתמש',
             displayValue: () => this.item.name.value
             , ...settings
-        }); 
-        // extend(this).dataControl(ctrl => {
-        //     ctrl.getValue = () => this.displayValue;
-        //     ctrl.hideDataOnInput = true;
-        //     ctrl.width = '200';
-
-        //     ctrl.click = async () => {
-        //         await openDialog(DynamicServerSideSearchDialogComponent,
-        //             dlg => dlg.args(Users, {
-        //                 onClear: () => this.value = '',
-        //                 onSelect: cur => this.value = cur.id.value,
-        //                 searchColumn: cur => cur.name,
-        //                 where: cur => cur.store.isEqualTo(true)
-        //                 // role && role === Roles.store
-        //                 //     ? cur.store.isEqualTo(true)
-        //                 //     : FILTER_IGNORE
-        //             })
-        //             );
-        //     };
-        // });
+        });
     }
 
 }

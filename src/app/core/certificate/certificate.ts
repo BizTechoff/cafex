@@ -7,7 +7,7 @@ import { UserId, Users } from "../../users/users";
 
 @EntityClass
 export class Ceritificate extends IdEntity {
-    uid = extend(new UserId(this.context, Roles.store, {
+    uid = extend(new UserId(this.context, {
         caption: 'בית קפה',
         validate: () => {
             validString(this.uid, { notNull: true, minLength: 3 });

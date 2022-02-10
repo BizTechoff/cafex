@@ -4,10 +4,12 @@ import { Context, NumberColumn, ValueListTypeInfo } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { DynamicServerSideSearchDialogComponent } from '../../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
-import { FILTER_IGNORE } from '../../../shared/types';
+import { FILTER_IGNORE, TODAY } from '../../../shared/types';
 import { addDays, addTime } from '../../../shared/utils';
 import { Roles } from '../../../users/roles';
 import { UserId, Users } from '../../../users/users';
+import { Container } from '../../container/container';
+import { ContainerItemsComponent } from '../../container/container-items/container-items.component';
 import { Order, OrderStatus, OrderStatusColumn, OrderType, OrderTypeColumn } from '../order';
 import { OrderItemsComponent } from '../order-items/order-items.component';
 import { OrderItem } from '../orderItem';
@@ -42,7 +44,7 @@ export class OrdersListComponent implements OnInit {
       }
       x.valueList = v;
     });
-  status = new OrderStatusColumn(true, {
+  status = extend(new OrderStatusColumn({
     caption: 'סינון סטטוס',
     valueChange: async () => {
       if (!this.loading) {
@@ -50,8 +52,19 @@ export class OrdersListComponent implements OnInit {
       }
       await this.refresh();
     }
+  })).dataControl(x => {
+    let v = [];
+    for (const t of ValueListTypeInfo.get(OrderStatus).getOptions()) {
+      if (t.isOpen()) {
+        if (this.isTechnician()) {
+          continue;
+        }
+      }
+      v.push(t);
+    }
+    x.valueList = v;
   });
-  store = extend(new UserId(this.context, Roles.store, {
+  store = extend(new UserId(this.context, {
     caption: this.isStore() ? 'בית קפה' : 'בית קפה',
     valueChange: async () => {
       if (!this.loading) {
@@ -92,6 +105,10 @@ export class OrdersListComponent implements OnInit {
       {
         where: row => {
           let result = FILTER_IGNORE;
+          if (this.isTechnician()) {
+            result = result.and(row.status.isNotIn(OrderStatus.open));
+            result = result.and(row.technical.isEqualTo(this.context.user.id));
+          }
           if (this.store.value) {
             result = result.and(row.sid.isEqualTo(this.store.value));
           }
@@ -105,18 +122,6 @@ export class OrdersListComponent implements OnInit {
             if (!this.type.isAll())
               result = result.and(row.type.isEqualTo(this.type.value));
           }
-
-          // (this.isAdmin()
-          //   ? this.store.value
-          //     ? row.uid.isEqualTo(this.store.value)
-          //     : FILTER_IGNORE
-          //   : row.uid.isEqualTo(this.store.value))
-          //   .and(this.status.value && this.status.isIn(OrderStatus.open, OrderStatus.closed)
-          //     ? row.status.isEqualTo(this.status)
-          //     : FILTER_IGNORE)
-          //   .and(this.type.value && this.type.isIn(OrderType.normal, OrderType.fault, OrderType.maintenance)
-          //     ? row.type.isEqualTo(this.type)
-          //     : FILTER_IGNORE)
 
           return result;
         },
@@ -134,17 +139,21 @@ export class OrdersListComponent implements OnInit {
         },
         allowCRUD: false,// this.context.isAllowed(Roles.admin),
         // allowDelete: false,
-        numOfColumnsInGrid: 10,
+        numOfColumnsInGrid: 15,
         columnSettings: cur => [
           this.isStore() ? undefined : { column: cur.sid, readOnly: o => !o.isNew(), width: '95' },//, width: '95'
           { column: cur.date, readOnly: o => !o.isNew(), width: '90' },//
-          { column: cur.orderNum, readOnly: o => !o.isNew(), width: '85', caption: this.isTechnician() ? 'מס.קריאה' : 'מס.הזמנה' },//
+          { column: cur.status, readOnly: o => true, width: '80' },//, width: '80'
+          { column: cur.remark, readOnly: o => true },//, width: '100%'
+          { column: cur.orderNum, readOnly: o => !o.isNew(), width: '100', caption: this.isTechnician() ? 'מס.קריאה' : 'מס.הזמנה' },//
           { column: cur.type, readOnly: o => !o.isNew(), width: '80' },
           { column: cur.worker, caption: 'שם ממלא', readOnly: o => !o.isNew(), width: '100' }, //, width: '80' //this.isStore() ? undefined : { column: cur.worker, readOnly: o => !o.isNew(), width: '80' },
-          { column: cur.status, readOnly: o => true, width: '80' },//, width: '80'
           { column: this.count, readOnly: o => true, width: '100', getValue: o => o.getCount(), hideDataOnInput: true, allowClick: (o) => false },//, width: '100'
-          { column: cur.remark, readOnly: o => true },//, width: '100%'
-          { column: cur.createdBy, readOnly: o => true }
+          this.isTechnician() ? undefined : { column: cur.technical, readOnly: o => true, width: '100' },
+          { column: cur.technicalDate, readOnly: o => true, width: '90' },
+          { column: cur.technicalTime, readOnly: o => true, width: '80' },
+          { column: cur.createdBy, readOnly: o => true, width: '100' },
+          { column: cur.modifiedBy, readOnly: o => true, width: '100' }
         ],
         gridButtons: [
           {
@@ -158,30 +167,55 @@ export class OrdersListComponent implements OnInit {
             textInMenu: 'הצג פריטים',// row => row.type.isTechnical()? 'הצג קריאה' : 'הצג הזמנה',
             icon: 'shopping_bag',
             click: async (cur) => await this.showOrderItems(cur),
-            visible: cur => !cur.isNew() && (this.isStore() ? cur.type.isNormal() : true),
+            visible: row => !row.isNew() && (this.isStore() ? row.type.isNormal() : true),
             showInLine: true
           },
           {
-            textInMenu: 'שכפל הזמנה',
+            textInMenu: 'הצג מחסן לקוח',// row => row.type.isTechnical()? 'הצג קריאה' : 'הצג הזמנה',
+            icon: 'inventory',
+            click: async (row) => await this.showStoreContainerItems(row.sid.item),
+            visible: row => !row.isNew() && !this.isStore(), // (this.isStore() ? row.type.isNormal() : true),
+            showInLine: true
+          },
+          {
+            textInMenu: row => row.type.isTechnical() ? 'שכפל קריאת שירות' : 'שכפל הזמנה',
             icon: 'content_copy',
-            click: async (cur) => await this.copyOrder(cur),
-            visible: cur => !cur.isNew() && (this.isAgent() || this.isStore())
+            click: async (row) => await this.copyOrder(row),
+            visible: row => !row.isNew() && row.type.isNormal() && (this.isAgent() || this.isStore())
           },
           {
-            textInMenu: '__________________________',
-            visible: cur => !cur.isNew() && cur.status.value === OrderStatus.open
+            textInMenu: '________________________',
+            cssClass: 'menuSeperator',
+            visible: row => !row.isNew() && (this.isStore() ? row.type.isNormal() : true) || !row.isNew() && row.type.isNormal() && (this.isAgent() || this.isStore())
           },
           {
-            textInMenu: 'סגור הזמנה',
+            textInMenu: row => row.type.isTechnical() ? 'ערוך קריאת שירות' : 'ערוך הזמנה',
+            cssClass: '',
+            icon: 'edit',
+            click: async (row) => await this.addOrder(row.type.value, row),
+            visible: row => !row.isNew() && !row.status.value.isClosed()
+          },
+          {
+            textInMenu: 'שייך טכנאי',
+            icon: 'build',
+            visible: row => row.type.isTechnical() && !row.isNew() && !row.status.value.isClosed() && this.isAdmin(),
+            click: async (row) => await this.assignTechnical(row)
+          },
+          {
+            textInMenu: row => row.type.isTechnical() ? 'סגור קריאת שירות' : 'סגור הזמנה',
             icon: 'check_circle_outline',
-            click: async (cur) => await this.closeOrder(cur),
-            visible: cur => !cur.isNew() && cur.status.value === OrderStatus.open
+            click: async (row) => await this.closeOrder(row),
+            visible: row => !row.isNew() && !row.status.value.isClosed()
           },
+          // {
+          //   textInMenu: '__________________________',
+          //   visible: cur => !cur.isNew() && cur.status.value === OrderStatus.open
+          // },
           {
-            textInMenu: 'מחק הזמנה',
+            textInMenu: row => row.type.isTechnical() ? 'מחק קריאת שירות' : 'מחק הזמנה',
             icon: 'delete',
-            click: async (cur) => await this.deleteOrder(cur),
-            visible: cur => !cur.isNew() && cur.status.value === OrderStatus.open
+            click: async (row) => await this.deleteOrder(row),
+            visible: row => !row.isNew() && row.status.value === OrderStatus.open
           }
         ],
       });
@@ -237,8 +271,44 @@ export class OrdersListComponent implements OnInit {
     return this.context.isAllowed(Roles.technician);
   }
 
+  async assignTechnical(o: Order) {
+    let clone = await this.context.for(Order).findId(o.id)
+    clone.technicalDate.value = addDays(1, undefined, true)
+    clone.technicalTime.value = '10:00'
+    openDialog(InputAreaComponent, i => i.args = {
+      title: 'שיוך טכנאי מטפל',
+      mainButtonText: 'שייך',
+      columnSettings: () => [
+        clone.technical,
+        [clone.technicalDate, clone.technicalTime]
+      ],
+      ok: async () => {
+        clone.status.value = OrderStatus.approved
+        await clone.save()
+        await o.reload()
+      }
+    });
+  }
+
   async closeOrder(o: Order) {
-    let yes = await this.dialog.yesNoQuestion(`לסגור הזמנה ${o.orderNum.value}?`);
+    let yes = false
+    let title = `לסגור הזמנה ${o.orderNum.value}?`
+    if (o.type.isTechnical()) {
+      title = `לסגור קריאת שירות ${o.orderNum.value}?`
+      let count = await this.context.for(OrderItem).count(row => row.oid.isEqualTo(o.id))
+      if (count === 0) {
+        yes = await this.dialog.yesNoQuestion(`לא נמשכו פריטים לתיקון, האם ${title}`);
+        if (!yes) {
+          return
+        }
+      }
+    }
+    if (!yes) {
+      yes = await this.dialog.yesNoQuestion(title);
+      if (!yes) {
+        return
+      }
+    }
     if (yes) {
       o.status.value = OrderStatus.closed;
       await o.save();
@@ -247,12 +317,18 @@ export class OrdersListComponent implements OnInit {
     }
   }
 
-  async addOrder(type: OrderType) {
-    let order = this.context.for(Order).create();
-    order.type.value = type;
-    order.sid.value = this.isStore() ? this.context.user.id : this.store.value;
-    order.date.value = addDays();
+  async addOrder(type: OrderType, o?: Order) {
+    let order = o;
+    if (!order) {
+      order = this.context.for(Order).create();
+      order.type.value = type;
+      order.sid.value = this.isStore() ? this.context.user.id : this.store.value;
+      order.date.value = addDays();
+    }
     let title = type.isTechnical() ? 'קריאת שירות חדשה' : 'הזמנה חדשה';
+    if (!order.isNew()) {
+      title = type.isTechnical() ? 'עדכון קריאת שירות' : 'עדכון הזמנה';
+    }
     await openDialog(InputAreaComponent,
       it => it.args = {
         title: title,
@@ -274,12 +350,15 @@ export class OrdersListComponent implements OnInit {
           return f;
         },
         ok: async () => {
+          let isNew = order.isNew()
           await order.save();
           if (!this.store.value) {
             this.store.value = order.sid.value;
           }
           await this.refresh();
-          await this.showOrderItems(order, true);
+          if (isNew) {
+            await this.showOrderItems(order, true);
+          }
         }
       });
     // this.orders.addNewRow();
@@ -300,7 +379,8 @@ export class OrdersListComponent implements OnInit {
   }
 
   async copyOrder(o: Order) {
-    let yes = await this.dialog.yesNoQuestion(`האם לשכפל את הזמנה ${o.orderNum.value}`);
+    let q = o.type.isTechnical() ? 'האם לשכפל את קריאת השירות' : 'האם לשכפל את הזמנה';
+    let yes = await this.dialog.yesNoQuestion(`${q} ${o.orderNum.value}`);
     if (yes) {
       let copy = this.context.for(Order).create();
       copy.sid.value = o.sid.value;
@@ -323,7 +403,20 @@ export class OrdersListComponent implements OnInit {
       }
       await this.refresh();
       await this.showOrderItems(copy, true);
-      await this.dialog.info(`הזמנה ${o.orderNum.value} שוכפלה`);
+      let m = o.type.isTechnical() ? 'קריאת שירות' : 'הזמנה';
+      await this.dialog.info(`${m} ${o.orderNum.value} שוכפלה`);
+    }
+  }
+
+  async showStoreContainerItems(store: Users) {
+    let con = await this.context.for(Container).findFirst(row => row.uid.isEqualTo(store.id.value))
+    if (con) {
+      openDialog(ContainerItemsComponent, com => com.args = {
+        in: { conId: con.id.value, conName: con.name.value }
+      })
+    }
+    else {
+      this.dialog.info(`לא נמצא מחסן ל${store.name.value}`)
     }
   }
 

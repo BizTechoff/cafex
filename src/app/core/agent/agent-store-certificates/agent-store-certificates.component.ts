@@ -18,7 +18,7 @@ import { Ceritificate } from '../../certificate/certificate';
 })
 export class AgentStoreCertificatesComponent implements OnInit {
 
-  store = extend(new UserId(this.context, Roles.store, { caption: 'בית קפה', valueChange: async () => { await this.refresh(true); } }))
+  store = extend(new UserId(this.context, { caption: 'בית קפה', valueChange: async () => { await this.refresh(true); } }))
     .dataControl(dcs => {
       dcs.hideDataOnInput = true;
       dcs.clickIcon = 'search';
@@ -79,7 +79,7 @@ export class AgentStoreCertificatesComponent implements OnInit {
 
   async ngOnInit() {
     let u = await this.context.for(Users).findId(this.context.user.id);
-    if (u && u.defaultStore) {
+    if (u.hasDefaultStore()) {
       this.store.value = u.defaultStore.value;
     }
   }

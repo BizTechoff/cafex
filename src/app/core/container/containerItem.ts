@@ -10,9 +10,9 @@ export class ContainerItem extends IdEntity {
  
     conid = new ContainerIdColumn(this.context, { caption: 'מחסן' });
     pid = new ProductIdColumn(this.context, { caption: "פריט" });
-    quantity = new NumberColumn({ caption: "כמות" });
+    quantity = new NumberColumn({ caption: "כמות", defaultValue: 0 });
     created = new DateTimeColumn({ caption: 'נוצר' })
-    createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
+    createdBy = new UserId(this.context, { caption: 'נוצר ע"י' });
   
     constructor(private context: Context) {
         super({

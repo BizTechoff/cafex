@@ -9,8 +9,8 @@ import { CategoryItem, CategoryItemIdColumn } from "../category/categoryItem";
 
 
 export class ProductSharing {
-    static public = new ProductSharing('כללי');
-    static private = new ProductSharing('משוייך');
+    static public = new ProductSharing('כללי');// all stores/technicals
+    static private = new ProductSharing('משוייך');// explicit stores/technicals
     constructor(caption = '') { this.caption = caption; }
     id: string;
     caption: string;
@@ -33,11 +33,13 @@ export class ProductSharingColumn extends ValueListColumn<ProductSharing> {
 export class ProductType {
     static regular = new ProductType('רגיל');
     static technical = new ProductType('תחזוקה');
+    static machine = new ProductType('מכונה');//equipment
     constructor(caption = '') { this.caption = caption; }
     id: string;
     caption: string;
     isRegular() { return this === ProductType.regular; }
     isTechnical() { return this === ProductType.technical; }
+    isMachine() { return this === ProductType.machine; }
 }
 export class ProductTypeColumn extends ValueListColumn<ProductType> {
     constructor(options?: ColumnSettings<ProductType>) {

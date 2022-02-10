@@ -65,9 +65,9 @@ export class OrderItem extends IdEntity {
 
     remark = new StringColumn({ caption: 'הערה' });
     created = new DateTimeColumn({ caption: 'נוצר' });
-    createdBy = new UserId(this.context, Roles.admin, { caption: 'נוצר ע"י' });
+    createdBy = new UserId(this.context, { caption: 'נוצר ע"י' });
     modified = new DateTimeColumn({ caption: 'השתנה' });
-    modifiedBy = new UserId(this.context, Roles.admin, { caption: 'השתנה ע"י' });
+    modifiedBy = new UserId(this.context, { caption: 'עודכן ע"י' });
 
     constructor(private context: Context) {
         super({
