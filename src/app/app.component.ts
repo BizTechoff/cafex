@@ -18,7 +18,7 @@ import { PasswordColumn, Users } from './users/users';
 })
 export class AppComponent implements OnInit {
 
-  appVersion = '2002.02.13.1'
+  appVersion = '2002.02.13.2'
 
   constructor( 
     public router: Router,
@@ -48,8 +48,10 @@ export class AppComponent implements OnInit {
         if (this.context.isAllowed(Roles.technician)) {
           this.router.navigateByUrl('t/orders')
         }
-        else if (this.context.isAllowed(Roles.technician)) {
-          this.router.navigateByUrl('t/orders')
+        else if (this.context.isAllowed(Roles.store)) {
+          this.router.navigateByUrl('s/orders')
+          // await this.router.navigateByUrl('s/orders')
+          // await this.sidenav.toggle();
         }
       }
     });

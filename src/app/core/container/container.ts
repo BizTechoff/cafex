@@ -14,7 +14,15 @@ export class Container extends IdEntity {
     created = new DateTimeColumn({ caption: 'נוצר' })
     createdBy = new UserId(this.context, { caption: 'נוצר ע"י' });
     count: number;
+    // hasMinus:string 
 
+    // getMinus() {
+    //     if (this.hasMinus !== undefined)
+    //         return this.hasMinus;
+    //     this.hasMinus ='לא';
+    //     this.context.for(ContainerItem).count(c => c.conid.isEqualTo(this.id).and(c.quantity.isLessThan(0))).then(result => { this.hasMinus = result > 0?'כן':'לא'; })
+    //     return this.hasMinus;
+    // }
     getCount() {
         if (this.count !== undefined)
             return this.count;

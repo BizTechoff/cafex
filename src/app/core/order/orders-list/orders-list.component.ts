@@ -146,8 +146,8 @@ export class OrdersListComponent implements OnInit {
           { column: cur.date, readOnly: o => !o.isNew(), width: '90' },//
           { column: cur.status, readOnly: o => true, width: '80' },//, width: '80'
           { column: cur.remark, readOnly: o => true },//, width: '100%'
-          { column: cur.orderNum, readOnly: o => !o.isNew(), width: '100', caption: this.isTechnician() ? 'מס.קריאה' : 'מס.הזמנה' },//
           { column: cur.type, readOnly: o => !o.isNew(), width: '80' },
+          { column: cur.orderNum, readOnly: o => !o.isNew(), width: '100', caption: this.isTechnician() ? 'מס.קריאה' : 'מס.הזמנה' },//
           { column: cur.worker, caption: 'שם ממלא', readOnly: o => !o.isNew(), width: '100' }, //, width: '80' //this.isStore() ? undefined : { column: cur.worker, readOnly: o => !o.isNew(), width: '80' },
           { column: this.count, readOnly: o => true, width: '100', getValue: o => o.getCount(), hideDataOnInput: true, allowClick: (o) => false },//, width: '100'
           this.isTechnician() ? undefined : { column: cur.technical, readOnly: o => true, width: '100' },

@@ -175,6 +175,9 @@ export class UserId extends LookupColumn<Users> {
             , ...settings
         });
     }
+    openWaze() {
+        window.open(`waze://?q=${encodeURI(this.item.address.value)}&navigate=yes`, '_blank')
+    }
 
 }
 export class PasswordColumn extends StringColumn {

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { extend, GridSettings, openDialog } from '@remult/angular';
-import { Context, NumberColumn } from '@remult/core';
+import { BoolColumn, Context, NumberColumn, StringColumn } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { DynamicServerSideSearchDialogComponent } from '../../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component';
 import { FILTER_IGNORE } from '../../../shared/types';
@@ -50,6 +50,7 @@ export class ContainersListComponent implements OnInit {
     });
 
   count = new NumberColumn({ caption: 'מס.פריטים' });
+  hasMinus = new StringColumn({ caption: 'במינוס' });
   containers: GridSettings<Container>;
 
   constructor(private context: Context, private dialog: DialogService) { }
@@ -87,6 +88,7 @@ export class ContainersListComponent implements OnInit {
           { column: cur.uid, caption: this.isTechnician() ? 'בית קפה\\טכנאי' : 'בית קפה\\טכנאי' },
           cur.name,
           { column: this.count, readOnly: o => true, width: '100', getValue: c => c.getCount(), hideDataOnInput: true, allowClick: (o) => false },//, width: '100
+          // { column: this.hasMinus, readOnly: o => true, width: '100', getValue: c => c.getMinus(), hideDataOnInput: true, allowClick: (o) => false },//, width: '100
           cur.createdBy,
           cur.created
         ],

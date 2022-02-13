@@ -83,6 +83,14 @@ export class OrderItemsComponent implements OnInit {
     return this.context.isAllowed(Roles.store);
   }
 
+  isAgent() {
+    return this.context.isAllowed(Roles.agent);
+  }
+
+  isManager() {
+    return this.context.isAllowed(Roles.admin);
+  }
+
   async refresh() {
     if (this.args.in.oid && this.args.in.oid.length > 0) {
       this.order = await this.context.for(Order).findId(this.args.in.oid);
@@ -126,7 +134,7 @@ export class OrderItemsComponent implements OnInit {
             click: async () => {
 
               if (this.order.type.isNormal()) {
-                if (this.isStore()) {
+                if (this.isStore() || this.isAgent() || this.isManager()) {
                   if (this.order.sid) {
                     await this.showStoreProucts(itm, this.order.sid.value)
                   }
@@ -137,7 +145,7 @@ export class OrderItemsComponent implements OnInit {
               }
 
               else if (this.order.type.isTechnical()) {
-                if (this.isTechnician()) {
+                if (this.isTechnician() || this.isManager()) {
                   if (this.order.technical) {
                     await this.showTechnicalProucts(itm, this.order.technical.value)
                   }
@@ -244,9 +252,9 @@ export class OrderItemsComponent implements OnInit {
           con = this.context.for(Container).create()
           con.uid.value = tid
           if (this.order.technical.item) {
-            con.name.value = 'הוקם ע"י ' + this.order.technical.item.name.value
+            con.name.value = 'מחסן של ' + this.order.technical.item.name.value
           }
-           if (this.order.sid.item) {
+          else if (this.order.sid.item) {
             con.name.value = 'הוקם ע"י ' + this.order.sid.item.name.value
           }
           await con.save()
