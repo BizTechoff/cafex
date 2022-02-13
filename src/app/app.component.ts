@@ -1,15 +1,15 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Router, Route, ActivatedRoute } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
-
-import { Context, ServerFunction, StringColumn, UserInfo } from '@remult/core';
-
-import { DialogService } from './common/dialog';
-import { openDialog, RouteHelperService } from '@remult/angular';
-import { PasswordColumn, Users } from './users/users';
-import { Roles } from './users/roles';
-import { InputAreaComponent } from './common/input-area/input-area.component';
+import { ActivatedRoute, Route, Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
+import { openDialog, RouteHelperService } from '@remult/angular';
+import { Context, ServerFunction, StringColumn, UserInfo } from '@remult/core';
+import { DialogService } from './common/dialog';
+import { InputAreaComponent } from './common/input-area/input-area.component';
+import { Roles } from './users/roles';
+import { PasswordColumn, Users } from './users/users';
+
+
 
 @Component({
   selector: 'app-root',
@@ -44,6 +44,12 @@ export class AppComponent implements OnInit {
           user.value = user.value.trim();//remult check if changed
         }
         this.setToken(await AppComponent.signIn(user.value, password.value));
+        if (this.context.isAllowed(Roles.technician)) {
+          this.router.navigateByUrl('t/orders')
+        }
+        else if (this.context.isAllowed(Roles.technician)) {
+          this.router.navigateByUrl('t/orders')
+        }
       }
     });
   }
@@ -63,7 +69,7 @@ export class AppComponent implements OnInit {
         }
         if (u.technician.value) {
           result.roles.push(Roles.technician);
-        } 
+        }
         if (u.agent.value) {
           result.roles.push(Roles.agent);
         }

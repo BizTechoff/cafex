@@ -2,13 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { GridSettings, openDialog } from '@remult/angular';
 import { Context, NumberColumn, StringColumn } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
-import { GridDialogComponent } from '../../../common/grid-dialog/grid-dialog.component';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
 import { FILTER_IGNORE } from '../../../shared/types';
-import { Roles } from '../../../users/roles';
-import { UserProduct } from '../../../users/userProduct/userProduct';
 import { OrderItem } from '../../order/orderItem';
-import { Product } from '../product';
+import { Product, ProductType } from '../product';
 import { ProductUsersComponent } from '../product-users/product-users.component';
 
 @Component({
@@ -34,12 +31,12 @@ export class ProductsListComponent implements OnInit {
       numOfColumnsInGrid: 10,
       columnSettings: cur => [
         cur.type,
+        cur.share,
         cur.cid,
         cur.ciid,
         cur.sku,
         cur.name,
         { column: this.count, readOnly: o => true, getValue: c => c.getCount(), hideDataOnInput: true, width: '85', allowClick: (c) => false },
-        cur.share,
         cur.active
       ],
       gridButtons: [
@@ -53,8 +50,8 @@ export class ProductsListComponent implements OnInit {
         {
           textInMenu: 'משתמשים משוייכים',
           icon: 'shopping_bag',//await this.showProducts(this.context.user.id, this.context.user.name)
-          click: async (cur) => await this.showUsers(cur.id.value, cur.name.value),
-          visible: cur => !cur.isNew(),
+          click: async (row) => await this.showUsers(row.type.value, row.id.value, row.name.value),
+          visible: row => !row.isNew(),
           showInLine: true,
         },
         { textInMenu: '________________________' },
@@ -88,12 +85,11 @@ export class ProductsListComponent implements OnInit {
         title: p.isNew() ? `פריט חדש` : `עריכת פריט: ${p.name.value}`,
         columnSettings: () => [
           p.active,
-          p.type,
+          [p.type, p.share],
           p.cid,
           p.ciid,
           p.sku,
-          p.name,
-          p.share
+          p.name
         ],
         ok: async () => {
           await p.save();
@@ -123,10 +119,10 @@ export class ProductsListComponent implements OnInit {
     }
   }
 
-  async showUsers(pid: string, name?: string) {
+  async showUsers(pType: ProductType, pid: string, name?: string) {
 
     let changed = await openDialog(ProductUsersComponent,
-      it => it.args = { in: { pid: pid, name: name } },
+      it => it.args = { in: { pType: pType, pid: pid, name: name } },
       it => it && it.args.out ? it.args.out.changed : false);
     if (changed) {
       await this.refresh();

@@ -9,8 +9,8 @@ import { CategoryItem, CategoryItemIdColumn } from "../category/categoryItem";
 
 
 export class ProductSharing {
-    static public = new ProductSharing('כללי');// all stores/technicals
-    static private = new ProductSharing('משוייך');// explicit stores/technicals
+    static public = new ProductSharing('עם כולם');// all stores/technicals
+    static private = new ProductSharing('פרטני');// explicit stores/technicals
     constructor(caption = '') { this.caption = caption; }
     id: string;
     caption: string;

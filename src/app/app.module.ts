@@ -40,6 +40,7 @@ import { CategoryItemsComponent } from './core/category/category-items/category-
 import { StoreDetailsComponent } from './core/store/store-details/store-details.component';
 import { ContainersListComponent } from './core/container/containers-list/containers-list.component';
 import { ContainerItemsComponent } from './core/container/container-items/container-items.component';
+import { DateTimeComponent } from './common/date-time/date-time.component';
  
  
 @NgModule({
@@ -65,7 +66,8 @@ import { ContainerItemsComponent } from './core/container/container-items/contai
     CategoryItemsComponent,
     StoreDetailsComponent,
     ContainersListComponent,
-    ContainerItemsComponent
+    ContainerItemsComponent,
+    DateTimeComponent
   ],
   imports: [
     BrowserModule,

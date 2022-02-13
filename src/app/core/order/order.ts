@@ -78,24 +78,24 @@ export class Order extends IdEntity {
                 await openDialog(DynamicServerSideSearchDialogComponent,
                     dlg => dlg.args(Users, {
                         onClear: () => this.technical.value = '',
-                        onSelect: cur => this.technical.value = cur.id.value,
-                        searchColumn: cur => cur.name,
-                        where: (cur) => cur.technician.isEqualTo(true)
+                        onSelect: row => this.technical.value = row.id.value,
+                        searchColumn: row => row.name,
+                        where: (row) => row.technician.isEqualTo(true)
                     })
                 );
             };
         });
     technicalDate = new DateColumn({
-        caption: 'תאריך טיפול',
-        defaultValue: addDays(TODAY, undefined, true),
-        validate: () => {
-            validDate(this.date, { notNull: true, minYear: 2000 });
-            if (this.isNew()) {
-                validDate(this.date, { greaterThenToday: true });
-            }
-        }
+        caption: 'תאריך טיפול'//,
+        // defaultValue: addDays(TODAY, undefined, true),
+        // validate: () => {
+        //     validDate(this.date, { notNull: true, minYear: 2000 });
+        //     if (!this.isNew()) {
+        //         validDate(this.date, { greaterThenToday: true });
+        //     }
+        // }
     });
-    technicalTime = new TimeColumn({ caption: 'שעת טיפול', defaultValue: '10:00' });
+    technicalTime = new TimeColumn({ caption: 'שעת טיפול' });//, defaultValue: '00:00'
     created = new DateTimeColumn({ caption: 'נוצר' });
     createdBy = new UserId(this.context, { caption: 'נוצר ע"י' });
     modified = new DateTimeColumn({ caption: 'השתנה' });

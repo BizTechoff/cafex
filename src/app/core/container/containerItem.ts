@@ -1,19 +1,18 @@
-import { checkForDuplicateValue, Context, DateTimeColumn, EntityClass, IdEntity, NumberColumn, StringColumn } from "@remult/core";
+import { checkForDuplicateValue, Context, DateTimeColumn, EntityClass, IdEntity, NumberColumn } from "@remult/core";
 import { FILTER_IGNORE } from "../../shared/types";
-import { Roles } from "../../users/roles";
 import { UserId } from "../../users/users";
 import { ProductIdColumn } from "../product/product";
 import { ContainerIdColumn } from "./container";
-   
+
 @EntityClass
 export class ContainerItem extends IdEntity {
- 
+
     conid = new ContainerIdColumn(this.context, { caption: 'מחסן' });
     pid = new ProductIdColumn(this.context, { caption: "פריט" });
     quantity = new NumberColumn({ caption: "כמות", defaultValue: 0 });
     created = new DateTimeColumn({ caption: 'נוצר' })
     createdBy = new UserId(this.context, { caption: 'נוצר ע"י' });
-  
+
     constructor(private context: Context) {
         super({
             name: 'containersItems',
@@ -21,7 +20,7 @@ export class ContainerItem extends IdEntity {
             allowApiRead: c => c.isSignedIn(),
             saving: async () => {
                 if (context.onServer) {
-                    await checkForDuplicateValue(this, this.pid, this.context.for(ContainerItem));
+                    // await checkForDuplicateValue(this, [this.conid, this.pid], this.context.for(ContainerItem));
                     if (this.isNew()) {
                         this.created.value = new Date();
                         this.createdBy.value = context.user.id;
@@ -57,14 +56,14 @@ export class ContainerItem extends IdEntity {
 
     static async post(req: { id?: string, containerid?: string, productid?: string, quantity?: number }, context?: Context) {
         let result = '';
-        let item : ContainerItem = undefined;
+        let item: ContainerItem = undefined;
         if (req.id) {
             item = await context.for(ContainerItem).findId(req.id);
             if (!item) {
                 return 'Id Not Found';
             }
         }
-        else{
+        else {
             item = context.for(ContainerItem).create();
         }
         item.conid.value = req.containerid;

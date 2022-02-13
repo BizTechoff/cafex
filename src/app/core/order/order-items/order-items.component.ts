@@ -243,6 +243,12 @@ export class OrderItemsComponent implements OnInit {
         if (!con) {
           con = this.context.for(Container).create()
           con.uid.value = tid
+          if (this.order.technical.item) {
+            con.name.value = 'הוקם ע"י ' + this.order.technical.item.name.value
+          }
+           if (this.order.sid.item) {
+            con.name.value = 'הוקם ע"י ' + this.order.sid.item.name.value
+          }
           await con.save()
         }
         let conItem = await this.context.for(ContainerItem).findFirst(

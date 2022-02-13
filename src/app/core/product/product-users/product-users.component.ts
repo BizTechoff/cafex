@@ -3,10 +3,11 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { GridSettings, openDialog } from '@remult/angular';
 import { Context } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
+import { DynamicServerSideSearchDialogComponent } from '../../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
 import { UserProduct } from '../../../users/userProduct/userProduct';
 import { Users } from '../../../users/users';
-import { Product } from '../product';
+import { Product, ProductType } from '../product';
 
 @Component({
   selector: 'app-product-users',
@@ -15,19 +16,19 @@ import { Product } from '../product';
 })
 export class ProductUsersComponent implements OnInit {
 
-  args: { in: { pid: string, name: string }, out?: { changed: boolean } } = { in: { pid: '', name: '' } };
+  args: { in: {pType:ProductType, pid: string, name: string }, out?: { changed: boolean } } = { in: {pType: ProductType.regular, pid: '', name: '' } };
   readonly = false;
- 
+
   users = new GridSettings(this.context.for(UserProduct), {
     where: cur => cur.pid.isEqualTo(this.args.in.pid),
     orderBy: cur => [cur.uid],
     newRow: cur => cur.pid.value = this.args.in.pid,
-    allowCRUD: false, 
+    allowCRUD: false,
     numOfColumnsInGrid: 10,
     columnSettings: cur => [
       { column: cur.uid, width: '222' }
     ],
-    rowButtons: [ 
+    rowButtons: [
       {
         textInMenu: 'בטל שיוך של משתמש זה',
         icon: 'cancel',
@@ -65,7 +66,23 @@ export class ProductUsersComponent implements OnInit {
     let changed = await openDialog(InputAreaComponent,
       it => it.args = {
         title: 'בחירת משתמש לשיוך',
-        columnSettings: () => [add.uid],
+        columnSettings: () => [
+          {
+            column: add.uid,
+            click: async () => {
+              await openDialog(DynamicServerSideSearchDialogComponent,
+                dlg => dlg.args(Users, {
+                  onClear: () => add.uid.value = '',
+                  onSelect: row => add.uid.value = row.id.value,
+                  searchColumn: row => row.name,
+                  where: row => this.args.in.pType === ProductType.technical
+                    ? row.technician.isEqualTo(true)
+                    : row.store.isEqualTo(true)
+                })
+              );
+            }
+          }
+        ],
         ok: async () => {
           await add.save();
           this.args.out.changed = true;

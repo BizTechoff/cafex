@@ -4,7 +4,7 @@ import { Context, NumberColumn, ValueListTypeInfo } from '@remult/core';
 import { DialogService } from '../../../common/dialog';
 import { DynamicServerSideSearchDialogComponent } from '../../../common/dynamic-server-side-search-dialog/dynamic-server-side-search-dialog.component';
 import { InputAreaComponent } from '../../../common/input-area/input-area.component';
-import { FILTER_IGNORE, TODAY } from '../../../shared/types';
+import { FILTER_IGNORE } from '../../../shared/types';
 import { addDays, addTime } from '../../../shared/utils';
 import { Roles } from '../../../users/roles';
 import { UserId, Users } from '../../../users/users';
@@ -46,6 +46,7 @@ export class OrdersListComponent implements OnInit {
     });
   status = extend(new OrderStatusColumn({
     caption: 'סינון סטטוס',
+    defaultValue: this.isTechnician() ? OrderStatus.approved : OrderStatus.open,
     valueChange: async () => {
       if (!this.loading) {
         await this.saveUserDefaults();
@@ -164,7 +165,7 @@ export class OrdersListComponent implements OnInit {
         ],
         rowButtons: [
           {
-            textInMenu: 'הצג פריטים',// row => row.type.isTechnical()? 'הצג קריאה' : 'הצג הזמנה',
+            textInMenu: row => row.type.isTechnical() ? 'הצג פריטי קריאה' : 'הצג פריטי הזמנה',
             icon: 'shopping_bag',
             click: async (cur) => await this.showOrderItems(cur),
             visible: row => !row.isNew() && (this.isStore() ? row.type.isNormal() : true),
@@ -186,7 +187,32 @@ export class OrdersListComponent implements OnInit {
           {
             textInMenu: '________________________',
             cssClass: 'menuSeperator',
-            visible: row => !row.isNew() && (this.isStore() ? row.type.isNormal() : true) || !row.isNew() && row.type.isNormal() && (this.isAgent() || this.isStore())
+            visible: row =>
+              (!row.isNew() && (this.isStore() ? row.type.isNormal() : true)
+                ||
+                !row.isNew() && !this.isStore()
+                ||
+                !row.isNew() && row.type.isNormal() && (this.isAgent() || this.isStore())
+              )
+              &&
+              (!row.isNew() && !row.status.value.isClosed()
+                ||
+                row.type.isTechnical() && !row.isNew() && !row.status.value.isClosed() && this.isAdmin()
+                ||
+                !row.isNew() && !row.status.value.isClosed()
+                ||
+                !row.isNew() && row.status.value === OrderStatus.open)
+          },
+          {
+            textInMenu: 'שייך טכנאי',
+            icon: 'build',
+            visible: row => row.type.isTechnical() && !row.isNew() && !row.status.value.isClosed() && this.isAdmin(),
+            click: async (row) => await this.assignTechnical(row.id.value)
+          },
+          {
+            textInMenu: '________________________',
+            cssClass: 'menuSeperator',
+            visible: row => row.type.isTechnical() && !row.isNew() && !row.status.value.isClosed() && this.isAdmin()
           },
           {
             textInMenu: row => row.type.isTechnical() ? 'ערוך קריאת שירות' : 'ערוך הזמנה',
@@ -196,21 +222,11 @@ export class OrdersListComponent implements OnInit {
             visible: row => !row.isNew() && !row.status.value.isClosed()
           },
           {
-            textInMenu: 'שייך טכנאי',
-            icon: 'build',
-            visible: row => row.type.isTechnical() && !row.isNew() && !row.status.value.isClosed() && this.isAdmin(),
-            click: async (row) => await this.assignTechnical(row)
-          },
-          {
             textInMenu: row => row.type.isTechnical() ? 'סגור קריאת שירות' : 'סגור הזמנה',
             icon: 'check_circle_outline',
             click: async (row) => await this.closeOrder(row),
             visible: row => !row.isNew() && !row.status.value.isClosed()
           },
-          // {
-          //   textInMenu: '__________________________',
-          //   visible: cur => !cur.isNew() && cur.status.value === OrderStatus.open
-          // },
           {
             textInMenu: row => row.type.isTechnical() ? 'מחק קריאת שירות' : 'מחק הזמנה',
             icon: 'delete',
@@ -271,8 +287,8 @@ export class OrdersListComponent implements OnInit {
     return this.context.isAllowed(Roles.technician);
   }
 
-  async assignTechnical(o: Order) {
-    let clone = await this.context.for(Order).findId(o.id)
+  async assignTechnical(oid: string) {
+    let clone = await this.context.for(Order).findId(oid)
     clone.technicalDate.value = addDays(1, undefined, true)
     clone.technicalTime.value = '10:00'
     openDialog(InputAreaComponent, i => i.args = {
@@ -282,10 +298,20 @@ export class OrdersListComponent implements OnInit {
         clone.technical,
         [clone.technicalDate, clone.technicalTime]
       ],
+      validate: async () => {
+        console.log('clone.technical.value', clone.technical.value)
+        if (!clone.technical.value) {
+          console.log('!clone.technical.value', !clone.technical.value)
+          clone.technical.validationError = 'לא נבחר טכנאי מטפל'
+          throw (clone.technical.validationError)
+        }
+      },
       ok: async () => {
-        clone.status.value = OrderStatus.approved
+        if (clone.status.value === OrderStatus.open) {
+          clone.status.value = OrderStatus.approved
+        }
         await clone.save()
-        await o.reload()
+        this.refresh()
       }
     });
   }
@@ -373,8 +399,8 @@ export class OrdersListComponent implements OnInit {
       let yes = await this.dialog.confirmDelete(`הזמנה ${o.orderNum.value}`);
       if (yes) {
         await o.delete();
+        this.dialog.info(`הזמנה ${o.orderNum.value} נמחקה`);
       }
-      await this.dialog.info(`הזמנה ${o.orderNum.value} נמחקה`);
     }
   }
 

@@ -88,7 +88,7 @@ async function startup() {
             app.get('/api-req/' + path, f);
         }
     }
-
+ 
     register('get', "time", async (req, context) => {
         return new Date().toLocaleString('he-IL');
     });

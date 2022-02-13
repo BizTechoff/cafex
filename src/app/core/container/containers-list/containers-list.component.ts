@@ -8,6 +8,7 @@ import { Roles } from '../../../users/roles';
 import { UserId, Users } from '../../../users/users';
 import { Container } from '../container';
 import { ContainerItemsComponent } from '../container-items/container-items.component';
+import { ContainerItem } from '../containerItem';
 
 @Component({
   selector: 'app-containers-list',
@@ -48,7 +49,7 @@ export class ContainersListComponent implements OnInit {
       };
     });
 
-    count = new NumberColumn({ caption: 'מס.פריטים' });
+  count = new NumberColumn({ caption: 'מס.פריטים' });
   containers: GridSettings<Container>;
 
   constructor(private context: Context, private dialog: DialogService) { }
@@ -88,7 +89,7 @@ export class ContainersListComponent implements OnInit {
           { column: this.count, readOnly: o => true, width: '100', getValue: c => c.getCount(), hideDataOnInput: true, allowClick: (o) => false },//, width: '100
           cur.createdBy,
           cur.created
-        ], 
+        ],
         gridButtons: [
           {
             textInMenu: () => 'רענן',
@@ -103,16 +104,17 @@ export class ContainersListComponent implements OnInit {
             textInMenu: 'הצג פריטים',
             visible: (row) => !this.readonly,// && (!row.uid.isTechnical() || row.uid.isAdmin()),// || cur.uid.value === this.context.user.id),
             click: async (row) => await this.showContainerItems(row)
-          }//,
-          // {
-          //   textInMenu: 'מחק שורה',
-          //   visible: () => !this.readonly,
-          //   click: async (cur) => await this.deleteContainer(cur)
-          // }
+          },
+          {
+            textInMenu: 'מחק שורה',
+            icon: 'delete',
+            visible: () => !this.readonly || this.isAdmin(),
+            click: async (cur) => await this.deleteContainer(cur)
+          }
         ]
       });
   }
- 
+
   loading = false;
   async loadUserDefaults() {
     let defs = localStorage.getItem('user-defaults');
@@ -168,6 +170,19 @@ export class ContainersListComponent implements OnInit {
         it => it && it.args.out ? it.args.out.changed : false);
       if (changed) {
         await this.refresh();
+      }
+    }
+  }
+
+  async deleteContainer(c: Container) {
+    let count = await this.context.for(ContainerItem).count(row => row.id.isEqualTo(c.id))
+    if (count > 0) {
+      this.dialog.info('קיימים פריטים למחסן, לא ניתן למחוק')
+    }
+    else {
+      let yes = await this.dialog.yesNoQuestion('למחוק ' + c.name.value + '?')
+      if (yes) {
+        await c.delete()
       }
     }
   }
