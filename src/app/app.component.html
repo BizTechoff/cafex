@@ -5,7 +5,7 @@
     </button>
     <span class="toolbar-title">{{currentTitle()}}</span>
     <ng-container *ngIf="!context.isSignedIn()">
-      <button mat-flat-button color="primary" (click)="signUp()">רישום</button>
+      <!-- <button mat-flat-button color="primary" (click)="signUp()">רישום</button> -->
       <button mat-flat-button color="primary" (click)="signIn()">כניסה</button>
     </ng-container>
     <ng-container *ngIf="context.isSignedIn()">
@@ -21,13 +21,13 @@
     <mat-sidenav #sidenav class="app-sidenav mat-elevation-z10 no-print"
       [opened]="!dialogService.isScreenSmall() && context.isSignedIn()"
       [mode]="dialogService.isScreenSmall()?'over':'side'">
-      <div style="width:100%;text-align: center"><img src="../assets/crema.plus.logo.png"> </div>
+      <div style="width:100%;text-align: center"><img src="../assets/crema.plus.logo.png" (click)="openSite('https://www.creama.co.il/')" style="cursor: pointer;"> </div>
       <h4 *ngIf="context.isSignedIn()">שלום {{context.user.name}}</h4>
  
       <mat-nav-list role="list">
         <ng-container *ngFor="let m of router.config">
           <mat-divider *ngIf="m.path === 'Stores'"></mat-divider>
-          <mat-divider *ngIf="m.path === 'User Accounts'"></mat-divider>
+          <mat-divider *ngIf="m.path === 'Categories'"></mat-divider>
           <mat-list-item *ngIf="shouldDisplayRoute(m)" routerLinkActive="active-route">
             <a matLine [routerLink]="m.path" (click)="routeClicked()">{{routeName(m)}}</a>
           </mat-list-item>
@@ -42,6 +42,13 @@
     </div>
   </mat-sidenav-container>
 
+  <div class="footer" style="font-size: smaller;">
+    <div style="display:flex;flex-direction: row;justify-content: flex-end; cursor: pointer;"
+      (click)="openSite('https://biztechoff.co.il')">
+      {{ ' v' + this.appVersion }}
+      <div>{{ '::BizTechoff ' }}</div>
+    </div>
+  </div>
 </div>
 <mat-form-field style="display:none">
   <input matInput>

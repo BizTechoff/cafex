@@ -108,7 +108,7 @@ export class ContainersListComponent implements OnInit {
           {
             textInMenu: 'מחק שורה',
             icon: 'delete',
-            visible: () => !this.readonly || this.isAdmin(),
+            visible: () => !this.readonly && this.isAdmin(),
             click: async (cur) => await this.deleteContainer(cur)
           }
         ]

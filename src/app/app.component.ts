@@ -18,8 +18,9 @@ import { PasswordColumn, Users } from './users/users';
 })
 export class AppComponent implements OnInit {
 
+  appVersion = '2002.02.13.0'
 
-  constructor(
+  constructor( 
     public router: Router,
     public activeRoute: ActivatedRoute,
     private routeHelper: RouteHelperService,
@@ -124,6 +125,10 @@ export class AppComponent implements OnInit {
     });
   }
 
+  openSite(url:string){
+    window.open(url, '_blank')
+  }
+  
   async updateInfo() {
     let user = await this.context.for(Users).findId(this.context.user.id);
     openDialog(InputAreaComponent, i => i.args = {
