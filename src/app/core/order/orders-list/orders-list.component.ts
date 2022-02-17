@@ -384,7 +384,7 @@ export class OrdersListComponent implements OnInit {
           //   )
           // } 
           f.push(order.remark);
-          if (!this.isStore() && order.type.isTechnical()) {
+          if (this.isAdmin() && order.type.isTechnical()) {
             f.push(
               // {column: order.type, readonly: () => true},
               order.technical,

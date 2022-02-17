@@ -18,7 +18,7 @@ import { PasswordColumn, Users } from './users/users';
 })
 export class AppComponent implements OnInit {
 
-  appVersion = '2022.02.17.0'
+  appVersion = '2022.02.17.1'
 
   constructor( 
     public router: Router,
