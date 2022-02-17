@@ -16,8 +16,13 @@ export class Order extends IdEntity {
     type = extend(new OrderTypeColumn()).dataControl(x => {
         let v = [] as OrderType[];
         for (const t of ValueListTypeInfo.get(OrderType).getOptions()) {
-            if (!t.isNormal() && !t.isAll()) {
-                v.push(t);
+            if(!t.isAll()){
+                if(this.isAdmin()){
+                    v.push(t);
+                }
+                else if (!t.isNormal()){
+                    v.push(t);
+                }
             }
         }
         // v.sort((a,b) => a.caption.localeCompare(b.caption));
@@ -43,8 +48,16 @@ export class Order extends IdEntity {
             );
         };
     });
-    status = new OrderStatusColumn({
+    status = extend(new OrderStatusColumn({
         // displayValue: this.isTechnician()? OrderStatus.approved : OrderStatus.open
+    })).dataControl(x => {
+        let v = [];
+        for (const t of ValueListTypeInfo.get(OrderStatus).getOptions()) {
+            if (!t.isAll()) {
+                v.push(t);
+            }
+        }
+        x.valueList = v;
     });
     date = new DateColumn({
         caption: 'תאריך',
@@ -112,12 +125,18 @@ export class Order extends IdEntity {
         return this.count;
     }
 
+    getCss() {
+        let result = 'status'
+        // this.status.value.color
+        return result
+    }
+
     constructor(private context: Context) {
         super({
             name: 'orders',
             allowApiCRUD: c => c.isSignedIn(),
             allowApiRead: c => c.isSignedIn(),
-            defaultOrderBy: () => [this.sid, this.date, this.type],
+            defaultOrderBy: () => [{ column: this.orderNum, descending: true }],// [this.sid, {column: this.date, descending: true}, this.status, this.type],
             apiDataFilter: () => {
                 let result = FILTER_IGNORE;
                 if (this.isStore()) {
@@ -163,6 +182,10 @@ export class Order extends IdEntity {
 
     isTechnician() {
         return this.context.isAllowed(Roles.technician);
+    }
+
+    isAdmin() {
+        return this.context.isAllowed(Roles.admin);
     }
 
     @ServerFunction({ allowed: true })
@@ -226,20 +249,26 @@ export class OrderIdColumn extends LookupColumn<Order> {
 
 export class OrderStatus {
     static open = new OrderStatus('פתוחה');
-    static approved = new OrderStatus('אושרה');
-    static closed = new OrderStatus('סופקה');
-    constructor(caption = '') { this.caption = caption; }
+    static approved = new OrderStatus('אושרה', 'orange');
+    static closed = new OrderStatus('סופקה', 'green');
+    static all = new OrderStatus('הכל');
+    constructor(caption = '', color = '') { this.caption = caption; this.color = color }
     id: string;
     caption: string;
+    color: string
     isOpen() { return this === OrderStatus.open; }
     isApproved() { return this === OrderStatus.approved; }
     isClosed() { return this === OrderStatus.closed; }
+    isAll() { return this === OrderStatus.all; }
     static fromString(id: string) {
         if (id === OrderStatus.closed.id) {
             return OrderStatus.closed;
         }
         if (id === OrderStatus.approved.id) {
             return OrderStatus.approved;
+        }
+        if (id === OrderStatus.all.id) {
+            return OrderStatus.all;
         }
         return OrderStatus.open;
     }
@@ -256,6 +285,7 @@ export class OrderStatusColumn extends ValueListColumn<OrderStatus> {
             x.valueList = ValueListTypeInfo.get(OrderStatus).getOptions()
         });
     }
+    isAll() { return this.value && this.value.isAll(); }
 }
 
 export class OrderType {

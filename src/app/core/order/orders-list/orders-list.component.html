@@ -7,27 +7,29 @@
                 </div>
                 <div style="min-width: 50px; padding-right: 5px; width: 100%;">
                     <data-control [column]="status"></data-control>
-                </div>
+                </div> 
                 <div style="min-width: 50px; padding-right: 5px; width: 100%;">
                     <data-control [column]="type"></data-control>
                 </div>
             </div>
-            <div style="display: flex; flex-direction: row; justify-content: space-between;">   
-               
-                <button *ngIf="!this.isTechnician()" style="width: 100%;" mat-raised-button color='primary' (click)="addOrder(OrderType.normal)">
+            <div style="display: flex; flex-direction: row; justify-content: space-between;">
+
+                <button *ngIf="!this.isTechnician()" style="width: 100%;" mat-raised-button color='primary'
+                    (click)="addOrder(OrderType.normal)">
                     <mat-icon>add</mat-icon>
                     <mat-label style="padding-right: 10px;">{{ 'הזמנה חדשה' }}
                     </mat-label>
-                </button>
+                </button> 
                 <span *ngIf="!this.isTechnician()" style="width: 10px;"></span>
-                 <button style="width: 100%;" mat-raised-button color='primary' (click)="addOrder(OrderType.maintenance)">
-                    <mat-icon>add</mat-icon>
-                    <mat-label style="padding-right: 10px;">{{ 'קריאת שירות חדשה'  }}
+                <button title="קריאת שירות חדשה" [style.width]="this.isTechnician()? '100%' : '15%'" mat-raised-button color="primary" [style.backgroundColor]="!isTechnician()? 'darkgrey' : ''"
+                    (click)="addOrder(OrderType.maintenance)">
+                    <mat-icon [ngStyle]="{'color': this.isTechnician()? 'white': 'black'}">build</mat-icon>
+                    <mat-label *ngIf="this.isTechnician()" style="padding-right: 10px;">{{'קריאת שירות חדשה' }}
                     </mat-label>
                 </button>
             </div>
         </div>
-    </div>
+    </div> 
     <div class="grow-item">
         <data-grid *ngIf="this.orders" [settings]='orders'></data-grid>
     </div>

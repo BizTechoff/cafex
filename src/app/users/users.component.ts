@@ -4,7 +4,8 @@ import { Context, ServerFunction, StringColumn } from '@remult/core';
 import { DialogService } from '../common/dialog';
 import { GridDialogComponent } from '../common/grid-dialog/grid-dialog.component';
 import { InputAreaComponent } from '../common/input-area/input-area.component';
-import { ProductSharing } from '../core/product/product';
+import { Container } from '../core/container/container';
+import { Order } from '../core/order/order';
 import { FILTER_IGNORE } from '../shared/types';
 import { Roles } from './roles';
 import { UserProduct } from './userProduct/userProduct';
@@ -35,7 +36,9 @@ export class UsersComponent implements OnInit {
 
   users = new GridSettings<Users>(this.context.for(Users), {
     where: cur => this.search.value ? cur.name.contains(this.search) : FILTER_IGNORE,
-    allowCRUD: false,
+    allowDelete: false,
+    allowUpdate: this.isAdmin(),
+    allowInsert: false,
     numOfColumnsInGrid: 10,
     columnSettings: row => [
       { column: row.name, width: '85' },
@@ -77,7 +80,15 @@ export class UsersComponent implements OnInit {
       name: 'מחיקת משתמש',
       icon: 'delete',
       click: async (cur) => {
-
+        let count = await this.context.for(Order).count(row => row.createdBy.isEqualTo(cur.id).or(row.modifiedBy.isEqualTo(cur.id)))
+        if (count > 0) {
+          this.dialog.error('לא ניתן למחוק משתמש המשוייך להזמנות')
+          return
+        } count = await this.context.for(Container).count(row => row.createdBy.isEqualTo(cur.id))
+        if (count > 0) {
+          this.dialog.error('לא ניתן למחוק משתמש המשוייך למחסן')
+          return
+        }
         if (await this.dialog.confirmDelete(cur.name.value)) {
           await cur.delete();
         };
@@ -138,7 +149,7 @@ export class UsersComponent implements OnInit {
     let changed = await openDialog(InputAreaComponent,
       it => it.args = {
         title: 'הוספת משתמש חדש',
-        columnSettings: () => [add.name],
+        columnSettings: () => [add.name, add.admin, add.technician, add.agent, add.store],
         ok: async () => {
           let pass = await UsersComponent.getDefaultPasswword();
           // console.log('pass='+pass);

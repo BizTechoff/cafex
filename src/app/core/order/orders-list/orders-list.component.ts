@@ -114,7 +114,9 @@ export class OrdersListComponent implements OnInit {
             result = result.and(row.sid.isEqualTo(this.store.value));
           }
           if (this.status.value) {
-            result = result.and(row.status.isEqualTo(this.status.value));
+            if (!this.status.isAll()) {
+              result = result.and(row.status.isEqualTo(this.status.value));
+            }
           }
           if (this.type.value) {
             if (this.isTechnician()) {
@@ -145,8 +147,8 @@ export class OrdersListComponent implements OnInit {
           this.isStore() ? undefined : { column: cur.sid, readOnly: o => !o.isNew(), width: '95' },//, width: '95'
           { column: cur.date, readOnly: o => !o.isNew(), width: '90' },//
           { column: cur.status, readOnly: o => true, width: '80' },//, width: '80'
-          { column: cur.remark, readOnly: o => true },//, width: '100%'
-          { column: cur.type, readOnly: o => !o.isNew(), width: '80' },
+          { column: cur.remark, readOnly: o => true },//, width: '100%' 
+          { column: cur.type, readOnly: o => !o.isNew(), width: '80', cssClass: (ord) => { return ord.type.value.isNormal() ? '' : `order-type-${ord.type.value.id}` } },
           { column: cur.orderNum, readOnly: o => !o.isNew(), width: '100', caption: this.isTechnician() ? 'מס.קריאה' : 'מס.הזמנה' },//
           { column: cur.worker, caption: 'שם ממלא', readOnly: o => !o.isNew(), width: '100' }, //, width: '80' //this.isStore() ? undefined : { column: cur.worker, readOnly: o => !o.isNew(), width: '80' },
           { column: this.count, readOnly: o => true, width: '100', getValue: o => o.getCount(), hideDataOnInput: true, allowClick: (o) => false },//, width: '100'
@@ -204,7 +206,7 @@ export class OrdersListComponent implements OnInit {
                 !row.isNew() && row.status.value === OrderStatus.open)
           },
           {
-            textInMenu: 'שייך טכנאי',
+            textInMenu: 'שיבוץ טכנאי',
             icon: 'build',
             visible: row => row.type.isTechnical() && !row.isNew() && !row.status.value.isClosed() && this.isAdmin(),
             click: async (row) => await this.assignTechnical(row.id.value)
@@ -218,7 +220,7 @@ export class OrdersListComponent implements OnInit {
             textInMenu: row => row.type.isTechnical() ? 'ערוך קריאת שירות' : 'ערוך הזמנה',
             cssClass: '',
             icon: 'edit',
-            click: async (row) => await this.addOrder(row.type.value, row),
+            click: async (row) => await this.addOrder(row.type.value, row.id.value),
             visible: row => !row.isNew() && !row.status.value.isClosed()
           },
           {
@@ -343,8 +345,11 @@ export class OrdersListComponent implements OnInit {
     }
   }
 
-  async addOrder(type: OrderType, o?: Order) {
-    let order = o;
+  async addOrder(type: OrderType, oid?: string) {
+    let order: Order = undefined;
+    if (oid) {
+      order = await this.context.for(Order).findId(oid)
+    }
     if (!order) {
       order = this.context.for(Order).create();
       order.type.value = type;
@@ -354,6 +359,7 @@ export class OrdersListComponent implements OnInit {
     let title = type.isTechnical() ? 'קריאת שירות חדשה' : 'הזמנה חדשה';
     if (!order.isNew()) {
       title = type.isTechnical() ? 'עדכון קריאת שירות' : 'עדכון הזמנה';
+      title += " " + order.orderNum.value
     }
     await openDialog(InputAreaComponent,
       it => it.args = {
@@ -362,17 +368,29 @@ export class OrdersListComponent implements OnInit {
           let f = [];
           if (!this.isStore()) {
             f.push(
-              { column: order.sid, visible: () => this.store.value ? false : true, readOnly: () => this.isStore() },
+              { column: order.sid, readOnly: () => this.store.value ? true : false },
             );
           }
           if (!(order.type.value === OrderType.normal)) {
             f.push(order.type);
           }
+          f.push(order.date)
           f.push(
-            order.date,
-            { column: order.worker, visible: () => this.isStore(), readOnly: () => !this.isStore() },
-            order.remark
+            { column: order.worker }
           );
+          // if (!this.isStore()) {
+          //   f.push(
+          //     {column: order.status, readonly: () => true}
+          //   )
+          // } 
+          f.push(order.remark);
+          if (!this.isStore() && order.type.isTechnical()) {
+            f.push(
+              // {column: order.type, readonly: () => true},
+              order.technical,
+              [order.technicalDate, order.technicalTime]
+            )
+          }
           return f;
         },
         ok: async () => {

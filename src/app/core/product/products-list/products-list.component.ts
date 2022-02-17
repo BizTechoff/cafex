@@ -25,7 +25,7 @@ export class ProductsListComponent implements OnInit {
       where: cur => this.search.value && this.search.value.length > 0
         ? cur.name.contains(this.search.value)
         : FILTER_IGNORE,
-      orderBy: cur => [cur.cid, cur.ciid, cur.sku, cur.name],
+      orderBy: cur => [cur.type, cur.share, cur.name],
       allowCRUD: false,
       allowDelete: false,
       numOfColumnsInGrid: 10,

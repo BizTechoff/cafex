@@ -38,3 +38,18 @@ body {
   font-weight: bolder;
   background-color: #8b9df5 !important;
 }
+
+.order-type-normal {
+  color: #492de7 !important;
+  font-weight: bold;
+}
+
+.order-type-maintenance {
+  color: rgb(255, 127, 39) !important;
+  font-weight: bold;
+}
+
+.order-type-fault {
+  color: #d12020 !important;
+  font-weight: bold;
+}
